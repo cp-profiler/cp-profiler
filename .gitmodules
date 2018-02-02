@@ -1,0 +1,4 @@
+[submodule "src/cpp-integration"]
+	path = src/cpp-integration
+	url = git@github.com:cp-profiler/cpp-integration.git
+	branch = master
