@@ -1,10 +1,10 @@
 #ifndef CPPROFILER_RECEIVER_WORKER_HH
 #define CPPROFILER_RECEIVER_WORKER_HH
 
-#include "cpp-integration/message.hpp"
-
 #include <QObject>
 #include <memory>
+
+#include "cpp-integration/message.hpp"
 
 class QTcpSocket;
 
@@ -12,6 +12,7 @@ namespace cpprofiler {
 
 class Conductor;
 class Execution;
+class Message;
 
 class ReceiverWorker : public QObject {
 Q_OBJECT
@@ -48,6 +49,8 @@ Q_OBJECT
 signals:
 
     void newExecution(Execution* e);
+    void newNode(Message* node);
+    void doneReceiving();
 
 public:
 

@@ -9,6 +9,9 @@
 
 #include "execution.hh"
 
+
+#include "tree/node.hh"
+
 namespace cpprofiler {
 
     ReceiverWorker::ReceiverWorker(QTcpSocket& socket)
@@ -116,19 +119,29 @@ namespace cpprofiler {
 
     }
 
+    /// nid, pid, alt, kids are needed during the Tree Construction
+    /// after the tree is build, these fields are easier to get from the tree structure
+    
+    /// label, nogood and info can be quieried at any time
+
     void ReceiverWorker::handleMessage(const Message& msg) {
 
         switch (msg.type()) {
             case cpprofiler::MsgType::NODE:
-                std::cerr << "N";
-                // execution->handleNewNode(msg);
+
+                try {
+                    /// NOTE(maxim): the messae will be deleted by the builder thread
+                    auto node_msg = new Message{msg};
+                    emit newNode(node_msg);
+                } catch (std::exception& e) {}
+
             break;
             case cpprofiler::MsgType::START:
                 std::cerr << "START\n";
                 handleStart(msg);
             break;
             case cpprofiler::MsgType::DONE:
-                // emit doneReceiving();
+                emit doneReceiving();
                 std::cerr << "DONE\n";
             break;
             case cpprofiler::MsgType::RESTART:

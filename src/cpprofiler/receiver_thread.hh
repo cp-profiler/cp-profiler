@@ -8,6 +8,7 @@
 namespace cpprofiler {
 
 class Conductor;
+class Message;
 class Execution;
 class ReceiverWorker;
 
@@ -21,6 +22,8 @@ Q_OBJECT
 signals:
 
     void newExecution(Execution* e);
+    void newNode(Message* node);
+    void doneReceiving();
 
 public:
     ReceiverThread(intptr_t socket_desc);

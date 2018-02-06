@@ -10,6 +10,8 @@
 
 namespace cpprofiler {
 
+    class Message;
+
     ReceiverThread::ReceiverThread(intptr_t socket_desc)
         : m_socket_desc(socket_desc)
     {
@@ -28,6 +30,12 @@ namespace cpprofiler {
         connect(m_worker.get(), &ReceiverWorker::newExecution,
             this, &ReceiverThread::newExecution, Qt::BlockingQueuedConnection);
 
+        connect(m_worker.get(), &ReceiverWorker::newNode,
+            this, &ReceiverThread::newNode);
+
+        connect(m_worker.get(), &ReceiverWorker::doneReceiving,
+            this, &ReceiverThread::doneReceiving);
+
         auto res = socket.setSocketDescriptor(m_socket_desc);
 
         if (!res) {
@@ -41,14 +49,7 @@ namespace cpprofiler {
             this->quit();
         });
 
-        // while(true) {
-        //     std::cout << "receiver thread\n";
-        //     std::this_thread::sleep_for(std::chrono::seconds(1));
-        // }
-
         exec();
-
-        std::cerr << "exit thread\n";
     }
 
     ReceiverThread::~ReceiverThread() {
