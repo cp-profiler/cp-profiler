@@ -5,6 +5,8 @@
 
 #include "cpprofiler/conductor.hh"
 
+#include "cpprofiler/tests/tree_test.hh"
+
 int main(int argc, char *argv[]) {
 
 #ifdef QT_OPENGL_SUPPORT
@@ -13,7 +15,7 @@ int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
 
-    std::cerr << "main thread" << std::this_thread::get_id() << std::endl;
+    cpprofiler::tests::run();
 
     cpprofiler::Conductor conductor;
 

@@ -3,10 +3,13 @@
 #include "receiver_thread.hh"
 #include <iostream>
 #include <thread>
+#include <QTreeView>
+#include <QGridLayout>
 #include "cpp-integration/message.hpp"
 
 #include "execution.hh"
 #include "builder_thread.hh"
+#include "execution_list.hh"
 
 namespace cpprofiler {
 
@@ -14,7 +17,16 @@ namespace cpprofiler {
 
         setWindowTitle("CP-Profiler");
 
-        
+        auto layout = new QGridLayout();
+
+        {
+            auto window = new QWidget();
+            setCentralWidget(window);
+            window->setLayout(layout);
+        }
+
+        m_execution_list.reset(new ExecutionList);
+        layout->addWidget(m_execution_list->getWidget());
 
         m_server.reset(new TcpServer([this](intptr_t socketDesc) {
 
@@ -74,10 +86,10 @@ namespace cpprofiler {
     void Conductor::addNewExecution(Execution* e) {
 
         std::cerr << "new execution created\n";
-        m_executions.push_back(std::shared_ptr<Execution>(e));
 
-        std::cerr << "conductor new execution thread" << std::this_thread::get_id() << std::endl;
-        
+        m_executions.push_back(std::shared_ptr<Execution>(e));
+        m_execution_list->addExecution(*e);
+
     }
 
 }

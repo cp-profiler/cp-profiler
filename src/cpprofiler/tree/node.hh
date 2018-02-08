@@ -2,16 +2,21 @@
 #define CPPROFILER_TREE_NODE
 
 #include <vector>
+#include "node_id.hh"
 
 namespace cpprofiler { namespace tree {
 
-struct NodeID {
-    int id;
+struct no_child : std::exception {
+    const char* what() const throw() override {
+        return "child does not exist at alt\n";
+    }
 };
 
 class Node {
 private:
-    enum {
+    enum class Tag {
+        LEAF = 0,
+        ONE_CHILD,
         TWO_CHILDREN,
         MORE_CHILDREN
     };
@@ -20,11 +25,23 @@ private:
     NodeID parent;
 
     /// The children, or in case there are at most two, the first child
-    void* childrenOrFirstChild;
+    void* m_childrenOrFirstChild;
 
-    // The number of children, in case it is greater than 2, or the first child (if negative)
-    int noOfChildren;
+    // The number of children, in case it is greater than 2, or the second child (if negative)
+    int m_noOfChildren;
 
+    Tag getTag() const;
+    void setTag(Tag);
+
+public:
+
+    explicit Node(int kids = 0);
+
+    int getNumberOfChildren() const;
+    void setNumberOfChildren(int n);
+
+    void setChild(NodeID, int alt);
+    NodeID getChild(int alt);
 
 };
 

@@ -21,7 +21,11 @@ public:
 
     Structure();
 
-    void createRoot();
+    NodeID createRoot(int kids);
+
+    NodeID addChild(NodeID pid, int alt, int kids);
+
+    NodeID getChild(NodeID pid, int alt);
 
 };
 

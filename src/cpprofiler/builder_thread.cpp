@@ -55,8 +55,22 @@ namespace cpprofiler {
         std::unique_ptr<Message> node_msg{node};
         std::cerr << *node << std::endl;
 
-        if (node->parentUID().nid == -1) {
-            m_execution->tree_structure().createRoot();
+        auto n_uid = node->nodeUID();
+        auto p_uid = node->parentUID();
+        auto kids = node->kids();
+
+        if (p_uid.nid == -1) {
+            auto nid = m_execution->tree_structure().createRoot(kids);
+
+            m_execution->solver_data().setNodeId({n_uid.nid, n_uid.rid, n_uid.tid}, nid);
+        } else {
+            // auto pid = m_execution->solver_data().getNodeId({p_uid.nid, p_uid.rid, p_uid.tid});
+            /// set the number of children for the parent node
+
+
+            // auto nid = m_execution->tree_structure().addChild(pid, )
+            /// TODO: add node to structure, update solver data
+
         }
     }
 

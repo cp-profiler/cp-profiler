@@ -3,13 +3,29 @@
 
 #include <vector>
 #include <memory>
-#include "shape.hh"
+#include <memory>
+#include <QMutex>
+
+#include "node_id.hh"
 
 namespace cpprofiler { namespace tree {
 
+class Shape;
+
 class Layout {
 
-    std::vector<std::unique_ptr<Shape>> shapes;
+    QMutex m_layout_mutex;
+
+    std::vector<std::unique_ptr<Shape>> m_shapes;
+
+public:
+
+    /// NOTE(maxim) cannot return Shape& without protecting it with a mutex
+    void getShape(NodeID nid);
+
+    void setShape(NodeID nid, const Shape& shape);
+
+    ~Layout();
 
 };
 
