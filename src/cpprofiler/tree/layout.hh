@@ -3,28 +3,42 @@
 
 #include <vector>
 #include <memory>
-#include <memory>
+#include <unordered_map>
 #include <QMutex>
 
 #include "node_id.hh"
+#include "layout_computer.hh"
 
 namespace cpprofiler { namespace tree {
 
 class Shape;
+class LayoutComputer;
+class Structure;
 
 class Layout {
 
+    friend class LayoutComputer;
+
     QMutex m_layout_mutex;
+
+    std::unordered_map<NodeID, Shape*> m_shape_map;
 
     std::vector<std::unique_ptr<Shape>> m_shapes;
 
+    const Shape& getShape_unprotected(NodeID nid) const;
+
+    /// just remember the pointer, it is managed elsewhere
+    void setShape_unprotected(NodeID nid, Shape* shape);
+
+    /// take ownership over shape
+    void setShape_unprotected(NodeID nid, std::unique_ptr<Shape> shape);
+
 public:
 
-    /// NOTE(maxim) cannot return Shape& without protecting it with a mutex
-    void getShape(NodeID nid);
 
-    void setShape(NodeID nid, const Shape& shape);
+    std::unique_ptr<LayoutComputer> createComputer(const Structure& str);
 
+    Layout();
     ~Layout();
 
 };

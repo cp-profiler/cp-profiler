@@ -5,11 +5,16 @@
 #include <thread>
 #include <QTreeView>
 #include <QGridLayout>
+#include <QPushButton>
+#include <QDebug>
 #include "cpp-integration/message.hpp"
 
 #include "execution.hh"
 #include "builder_thread.hh"
 #include "execution_list.hh"
+#include "execution_window.hh"
+
+#include "utils/std_ext.hh"
 
 namespace cpprofiler {
 
@@ -27,6 +32,16 @@ namespace cpprofiler {
 
         m_execution_list.reset(new ExecutionList);
         layout->addWidget(m_execution_list->getWidget());
+
+        auto showButton = new QPushButton("Show Tree");
+        layout->addWidget(showButton);
+        connect(showButton, &QPushButton::clicked, [this]() {
+
+            for (auto execution : m_execution_list->getSelected()) {
+                showTraditionalView(execution);
+            }
+
+        });
 
         m_server.reset(new TcpServer([this](intptr_t socketDesc) {
 
@@ -92,4 +107,21 @@ namespace cpprofiler {
 
     }
 
+}
+
+
+namespace cpprofiler {
+
+    void Conductor::showTraditionalView(const Execution* e) {
+        auto maybe_view = m_execution_windows.find(e);
+
+        /// create new one if doesn't already exist
+        if (maybe_view == m_execution_windows.end()) {
+            // m_execution_windows[e] = std::unique_ptr<ExecutionWindow>(new ExecutionWindow);
+            m_execution_windows[e] = utils::make_unique<ExecutionWindow>(*e);
+        }
+
+        m_execution_windows.at(e)->show();
+
+    }
 }

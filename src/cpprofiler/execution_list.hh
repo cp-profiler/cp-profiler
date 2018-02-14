@@ -5,6 +5,7 @@
 #include <QStandardItemModel>
 #include <QTreeView>
 #include <memory>
+#include <vector>
 
 namespace cpprofiler {
 
@@ -15,6 +16,7 @@ class ExecutionItem : public QStandardItem {
 
 public:
     ExecutionItem(Execution& e);
+    Execution* get_execution();
 };
 
 class ExecutionList {
@@ -30,6 +32,8 @@ public:
     QWidget* getWidget() { return &m_tree_view; }
 
     void addExecution(Execution& e);
+
+    std::vector<Execution*> getSelected();
 };
 
 

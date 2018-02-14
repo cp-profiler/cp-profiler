@@ -110,10 +110,11 @@ namespace cpprofiler {
 
         std::cerr << "execution name: " << execution_name << std::endl;
 
-        execution.reset(new Execution{execution_name});
+        /// Conductor will take the ownership of the new Execution
+        execution = new Execution{execution_name};
 
         /// This uses a blocking connection
-        emit newExecution(execution.get());
+        emit newExecution(execution);
 
 
 

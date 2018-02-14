@@ -1,9 +1,17 @@
+#ifndef CPPROFILER_TESTS_TREE_TEST_HH
+#define CPPROFILER_TESTS_TREE_TEST_HH
+
 namespace cpprofiler {
 
     namespace tests {
 
-        void run();
+        namespace tree_test {
+            void run();
+        }
 
     }
 
 }
+
+
+#endif

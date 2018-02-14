@@ -1,7 +1,6 @@
 #include "node_tree.hh"
 
 #include "structure.hh"
-#include "layout.hh"
 
 namespace cpprofiler { namespace tree {
 

@@ -33,10 +33,10 @@ namespace std
     {
         size_t operator()(cpprofiler::SolverID const& a) const
         {
-            size_t const h1 ( std::hash<int>{}(a.nid) );
+            const size_t h1 ( std::hash<int>{}(a.nid) );
             size_t const h2 ( std::hash<int>{}(a.tid) );
             size_t const h3 ( std::hash<int>{}(a.rid) );
-            return h1 ^ (h2 << 1) ^ (h3 << 1); // or use boost::hash_combine (see Discussion)
+            return h1 ^ (h2 << 1) ^ (h3 << 1);
         }
     };
 }

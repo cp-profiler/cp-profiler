@@ -6,12 +6,10 @@
 namespace cpprofiler { namespace tree {
 
 class Structure;
-class Layout;
 
 class NodeTree {
 
     std::unique_ptr<Structure> m_structure;
-    std::unique_ptr<Layout> m_layout;
 
 public:
 

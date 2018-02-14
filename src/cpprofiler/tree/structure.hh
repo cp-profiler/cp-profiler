@@ -25,11 +25,25 @@ public:
 
     NodeID addChild(NodeID pid, int alt, int kids);
 
-    NodeID getChild(NodeID pid, int alt);
+    NodeID getChild(NodeID pid, int alt) const;
+
+    int getNumberOfChildren(NodeID pid) const;
+
+    int nodeCount() const;
 
 };
 
 }}
+
+
+namespace cpprofiler { namespace tree { namespace helper {
+
+std::vector<NodeID> postOrder(const Structure& tree);
+
+std::vector<NodeID> preOrder(const Structure& tree);
+
+
+}}}
 
 
 #endif

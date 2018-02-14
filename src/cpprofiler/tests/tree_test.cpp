@@ -3,9 +3,7 @@
 
 #include <QDebug>
 
-namespace cpprofiler {
-
-    namespace tests {
+namespace cpprofiler { namespace tests { namespace tree_test {
 
 
         static void binary_tree() {
@@ -46,9 +44,6 @@ namespace cpprofiler {
 
             binary_tree();
 
-
         }
 
-    }
-
-}
+}}}

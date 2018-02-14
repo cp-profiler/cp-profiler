@@ -6,6 +6,7 @@
 #include "cpprofiler/conductor.hh"
 
 #include "cpprofiler/tests/tree_test.hh"
+#include "cpprofiler/tests/execution_test.hh"
 
 int main(int argc, char *argv[]) {
 
@@ -15,11 +16,13 @@ int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
 
-    cpprofiler::tests::run();
+    // cpprofiler::tests::tree_test::run();
 
     cpprofiler::Conductor conductor;
 
     conductor.show();
+
+    cpprofiler::tests::execution::run(conductor);
 
     return app.exec();
 }

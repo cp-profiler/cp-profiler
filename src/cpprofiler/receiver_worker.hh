@@ -38,7 +38,7 @@ Q_OBJECT
         int bytes_read = 0;
     } m_state;
 
-    std::shared_ptr<Execution> execution;
+    Execution* execution;
 
     cpprofiler::MessageMarshalling marshalling;
 

@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <exception>
+#include <stack>
+#include <algorithm>
 
 namespace cpprofiler { namespace tree {
 
@@ -37,8 +39,70 @@ namespace cpprofiler { namespace tree {
 
     }
 
-    NodeID Structure::getChild(NodeID pid, int alt) {
+    NodeID Structure::getChild(NodeID pid, int alt) const {
         return m_nodes[pid]->getChild(alt);
     }
 
+    int Structure::getNumberOfChildren(NodeID pid) const {
+        return m_nodes[pid]->getNumberOfChildren();
+    }
+
+    int Structure::nodeCount() const {
+        return m_nodes.size();
+    }
+
 }}
+
+
+namespace cpprofiler { namespace tree { namespace helper {
+
+
+std::vector<NodeID> preOrder(const Structure& tree) {
+    std::stack<NodeID> stk;
+    std::vector<NodeID> result;
+
+    NodeID root = NodeID{0};
+
+    stk.push(root);
+
+    while(stk.size() > 0) {
+        auto nid = stk.top(); stk.pop();
+        result.push_back(nid);
+
+        for (auto i = tree.getNumberOfChildren(nid) - 1; i >= 0 ; --i) {
+            auto child = tree.getChild(nid, i);
+            stk.push(child);
+        }
+    }
+
+    return result;
+}
+
+std::vector<NodeID> postOrder(const Structure& tree) {
+
+  /// PO-traversal requires two stacks
+  std::stack<NodeID> stk_1;
+  std::vector<NodeID> result;
+
+    NodeID root = NodeID{0};
+
+    stk_1.push(root);
+
+    while(stk_1.size() > 0) {
+        auto nid = stk_1.top(); stk_1.pop();
+
+        result.push_back(nid);
+
+        for (auto i = 0; i < tree.getNumberOfChildren(nid); ++i) {
+            auto child = tree.getChild(nid, i);
+            stk_1.push(child);
+        }
+    }
+
+    std::reverse(result.begin(), result.end());
+
+    return result;
+
+}
+
+}}}
