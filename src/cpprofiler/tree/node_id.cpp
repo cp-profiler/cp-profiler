@@ -6,4 +6,6 @@ namespace cpprofiler { namespace tree {
         return (static_cast<int>(lhs) == static_cast<int>(rhs));
     }
 
+    NodeID NodeID::NoNode = NodeID{-1};
+
 }}

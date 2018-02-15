@@ -14,18 +14,28 @@ namespace cpprofiler { namespace tree {
     }
 
     void Layout::setShape_unprotected(NodeID nid, Shape* shape) {
+
         m_shape_map[nid] = shape;
+        /// always check if the node had a unique shape associated with it
+        /// if yes, remove it
+        {
+            auto it = m_shapes.find(nid);
+            if (it != m_shapes.end()) {
+                m_shapes.erase(it);
+            }
+        }
+
+    }
+
+    void Layout::setChildOffset_unprotected(NodeID nid, double offset) {
+        m_child_offsets[nid] = offset;
     }
 
     void Layout::setShape_unprotected(NodeID nid, std::unique_ptr<Shape> shape) {
 
-        qDebug() << "set shape for nid: " << nid;
+        setShape_unprotected(nid, shape.get());
 
-        // for now assume that shape cannot be reassigned
-        if (m_shape_map.find(nid) != m_shape_map.end()) throw;
-
-        m_shapes.push_back(std::move(shape));
-        m_shape_map[nid] = m_shapes.back().get();
+        m_shapes[nid] = std::move(shape);
     }
 
     Layout::Layout() {
@@ -36,6 +46,11 @@ namespace cpprofiler { namespace tree {
     std::unique_ptr<LayoutComputer> Layout::createComputer(const Structure& str) {
 
         return utils::make_unique<LayoutComputer>(str, *this, m_layout_mutex);
+    }
+
+    double Layout::getOffset(NodeID nid) const {
+        QMutexLocker locker(&m_layout_mutex);
+        return m_child_offsets.at(nid);
     }
 
 }}

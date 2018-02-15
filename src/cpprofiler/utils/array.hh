@@ -21,8 +21,10 @@ public:
     Array();
     ~Array();
 
-    Array(const Array& other) = delete;
+    Array(const Array& other);
     Array& operator=(const Array& other) = delete;
+
+    Array(Array&& other);
 
     T& operator[](int pos);
 
@@ -34,29 +36,39 @@ public:
 
 template<typename T>
 Array<T>::Array(int size) : m_size(size) {
-
-    auto size_in_bytes = size * sizeof(T);
-    // m_data = reinterpret_cast<T*>(new char[size_in_bytes]);
-    m_data = new T[size_in_bytes];
+    m_data = new T[size];
 }
 
 template<typename T>
 Array<T>::Array(std::initializer_list<T> init_list)
 : m_size(init_list.size()) {
-    auto size_in_bytes = m_size * sizeof(T);
-    m_data = reinterpret_cast<T*>(new char[size_in_bytes]);
+    m_data = new T[m_size];
 
-    auto i = 0u;
+    int i = 0;
     for (auto&& el : init_list) {
         m_data[i] = el;
         ++i;
     }
-
-    // std::insert(std::begin(m_data), init_list.begin(), init_list.end());
 }
 
 template<typename T>
 Array<T>::Array() : m_size(0) {
+}
+
+template<typename T>
+Array<T>::Array(const Array& other) : m_size(other.size()) {
+    m_data = new T[m_size];
+
+    for (auto i = 0; i < m_size; ++i) {
+        m_data[i] = other[i];
+    }
+}
+
+template<typename T>
+Array<T>::Array(Array&& other) : m_size(other.size()) {
+    m_data = other.m_data;
+    other.m_size = 0;
+    other.m_data = nullptr;
 }
 
 template<typename T>

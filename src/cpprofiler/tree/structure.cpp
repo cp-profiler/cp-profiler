@@ -11,25 +11,25 @@ namespace cpprofiler { namespace tree {
         std::cerr << "Structure()\n";
         m_nodes.reserve(100);
 
-
     }
 
     NodeID Structure::createRoot(int kids) {
-
+        QWriteLocker locker(&m_lock);
         if (m_nodes.size() > 0) {
             throw invalid_tree();
         }
 
-        m_nodes.push_back(std::unique_ptr<Node>{new Node(kids)});
+        m_nodes.push_back(std::unique_ptr<Node>{new Node(NodeID::NoNode, kids)});
 
-        return NodeID{0};
+        return getRoot_unsafe();
 
     }
 
     NodeID Structure::addChild(NodeID pid, int alt, int kids) {
+        QWriteLocker locker(&m_lock);
 
         auto nid = NodeID{m_nodes.size()};
-        m_nodes.push_back(std::unique_ptr<Node>{new Node(kids)});
+        m_nodes.push_back(std::unique_ptr<Node>{new Node(pid, kids)});
 
         auto p_node = m_nodes[pid].get();
         p_node->setChild(nid, alt);
@@ -39,15 +39,66 @@ namespace cpprofiler { namespace tree {
 
     }
 
-    NodeID Structure::getChild(NodeID pid, int alt) const {
+    NodeID Structure::getChild_unsafe(NodeID pid, int alt) const {
         return m_nodes[pid]->getChild(alt);
     }
 
-    int Structure::getNumberOfChildren(NodeID pid) const {
+    NodeID Structure::getChild(NodeID pid, int alt) const {
+        QReadLocker locker(&m_lock);
+        return getChild_unsafe(pid, alt);;
+    }
+
+    NodeID Structure::getParent_unsafe(NodeID nid) const {
+        return m_nodes[nid]->getParent();
+    }
+
+    NodeID Structure::getParent(NodeID nid) const {
+        QReadLocker locker(&m_lock);
+        return getParent_unsafe(nid);
+    }
+
+    int Structure::getNumberOfChildren_unsafe(NodeID pid) const {
         return m_nodes[pid]->getNumberOfChildren();
     }
 
+    int Structure::getNumberOfChildren(NodeID pid) const {
+        QReadLocker locker(&m_lock);
+        return getNumberOfChildren_unsafe(pid);
+    }
+
+
+    int Structure::getNumberOfSiblings(NodeID nid) const {
+        QReadLocker locker(&m_lock);
+        auto pid = getParent_unsafe(nid);
+        return getNumberOfChildren_unsafe(pid);
+    }
+
+    NodeID Structure::getRoot_unsafe() const {
+        return NodeID{0};
+    }
+
+    NodeID Structure::getRoot() const {
+        QReadLocker locker(&m_lock);
+        return getRoot_unsafe();
+    }
+
+    int Structure::getAlternative(NodeID nid) const {
+        QReadLocker locker(&m_lock);
+        auto parent_nid = getParent_unsafe(nid);
+
+        if (parent_nid == NodeID::NoNode) return -1;
+
+        for (auto i = 0; i < getNumberOfChildren_unsafe(parent_nid); ++i) {
+            if (getChild_unsafe(parent_nid, i) == nid) {
+                return i;
+            }
+        }
+        throw;
+        return -1;
+    }
+
     int Structure::nodeCount() const {
+        QReadLocker locker(&m_lock);
         return m_nodes.size();
     }
 

@@ -4,6 +4,8 @@
 #include "node.hh"
 #include "memory"
 
+#include <QReadWriteLock>
+
 namespace cpprofiler { namespace tree {
 
 struct invalid_tree : std::exception {
@@ -14,7 +16,18 @@ struct invalid_tree : std::exception {
 
 class Structure {
 
+    mutable QReadWriteLock m_lock;
+
     std::vector<std::unique_ptr<Node>> m_nodes;
+
+    /// Same as `getParent` without holding a mutex
+    NodeID getParent_unsafe(NodeID nid) const;
+
+    int getNumberOfChildren_unsafe(NodeID pid) const;
+
+    NodeID getChild_unsafe(NodeID pid, int alt) const;
+
+    NodeID getRoot_unsafe() const;
 
 
 public:
@@ -27,7 +40,16 @@ public:
 
     NodeID getChild(NodeID pid, int alt) const;
 
+    NodeID getParent(NodeID nid) const;
+
     int getNumberOfChildren(NodeID pid) const;
+
+    int getNumberOfSiblings(NodeID nid) const;
+
+    NodeID getRoot() const;
+
+    /// which alternative the current node is relative to its parent
+    int getAlternative(NodeID nid) const;
 
     int nodeCount() const;
 

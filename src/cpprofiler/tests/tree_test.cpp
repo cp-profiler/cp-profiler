@@ -38,6 +38,9 @@ namespace cpprofiler { namespace tests { namespace tree_test {
                 tree.addChild(n2, 2, 0);
                 qDebug() << "bug: must not have room for this child";
             } catch (std::exception& e) {}
+
+            qDebug() << "siblings: " << tree.getNumberOfSiblings(n1);
+            qDebug() << "siblings: " << tree.getNumberOfSiblings(n4);
         }
 
         void run() {

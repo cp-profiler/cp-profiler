@@ -5,11 +5,9 @@
 namespace cpprofiler { namespace tree {
 
     Extent::Extent(int l0, int r0) : l(l0), r(r0) {
-        qDebug() << "Extent()";
     }
 
     Extent::~Extent() {
-        qDebug() << "~Extent()";
     }
 
 }}
@@ -19,7 +17,11 @@ namespace cpprofiler { namespace tree {
 
 
     Shape::Shape(int depth) : m_extents(depth) {
+        // qDebug() << "Shape()";
+    }
 
+    Shape::~Shape() {
+        // qDebug() << "~Shape()";
     }
 
     std::ostream& operator<<(std::ostream& os, const cpprofiler::tree::Shape& s) {

@@ -11,12 +11,27 @@
 
 namespace cpprofiler { namespace tests { namespace execution {
 
+    class Test {
+
+public:
+        Test() {
+            qDebug() << "Test";
+        }
+
+        ~Test() {
+            qDebug() << "~Test";
+        }
+    };
+
+    void copy_test(utils::Array<int> arr) {
+        auto new_arr = arr;
+    }
 
     void array_test() {
 
+        utils::Array<int> arr(1);
 
-        utils::Array<int> arr();
-
+        copy_test(arr);
 
     }
 

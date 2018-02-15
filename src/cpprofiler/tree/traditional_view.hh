@@ -13,8 +13,14 @@ class Structure;
 
 class TreeScrollArea : public QAbstractScrollArea {
 
+    const Structure& m_tree;
+    const Layout& m_layout;
+
     void paintEvent(QPaintEvent* e) override;
 
+public:
+
+    TreeScrollArea(const Structure& tree, const Layout& layout);
 
 };
 
@@ -23,15 +29,15 @@ class TraditionalView {
     // TreeWidget m_widget;
 
     const Structure& m_tree;
+    std::unique_ptr<Layout> m_layout;
 
     TreeScrollArea m_scroll_area;
 
-    std::unique_ptr<Layout> m_layout;
 
 
 public:
 
-    TraditionalView(const Structure& nt);
+    TraditionalView(const Structure& tree);
     ~TraditionalView();
 
     QWidget* widget();

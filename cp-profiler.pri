@@ -19,6 +19,9 @@ SOURCES += \
     $$PWD/src/cpprofiler/tree/node_tree.cpp \
     $$PWD/src/cpprofiler/tree/node_id.cpp \
     $$PWD/src/cpprofiler/tree/traditional_view.cpp \
+    $$PWD/src/cpprofiler/tree/cursors/node_cursor.cpp \
+    $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.cpp \
+    $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hpp \
 
 HEADERS += \
     $$PWD/src/cpprofiler/conductor.hh \
@@ -40,6 +43,9 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/node_tree.hh \
     $$PWD/src/cpprofiler/tree/node_id.hh \
     $$PWD/src/cpprofiler/tree/traditional_view.hh \
+    $$PWD/src/cpprofiler/tree/cursors/node_cursor.hh \
+    $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.hh \
+    $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hh \
 
 SOURCES += \
     $$PWD/src/cpprofiler/tests/tree_test.cpp \

@@ -19,6 +19,10 @@ namespace cpprofiler { namespace tree {
         );
     }
 
+    void Node::setParent(NodeID pid) {
+        m_parent = pid;
+    }
+
     int Node::getNumberOfChildren() const {
 
         auto tag = getTag();
@@ -49,7 +53,7 @@ namespace cpprofiler { namespace tree {
 
     }
 
-    Node::Node(int kids) {
+    Node::Node(NodeID parent_nid, int kids) : m_parent(parent_nid) {
         setNumberOfChildren(kids);
     }
 
@@ -89,6 +93,10 @@ namespace cpprofiler { namespace tree {
             return NodeID{-1};
         }
 
+    }
+
+    NodeID Node::getParent() const {
+        return m_parent;
     }
 
 

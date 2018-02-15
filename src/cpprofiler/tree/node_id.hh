@@ -9,6 +9,8 @@ namespace cpprofiler { namespace tree {
 struct NodeID {
     int id;
 
+    static NodeID NoNode;
+
     operator int() const { return id; }
     explicit NodeID(int nid = -1): id(nid) { }
 };

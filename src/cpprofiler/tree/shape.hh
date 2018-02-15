@@ -37,6 +37,7 @@ class Shape {
 
 public:
     Shape(int depth);
+    ~Shape();
 
     Shape(std::initializer_list<Extent> init_list)
     : m_extents{init_list} {}

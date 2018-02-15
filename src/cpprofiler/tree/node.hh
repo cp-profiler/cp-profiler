@@ -22,7 +22,7 @@ private:
     };
 
     /// The parent of this node
-    NodeID parent;
+    NodeID m_parent;
 
     /// The children, or in case there are at most two, the first child
     void* m_childrenOrFirstChild;
@@ -33,15 +33,19 @@ private:
     Tag getTag() const;
     void setTag(Tag);
 
+    void setParent(NodeID pid);
+
 public:
 
-    explicit Node(int kids = 0);
+    Node(NodeID parent_nid, int kids = 0);
 
     int getNumberOfChildren() const;
     void setNumberOfChildren(int n);
 
     void setChild(NodeID, int alt);
     NodeID getChild(int alt);
+
+    NodeID getParent() const;
 
 };
 

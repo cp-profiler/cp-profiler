@@ -27,15 +27,15 @@ std::unique_ptr<Shape> combine_shapes(const Shape& s1, const Shape& s2) {
 
     auto combined = utils::make_unique<Shape>(max_depth+1);
 
-    (*combined)[0] = {-10, 10};
+    (*combined)[0] = {-Layout::min_dist_x, Layout::min_dist_x};
 
     for (auto depth = 0; depth < common_depth; ++depth) {
-        (*combined)[depth+1] = {s1[depth].l - 10, s2[depth].r + 10};
+        (*combined)[depth+1] = {s1[depth].l - Layout::min_dist_x, s2[depth].r + Layout::min_dist_x};
     }
 
     if (max_depth != common_depth) {
         const auto& longer_shape = depth_left > depth_right ? s1 : s2;
-        const int offset = depth_left > depth_right ? -10 : 10;
+        const int offset = depth_left > depth_right ? -Layout::min_dist_x : Layout::min_dist_x;
 
         for (auto depth = common_depth; depth < max_depth; ++depth) {
             (*combined)[depth+1] = {longer_shape[depth].l + offset,
@@ -71,6 +71,9 @@ void LayoutComputer::compute() {
             auto combined = combine_shapes(s1, s2);
 
             m_layout.setShape_unprotected(nid, std::move(combined));
+
+            m_layout.setChildOffset_unprotected(kid_l, -Layout::min_dist_x);
+            m_layout.setChildOffset_unprotected(kid_r, Layout::min_dist_x);
 
         }
         // check if has children
