@@ -17,7 +17,24 @@ LayoutComputer::LayoutComputer(const Structure& tree, Layout& layout, QMutex& la
 
 }
 
-std::unique_ptr<Shape> combine_shapes(const Shape& s1, const Shape& s2) {
+
+static int distance_between(const Shape& s1, const Shape& s2) {
+    auto depth_left = s1.depth();
+    auto depth_right = s2.depth();
+    auto common_depth = std::min(depth_left, depth_right);
+
+    auto max = 0;
+    for (auto i = 0; i < common_depth; ++i) {
+        auto cur_dist = s1[i].r - s2[i].l;
+        if (cur_dist > max) max = cur_dist; 
+    }
+
+    qDebug() << "max: " << max;
+
+    return max + Layout::min_dist_x;
+}
+
+std::unique_ptr<Shape> combine_shapes(const Shape& s1, const Shape& s2, std::vector<int>& offsets) {
 
     auto depth_left = s1.depth();
     auto depth_right = s2.depth();
@@ -27,15 +44,20 @@ std::unique_ptr<Shape> combine_shapes(const Shape& s1, const Shape& s2) {
 
     auto combined = utils::make_unique<Shape>(max_depth+1);
 
-    (*combined)[0] = {-Layout::min_dist_x, Layout::min_dist_x};
+    auto distance = distance_between(s1, s2);
+    auto half_dist = distance / 2;
+
+    (*combined)[0] = {-half_dist, half_dist};
+
+    offsets[0] = -half_dist; offsets[1] = half_dist;
 
     for (auto depth = 0; depth < common_depth; ++depth) {
-        (*combined)[depth+1] = {s1[depth].l - Layout::min_dist_x, s2[depth].r + Layout::min_dist_x};
+        (*combined)[depth+1] = {s1[depth].l - half_dist, s2[depth].r + half_dist};
     }
 
     if (max_depth != common_depth) {
         const auto& longer_shape = depth_left > depth_right ? s1 : s2;
-        const int offset = depth_left > depth_right ? -Layout::min_dist_x : Layout::min_dist_x;
+        const int offset = depth_left > depth_right ? -half_dist : half_dist;
 
         for (auto depth = common_depth; depth < max_depth; ++depth) {
             (*combined)[depth+1] = {longer_shape[depth].l + offset,
@@ -68,12 +90,13 @@ void LayoutComputer::compute() {
             const auto& s1 = m_layout.getShape_unprotected(kid_l);
             const auto& s2 = m_layout.getShape_unprotected(kid_r);
 
-            auto combined = combine_shapes(s1, s2);
+            std::vector<int> offsets(2);
+            auto combined = combine_shapes(s1, s2, offsets);
 
             m_layout.setShape_unprotected(nid, std::move(combined));
 
-            m_layout.setChildOffset_unprotected(kid_l, -Layout::min_dist_x);
-            m_layout.setChildOffset_unprotected(kid_r, Layout::min_dist_x);
+            m_layout.setChildOffset_unprotected(kid_l, offsets[0]);
+            m_layout.setChildOffset_unprotected(kid_r, offsets[1]);
 
         }
         // check if has children

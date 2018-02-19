@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 #include <exception>
+#include <QDebug>
 
 namespace cpprofiler { namespace tree {
 
@@ -49,8 +50,13 @@ namespace cpprofiler { namespace tree {
             } break;
         }
 
+    }
 
+    void Node::resetNumberOfChildren(int n) {
+        // can only change from 0 to 2 for now
+        if (getNumberOfChildren() != 0 || n != 2) throw std::exception();
 
+        setTag(Tag::TWO_CHILDREN);
     }
 
     Node::Node(NodeID parent_nid, int kids) : m_parent(parent_nid) {
@@ -75,6 +81,12 @@ namespace cpprofiler { namespace tree {
         } else {
 
         }
+
+        auto kids2 = getNumberOfChildren();
+
+        if (kids != kids2) throw;
+
+
     }
 
     NodeID Node::getChild(int alt) {

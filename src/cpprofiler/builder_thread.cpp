@@ -1,8 +1,11 @@
 #include "builder_thread.hh"
 #include "cpp-integration/message.hpp"
 #include "tree/structure.hh"
+#include "tree/node_info.hh"
+#include "tree/node_id.hh"
 
 #include <iostream>
+#include <QDebug>
 
 namespace cpprofiler {
 
@@ -55,23 +58,26 @@ namespace cpprofiler {
         std::unique_ptr<Message> node_msg{node};
         std::cerr << *node << std::endl;
 
+        // auto& tree = m_execution->tree_structure();
+        // auto& node_info = m_execution->node_info();
+
         auto n_uid = node->nodeUID();
         auto p_uid = node->parentUID();
-        auto kids = node->kids();
 
-        if (p_uid.nid == -1) {
-            auto nid = m_execution->tree_structure().createRoot(kids);
+        auto& tree = m_execution->tree();
 
-            m_execution->solver_data().setNodeId({n_uid.nid, n_uid.rid, n_uid.tid}, nid);
-        } else {
-            // auto pid = m_execution->solver_data().getNodeId({p_uid.nid, p_uid.rid, p_uid.tid});
-            /// set the number of children for the parent node
+        tree::NodeID pid = tree::NodeID::NoNode;
 
-
-            // auto nid = m_execution->tree_structure().addChild(pid, )
-            /// TODO: add node to structure, update solver data
-
+        if (p_uid.nid != -1) {
+            pid = m_execution->solver_data().getNodeId({p_uid.nid, p_uid.rid, p_uid.tid});
         }
+
+        const auto nid = tree.addNode(pid, node->alt(), node->kids(),
+            static_cast<tree::NodeStatus>(node->status()));
+
+        // const auto pid = tree.getChild(pid, alt);
+        m_execution->solver_data().setNodeId({n_uid.nid, n_uid.rid, n_uid.tid}, nid);
+
     }
 
     BuilderThread::~BuilderThread() {

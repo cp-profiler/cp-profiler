@@ -44,6 +44,8 @@ namespace std
 
 namespace cpprofiler {
 
+    class UserData;
+
 
 class IdMap {
 
@@ -62,10 +64,17 @@ class SolverData {
 
     IdMap m_id_map;
 
+    std::unordered_map<tree::NodeID, std::string> m_labels;
+
+    static const std::string no_label;
+
 public:
 
     tree::NodeID getNodeId(SolverID sid) const;
     void setNodeId(SolverID sid, tree::NodeID nid);
+
+    void setLabel(tree::NodeID, const std::string& label);
+    const std::string& getLabel(tree::NodeID) const;
 
 };
 
@@ -74,6 +83,7 @@ class Execution {
 
     std::unique_ptr<tree::NodeTree> m_tree;
     SolverData m_solver_data;
+    std::unique_ptr<UserData> m_user_data;
 
 public:
     std::string name();
@@ -86,6 +96,15 @@ public:
 
     tree::Structure& tree_structure();
     const tree::Structure& tree_structure() const;
+
+    tree::NodeInfo& node_info();
+    const tree::NodeInfo& node_info() const;
+
+    UserData& user_data();
+    const UserData& user_data() const;
+
+    tree::NodeTree& tree();
+    const tree::NodeTree& tree() const;
 };
 
 }

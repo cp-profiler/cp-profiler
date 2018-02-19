@@ -5,6 +5,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/receiver_thread.cpp \
     $$PWD/src/cpprofiler/receiver_worker.cpp \
     $$PWD/src/cpprofiler/execution.cpp \
+    $$PWD/src/cpprofiler/user_data.cpp \
     $$PWD/src/cpprofiler/builder_thread.cpp \
     $$PWD/src/cpprofiler/execution_list.cpp \
     $$PWD/src/cpprofiler/execution_window.cpp \
@@ -18,6 +19,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/tree/shape.cpp \
     $$PWD/src/cpprofiler/tree/node_tree.cpp \
     $$PWD/src/cpprofiler/tree/node_id.cpp \
+    $$PWD/src/cpprofiler/tree/node_info.cpp \
     $$PWD/src/cpprofiler/tree/traditional_view.cpp \
     $$PWD/src/cpprofiler/tree/cursors/node_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.cpp \
@@ -29,6 +31,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/receiver_thread.hh \
     $$PWD/src/cpprofiler/receiver_worker.hh \
     $$PWD/src/cpprofiler/execution.hh \
+    $$PWD/src/cpprofiler/user_data.hh \
     $$PWD/src/cpprofiler/builder_thread.hh \
     $$PWD/src/cpprofiler/execution_list.hh \
     $$PWD/src/cpprofiler/execution_window.hh \
@@ -42,6 +45,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/shape.hh \
     $$PWD/src/cpprofiler/tree/node_tree.hh \
     $$PWD/src/cpprofiler/tree/node_id.hh \
+    $$PWD/src/cpprofiler/tree/node_info.hh \
     $$PWD/src/cpprofiler/tree/traditional_view.hh \
     $$PWD/src/cpprofiler/tree/cursors/node_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.hh \

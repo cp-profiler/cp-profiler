@@ -12,6 +12,14 @@ struct no_child : std::exception {
     }
 };
 
+enum class NodeStatus  {
+    SOLVED = 0,
+    FAILED = 1,
+    BRANCH = 2,
+    SKIPPED = 3,
+    UNDETERMINED = 4
+};
+
 class Node {
 private:
     enum class Tag {
@@ -41,6 +49,9 @@ public:
 
     int getNumberOfChildren() const;
     void setNumberOfChildren(int n);
+
+    /// similar to setNumberOfChildren, but handles existing children
+    void resetNumberOfChildren(int n);
 
     void setChild(NodeID, int alt);
     NodeID getChild(int alt);

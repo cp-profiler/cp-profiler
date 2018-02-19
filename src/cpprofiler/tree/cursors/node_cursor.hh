@@ -6,19 +6,22 @@
 namespace cpprofiler { namespace tree {
 
 class Structure;
+class NodeInfo;
+class NodeTree;
 
 class NodeCursor {
 
 protected:
 
     const Structure& m_tree;
+    const NodeInfo& m_node_info;
     const NodeID m_start_node;
     NodeID m_cur_node;
     int m_cur_alt;
 
 
 public:
-    NodeCursor(NodeID start, const Structure& tree);
+    NodeCursor(NodeID start, const NodeTree& tree);
 
 /// Test if the cursor may move to the parent node
     bool mayMoveUpwards() const;

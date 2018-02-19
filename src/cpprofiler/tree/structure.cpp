@@ -4,6 +4,7 @@
 #include <exception>
 #include <stack>
 #include <algorithm>
+#include <QDebug>
 
 namespace cpprofiler { namespace tree {
 
@@ -21,22 +22,41 @@ namespace cpprofiler { namespace tree {
 
         m_nodes.push_back(std::unique_ptr<Node>{new Node(NodeID::NoNode, kids)});
 
-        return getRoot_unsafe();
+        auto root_nid = getRoot_unsafe();
+        /// create `kids` white nodes
+        for (auto i = 0; i < kids; ++i) {
+            addChild_unsafe(root_nid, i, 0);
+        }
 
+        return root_nid;
     }
 
-    NodeID Structure::addChild(NodeID pid, int alt, int kids) {
-        QWriteLocker locker(&m_lock);
-
+    
+    
+    NodeID Structure::addChild_unsafe(NodeID pid, int alt, int kids) {
         auto nid = NodeID{m_nodes.size()};
         m_nodes.push_back(std::unique_ptr<Node>{new Node(pid, kids)});
 
         auto p_node = m_nodes[pid].get();
         p_node->setChild(nid, alt);
 
+        if (p_node->getChild(alt) != nid) throw;
+
         return nid;
+    }
 
+    NodeID Structure::addChild(NodeID pid, int alt, int kids) {
+        QWriteLocker locker(&m_lock);
+        return addChild_unsafe(pid, alt, kids);
+    }
 
+    void Structure::resetNumberOfChildren(NodeID nid, int kids) {
+        QWriteLocker locker(&m_lock);
+        m_nodes[nid]->resetNumberOfChildren(kids);
+
+        for (auto i = 0; i < kids; ++i) {
+            addChild_unsafe(nid, i, 0);
+        }
     }
 
     NodeID Structure::getChild_unsafe(NodeID pid, int alt) const {
@@ -132,8 +152,8 @@ std::vector<NodeID> preOrder(const Structure& tree) {
 std::vector<NodeID> postOrder(const Structure& tree) {
 
   /// PO-traversal requires two stacks
-  std::stack<NodeID> stk_1;
-  std::vector<NodeID> result;
+    std::stack<NodeID> stk_1;
+    std::vector<NodeID> result;
 
     NodeID root = NodeID{0};
 

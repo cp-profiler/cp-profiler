@@ -1,12 +1,13 @@
 #include "node_cursor.hh"
 
 #include "../structure.hh"
+#include "../node_tree.hh"
 #include <QDebug>
 
 namespace cpprofiler { namespace tree {
 
-    NodeCursor::NodeCursor(NodeID start, const Structure& tree)
-    : m_tree(tree), m_start_node(start), m_cur_node(start), m_cur_alt(0) {
+    NodeCursor::NodeCursor(NodeID start, const NodeTree& tree)
+    : m_tree(tree.tree_structure()), m_node_info(tree.node_info()), m_start_node(start), m_cur_node(start), m_cur_alt(0) {
 
     }
 

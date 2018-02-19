@@ -25,6 +25,8 @@ class Structure {
 
     int getNumberOfChildren_unsafe(NodeID pid) const;
 
+    NodeID addChild_unsafe(NodeID pid, int alt, int kids);
+
     NodeID getChild_unsafe(NodeID pid, int alt) const;
 
     NodeID getRoot_unsafe() const;
@@ -37,6 +39,8 @@ public:
     NodeID createRoot(int kids);
 
     NodeID addChild(NodeID pid, int alt, int kids);
+
+    void resetNumberOfChildren(NodeID nid, int kids);
 
     NodeID getChild(NodeID pid, int alt) const;
 

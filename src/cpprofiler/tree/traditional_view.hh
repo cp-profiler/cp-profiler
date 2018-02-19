@@ -6,29 +6,31 @@
 
 #include <memory>
 
+namespace cpprofiler {
+    class UserData;
+}
+
 namespace cpprofiler { namespace tree {
 
 class Layout;
-class Structure;
+class NodeTree;
 
 class TreeScrollArea : public QAbstractScrollArea {
 
-    const Structure& m_tree;
+    const NodeTree& m_tree;
+    const UserData& m_user_data;
     const Layout& m_layout;
 
     void paintEvent(QPaintEvent* e) override;
 
 public:
 
-    TreeScrollArea(const Structure& tree, const Layout& layout);
+    TreeScrollArea(const NodeTree& tree, const UserData& user_data, const Layout& layout);
 
 };
 
 class TraditionalView {
 
-    // TreeWidget m_widget;
-
-    const Structure& m_tree;
     std::unique_ptr<Layout> m_layout;
 
     TreeScrollArea m_scroll_area;
@@ -37,7 +39,7 @@ class TraditionalView {
 
 public:
 
-    TraditionalView(const Structure& tree);
+    TraditionalView(const NodeTree& tree, const UserData& user_data);
     ~TraditionalView();
 
     QWidget* widget();
