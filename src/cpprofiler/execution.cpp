@@ -14,7 +14,6 @@ namespace cpprofiler {
     Execution::Execution(const std::string& name)
         : m_name{name}, m_tree{new tree::NodeTree()}
     {
-        m_user_data.reset(new UserData());
         std::cerr << "Execution()\n";
     }
 
@@ -44,14 +43,6 @@ namespace cpprofiler {
 
     tree::NodeInfo& Execution::node_info() {
         return m_tree->node_info();
-    }
-
-    UserData& Execution::user_data() {
-        return *m_user_data;
-    }
-
-    const UserData& Execution::user_data() const {
-        return *m_user_data;
     }
 
     tree::NodeTree& Execution::tree() {

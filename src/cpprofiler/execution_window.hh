@@ -4,6 +4,8 @@
 #include <memory>
 #include <QMainWindow>
 
+#include "tree/node_id.hh"
+
 namespace cpprofiler {
 
 namespace tree {
@@ -13,13 +15,16 @@ namespace tree {
 class Execution;
 
 class ExecutionWindow : public QMainWindow {
+    Q_OBJECT
 
-    const Execution& m_execution;
+    Execution& m_execution;
     std::unique_ptr<tree::TraditionalView> m_traditional_view;
 
 public:
 
-    ExecutionWindow(const Execution& ex);
+    tree::TraditionalView& traditional_view();
+
+    ExecutionWindow(Execution& ex);
     ~ExecutionWindow();
 
 };

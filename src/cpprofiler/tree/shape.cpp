@@ -46,5 +46,13 @@ namespace cpprofiler { namespace tree {
         return m_extents[depth];
     }
 
-    Shape Shape::leaf{{-10, 10}};
+    void Shape::setBoundingBox(BoundingBox bb) {
+        m_bb = bb;
+    }
+
+    const BoundingBox& Shape::boundingBox() const {
+        return m_bb;
+    }
+
+    Shape Shape::leaf({{-10, 10}}, BoundingBox{-10, 10});
 }}

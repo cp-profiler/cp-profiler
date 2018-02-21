@@ -50,6 +50,8 @@ NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus s
 
     m_node_info->setStatus(nid, status);
 
+    emit structureUpdated();
+
     return nid;
 }
 

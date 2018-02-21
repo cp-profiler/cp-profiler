@@ -11,8 +11,8 @@
 
 namespace cpprofiler { namespace tree {
 
-LayoutComputer::LayoutComputer(const Structure& tree, Layout& layout, QMutex& layout_mutex)
-: m_tree(tree), m_layout(layout), m_layout_mutex(layout_mutex)
+LayoutComputer::LayoutComputer(const Structure& tree, Layout& layout)
+: m_tree(tree), m_layout(layout)
 {
 
 }
@@ -29,8 +29,6 @@ static int distance_between(const Shape& s1, const Shape& s2) {
         if (cur_dist > max) max = cur_dist; 
     }
 
-    qDebug() << "max: " << max;
-
     return max + Layout::min_dist_x;
 }
 
@@ -46,6 +44,12 @@ std::unique_ptr<Shape> combine_shapes(const Shape& s1, const Shape& s2, std::vec
 
     auto distance = distance_between(s1, s2);
     auto half_dist = distance / 2;
+
+    {
+        auto bb_left = std::min(s1.boundingBox().left - half_dist, s2.boundingBox().left + half_dist);
+        auto bb_right = std::max(s1.boundingBox().right - half_dist, s2.boundingBox().right + half_dist);
+        combined->setBoundingBox(BoundingBox{bb_left, bb_right});
+    }
 
     (*combined)[0] = {-half_dist, half_dist};
 
@@ -68,8 +72,13 @@ std::unique_ptr<Shape> combine_shapes(const Shape& s1, const Shape& s2, std::vec
     return std::move(combined);
 }
 
-void LayoutComputer::compute() {
-    QMutexLocker locker(&m_layout_mutex);
+bool LayoutComputer::compute() {
+
+    if (!m_needs_update) {
+        return false;
+    }
+
+    QMutexLocker locker(&m_layout.getMutex());
 
     auto order = helper::postOrder(m_tree);
 
@@ -98,6 +107,8 @@ void LayoutComputer::compute() {
             m_layout.setChildOffset_unprotected(kid_l, offsets[0]);
             m_layout.setChildOffset_unprotected(kid_r, offsets[1]);
 
+            m_layout.setLayoutDone_unprotected(nid, true);
+
         }
         // check if has children
 
@@ -105,16 +116,19 @@ void LayoutComputer::compute() {
 
         /// get their extents
 
-        auto& shape = m_layout.getShape_unprotected(nid);
+        // auto& shape = m_layout.getShape_unprotected(nid);
 
-        std::cerr << shape << "\n";
-
-        // shape
-
-
+        // std::cerr << shape << "\n";
     }
 
-    
+    m_needs_update = false;
+
+    return true;
+
+}
+
+void LayoutComputer::markAsOutdated() {
+    m_needs_update = true;
 }
 
 

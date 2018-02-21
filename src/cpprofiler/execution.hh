@@ -44,8 +44,6 @@ namespace std
 
 namespace cpprofiler {
 
-    class UserData;
-
 
 class IdMap {
 
@@ -82,8 +80,7 @@ class Execution {
     std::string m_name;
 
     std::unique_ptr<tree::NodeTree> m_tree;
-    SolverData m_solver_data;
-    std::unique_ptr<UserData> m_user_data;
+    SolverData m_solver_data;    
 
 public:
     std::string name();
@@ -99,9 +96,6 @@ public:
 
     tree::NodeInfo& node_info();
     const tree::NodeInfo& node_info() const;
-
-    UserData& user_data();
-    const UserData& user_data() const;
 
     tree::NodeTree& tree();
     const tree::NodeTree& tree() const;

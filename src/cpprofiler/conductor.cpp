@@ -107,12 +107,7 @@ namespace cpprofiler {
 
     }
 
-}
-
-
-namespace cpprofiler {
-
-    void Conductor::showTraditionalView(const Execution* e) {
+    ExecutionWindow& Conductor::getExecutionWindow(Execution* e) {
         auto maybe_view = m_execution_windows.find(e);
 
         /// create new one if doesn't already exist
@@ -121,7 +116,19 @@ namespace cpprofiler {
             m_execution_windows[e] = utils::make_unique<ExecutionWindow>(*e);
         }
 
-        m_execution_windows.at(e)->show();
+        return *m_execution_windows.at(e);
+    }
+
+}
+
+
+namespace cpprofiler {
+
+    void Conductor::showTraditionalView(Execution* e) {
+
+        auto& window = getExecutionWindow(e);
+
+        window.show();
 
     }
 }

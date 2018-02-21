@@ -12,14 +12,15 @@ namespace cpprofiler { namespace tree {
 
         const Structure& m_tree;
         Layout& m_layout;
-        QMutex& m_layout_mutex;
 
-
+        bool m_needs_update = true;
 public:
 
-        LayoutComputer(const Structure& tree, Layout& layout, QMutex& layout_mutex);
+        LayoutComputer(const Structure& tree, Layout& layout);
 
-        void compute();
+        bool compute();
+
+        void markAsOutdated();
     };
 
 

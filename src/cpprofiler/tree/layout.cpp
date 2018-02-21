@@ -27,6 +27,10 @@ namespace cpprofiler { namespace tree {
 
     }
 
+    QMutex& Layout::getMutex() {
+        return m_layout_mutex;
+    }
+
     void Layout::setChildOffset_unprotected(NodeID nid, double offset) {
         m_child_offsets[nid] = offset;
     }
@@ -38,20 +42,49 @@ namespace cpprofiler { namespace tree {
         m_shapes[nid] = std::move(shape);
     }
 
+    void Layout::setLayoutDone_unprotected(NodeID nid, bool val) {
+        m_layout_done[nid] = val;
+    }
+
+    bool Layout::getLayoutDone_unprotected(NodeID nid) const {
+        if (m_layout_done.find(nid) == m_layout_done.end()) {
+            return false;
+        }
+        return m_layout_done.at(nid);
+    }
+
     Layout::Layout() {
     }
 
     Layout::~Layout() = default;
 
-    std::unique_ptr<LayoutComputer> Layout::createComputer(const Structure& str) {
-
-        return utils::make_unique<LayoutComputer>(str, *this, m_layout_mutex);
-    }
-
     double Layout::getOffset(NodeID nid) const {
         QMutexLocker locker(&m_layout_mutex);
+
+        auto it = m_child_offsets.find(nid);
+
+        if (it == m_child_offsets.end()) {
+            return 0;
+        }
+
         return m_child_offsets.at(nid);
     }
+
+    int Layout::getDepth(NodeID nid) const {
+        return getShape_unprotected(nid).depth();
+    }
+
+    const BoundingBox& Layout::getBoundingBox(NodeID nid) const {
+        QMutexLocker locker(&m_layout_mutex);
+
+        return getShape_unprotected(nid).boundingBox();
+    }
+
+    bool Layout::getLayoutDone(NodeID nid) const {
+        QMutexLocker locker(&m_layout_mutex);
+        return getLayoutDone_unprotected(nid);
+    }
+
 
 }}
 

@@ -24,11 +24,13 @@ public:
 
     void addNewExecution(Execution* e);
 
+    void showTraditionalView(Execution* e);
+
+    ExecutionWindow& getExecutionWindow(Execution* e);
+
 private:
 
     // void getSelectedExecutions
-
-    void showTraditionalView(const Execution* e);
 
     static constexpr quint16 DEFAULT_PORT = 6565;
 

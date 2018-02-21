@@ -22,10 +22,17 @@ public:
     ~Extent();
 };
 
+struct BoundingBox {
+    int left;
+    int right;
+};
+
 
 class Shape {
 
     utils::Array<Extent> m_extents;
+
+    BoundingBox m_bb;
 
     /// two integers per level
 
@@ -42,12 +49,19 @@ public:
     Shape(std::initializer_list<Extent> init_list)
     : m_extents{init_list} {}
 
-    /// returns the depth of the shape
+    Shape(std::initializer_list<Extent> init_list, const BoundingBox& bb)
+    : m_extents{init_list}, m_bb{bb} {
+    }
+
+    /// returns the height of the shape
     int depth() const;
 
     Extent& operator[](int depth);
 
     const Extent& operator[](int depth) const;
+
+    void setBoundingBox(BoundingBox bb);
+    const BoundingBox& boundingBox() const;
 
     static Shape leaf;
 
