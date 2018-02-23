@@ -48,7 +48,7 @@ class Layout {
 
 public:
 
-    static constexpr double dist_y = 38.0;
+    static constexpr int dist_y = 38;
     static constexpr int min_dist_x = 16;
 
     double getOffset(NodeID nid) const;

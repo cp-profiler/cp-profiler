@@ -11,8 +11,8 @@
 
 namespace cpprofiler { namespace tree {
 
-LayoutComputer::LayoutComputer(const Structure& tree, Layout& layout)
-: m_tree(tree), m_layout(layout)
+LayoutComputer::LayoutComputer(const Structure& tree, Layout& layout, const NodeFlags& nf)
+: m_tree(tree), m_layout(layout), m_flags(nf)
 {
 
 }

@@ -27,6 +27,10 @@ public:
     ExecutionWindow(Execution& ex);
     ~ExecutionWindow();
 
+public slots:
+
+    void print_log(const std::string& str);
+
 };
 
 

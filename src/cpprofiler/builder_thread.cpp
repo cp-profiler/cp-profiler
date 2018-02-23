@@ -4,6 +4,8 @@
 #include "tree/node_info.hh"
 #include "tree/node_id.hh"
 
+#include "utils/perf_helper.hh"
+
 #include <iostream>
 #include <QDebug>
 
@@ -46,17 +48,19 @@ namespace cpprofiler {
 
     void BuilderThread::startBuilding(Execution* e) {
         m_execution = e;
+        perfHelper.begin("tree building");
         std::cerr << "Builder: execution ready\n";
     }
 
     void BuilderThread::finishBuilding() {
+        perfHelper.end();
         std::cerr << "Builder: building done\n";
         this->quit();
     }
 
     void BuilderThread::handleNode(Message* node) {
         std::unique_ptr<Message> node_msg{node};
-        std::cerr << *node << std::endl;
+        // std::cerr << *node << std::endl;
 
         // auto& tree = m_execution->tree_structure();
         // auto& node_info = m_execution->node_info();

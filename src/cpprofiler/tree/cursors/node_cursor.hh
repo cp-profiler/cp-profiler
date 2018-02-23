@@ -36,6 +36,8 @@ public:
 /// Move cursor to the first sibling
     void moveSidewards();
 
+    void finalize();
+
     void processCurrentNode();
 };
 

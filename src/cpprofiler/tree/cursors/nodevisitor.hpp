@@ -11,6 +11,7 @@ bool PreorderNodeVisitor<Cursor>::backtrack() {
         m_cursor.moveUpwards();
     }
     if (!m_cursor.mayMoveUpwards()) {
+        m_cursor.finalize();
         return false;
     } else {
         m_cursor.moveSidewards();

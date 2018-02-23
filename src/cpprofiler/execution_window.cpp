@@ -8,6 +8,8 @@
 #include <QSlider>
 #include <QDebug>
 #include <QMenuBar>
+#include <QTextEdit>
+#include <QFile>
 
 namespace cpprofiler {
 
@@ -19,23 +21,19 @@ namespace cpprofiler {
 
         auto layout = new QGridLayout();
 
-        resize(500,500);
+        resize(500,700);
 
         {
             auto widget = new QWidget();
             setCentralWidget(widget);
             widget->setLayout(layout);
-            layout->addWidget(m_traditional_view->widget(), 0, 0, -1, 1);
+            layout->addWidget(m_traditional_view->widget(), 0, 0, 2, 1);
         }
 
         {
 
             auto sb = new QSlider(Qt::Vertical);
-            // sb->setObjectName("scaleBar");
-            // sb->setMinimum(LayoutConfig::minScale);
-            // sb->setMaximum(LayoutConfig::maxScale);
 
-            
             sb->setMinimum(1);
             sb->setMaximum(100);
 
@@ -103,7 +101,19 @@ namespace cpprofiler {
                 debugMenu->addAction(computeLayout);
 
                 connect(computeLayout, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::forceComputeLayout);
+
+                auto getNodeInfo = new QAction{"Print node info", this};
+                getNodeInfo->setShortcut(QKeySequence("I"));
+                debugMenu->addAction(getNodeInfo);
+
+                connect(getNodeInfo, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::printNodeInfo);
             }
+
+            // auto debugText = new QTextEdit{this};
+            // // debugText->setHeight(200);
+            // debugText->setReadOnly(true);
+
+            // layout->addWidget(debugText, 2, 0);
 
         }
     }
@@ -112,6 +122,24 @@ namespace cpprofiler {
 
     tree::TraditionalView& ExecutionWindow::traditional_view() {
         return *m_traditional_view;
+    }
+
+    static void writeToFile(const QString& path, const QString& str) {
+      QFile file(path);
+
+      if (file.open(QFile::WriteOnly | QFile::Truncate)) {
+        QTextStream out(&file);
+
+        out << str;
+
+      } else {
+        qDebug() << "could not open the file: " << path;
+      }
+    }
+
+
+    void ExecutionWindow::print_log(const std::string& str) {
+        writeToFile("debug.log", str.c_str());
     }
 
 }

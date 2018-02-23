@@ -4,6 +4,9 @@
 #include "structure.hh"
 #include "node_tree.hh"
 
+#include <queue>
+#include <cmath>
+
 #include <QPainter>
 #include <QDebug>
 #include <QScrollBar>
@@ -18,9 +21,38 @@
 #include "layout_computer.hh"
 
 
+#include "../utils/perf_helper.hh"
+
+
+
+
 namespace cpprofiler { namespace tree {
 
     constexpr int y_margin = 20;
+
+    static void drawGrid(QPainter& painter, QSize size) {
+
+        const int cell_w = 100;
+        const int cell_h = 100;
+
+        {
+            QPen pen = painter.pen();
+            pen.setWidth(1);
+            pen.setStyle(Qt::DotLine);
+            painter.setPen(pen);
+        }
+
+        const auto columns = std::ceil(static_cast<float>(size.width()) / cell_w);
+        const auto rows = std::ceil(static_cast<float>(size.height()) / cell_h);
+
+        for (auto row = 0; row < rows; ++row) {
+            for (auto col = 0; col < columns; ++col) {
+                auto x = col * cell_w;
+                auto y = row * cell_h;
+                painter.drawRect(x,y,cell_w,cell_w);
+            }
+        }
+    }
 
     void TreeScrollArea::paintEvent(QPaintEvent* event) {
         QPainter painter(this->viewport());
@@ -30,32 +62,34 @@ namespace cpprofiler { namespace tree {
 
         auto root_nid = m_tree.tree_structure().getRoot();
 
+        auto bb = m_layout.getBoundingBox(root_nid);
+
+        if (!m_layout.getLayoutDone(root_nid)) { return; }
+        auto tree_width = bb.right - bb.left;
+        auto tree_height = m_layout.getDepth(root_nid) * Layout::dist_y;
+
+        auto viewport_size = viewport()->size();
+
+        auto h_page_step = viewport_size.width() / m_options.scale;
+        auto v_page_step = viewport_size.height() / m_options.scale;
+
+
+        /// set range in real pixels
+        horizontalScrollBar()->setRange(0, tree_width - h_page_step);
+        horizontalScrollBar()->setPageStep(h_page_step);
+
+        verticalScrollBar()->setRange(0, tree_height + y_margin / m_options.scale - v_page_step);
+        verticalScrollBar()->setPageStep(v_page_step);
+
+        horizontalScrollBar()->setSingleStep(Layout::min_dist_x);
+        verticalScrollBar()->setSingleStep(Layout::dist_y);
+
         {
-            if (!m_layout.getLayoutDone(root_nid)) { return; }
-            auto bb = m_layout.getBoundingBox(root_nid);
-            auto tree_width = bb.right - bb.left;
-            auto tree_height = m_layout.getDepth(root_nid) * Layout::dist_y;
-
-            auto viewport_size = viewport()->size();
-
-            auto h_page_step = viewport_size.width() / m_options.scale;
-            auto v_page_step = viewport_size.height() / m_options.scale;
-
-
-            /// set range in real pixels
-            horizontalScrollBar()->setRange(0, tree_width - h_page_step);
-            horizontalScrollBar()->setPageStep(h_page_step);
-
-            verticalScrollBar()->setRange(0, tree_height + y_margin / m_options.scale - v_page_step);
-            verticalScrollBar()->setPageStep(v_page_step);
-
-            horizontalScrollBar()->setSingleStep(Layout::min_dist_x);
-            verticalScrollBar()->setSingleStep(Layout::dist_y);
+            QPen pen = painter.pen();
+            pen.setWidth(2);
+            painter.setPen(pen);
         }
-
-        QPen pen = painter.pen();
-        pen.setWidth(2);
-        painter.setPen(pen);
+        
 
         auto x_off = horizontalScrollBar()->value();
         auto y_off = verticalScrollBar()->value();
@@ -65,22 +99,69 @@ namespace cpprofiler { namespace tree {
         auto half_w = viewport()->width() / 2;
         auto half_h = viewport()->height() / 2;
 
-        auto displayed_width = viewport()->size().width() / m_options.scale;
+        auto displayed_width = static_cast<int>(viewport()->size().width() / m_options.scale);
+        auto displayed_height = static_cast<int>(viewport()->size().height() / m_options.scale);
 
-        auto start_pos = QPoint{m_options.x_off + displayed_width / 2, m_options.y_off + y_margin / m_options.scale};
-        DrawingCursor dc(m_tree.tree_structure().getRoot(), m_tree, m_layout, m_user_data, m_node_flags, painter, start_pos);
+        // auto start_x = m_options.x_off + displayed_width / 2;
+
+        if (displayed_width > tree_width) {
+            m_options.root_x = (displayed_width - tree_width) / 2 - bb.left;
+        } else {
+            m_options.root_x = -bb.left;
+        }
+
+        m_options.root_y = y_margin / m_options.scale;
+        auto start_pos = QPoint{m_options.root_x, m_options.root_y};
+
+        const auto clip_margin = 100 / m_options.scale;
+
+        QRect clip{ QPoint{x_off + clip_margin, y_off + clip_margin},
+                    QSize{displayed_width - 2 * clip_margin, displayed_height - 2 * clip_margin} };
+
+        painter.drawRect(clip);
+
+        drawGrid(painter, {std::max(tree_width, displayed_width), std::max(tree_height, displayed_height)});
+
+        // perfHelper.begin("tree drawing");
+        DrawingCursor dc(m_tree.tree_structure().getRoot(), m_tree, m_layout, m_user_data, m_node_flags, painter, start_pos, clip);
         PreorderNodeVisitor<DrawingCursor>(dc).run();
-
+        // perfHelper.end();
 
     }
 
-    // static bool containsCoordinates(NodeID nid, const Layout& layout, int x, int y) {
+    QPoint TreeScrollArea::getNodeCoordinate(NodeID nid) {
+        auto& tree = m_tree.tree_structure();
+        auto node = nid;
+        auto pos = QPoint{m_options.root_x, m_options.root_y};
+
+        while(node != tree.getRoot()) {
+            pos += {m_layout.getOffset(node), Layout::dist_y};
+            node = tree.getParent(node);
+        }
+
+        return pos;
+    }
+
+    static std::pair<int,int> getRealBB(NodeID nid, const Structure& tree, const Layout& layout, const DisplayState& ds) {
         
-        
-    //     layout
-    // }
+        auto bb = layout.getBoundingBox(nid);
+
+        auto node = nid;
+        while (node != tree.getRoot()) {
+            bb.left += layout.getOffset(node);
+            bb.right += layout.getOffset(node);
+            node = tree.getParent(node);
+        }
+
+        bb.left += ds.root_x;
+        bb.right += ds.root_x;
+
+        return {bb.left, bb.right};
+    }
 
     NodeID TreeScrollArea::findNodeClicked(int x, int y) {
+
+        using traditional::NODE_WIDTH;
         /// calculate real x and y
         auto x_off = horizontalScrollBar()->value();
         auto y_off = verticalScrollBar()->value();
@@ -88,41 +169,56 @@ namespace cpprofiler { namespace tree {
         x = x / m_options.scale + x_off;
         y = y / m_options.scale + y_off;
 
-        // TODO
+        // qDebug() << "root x:" << m_options.root_x << "y:" << m_options.root_y;
+        // qDebug() << "clicked:" << x << y;
 
         auto& tree = m_tree.tree_structure();
 
-        auto root = tree.getRoot();
+        std::queue<NodeID> queue;
+        queue.push(tree.getRoot());
 
+        while(!queue.empty()) {
 
+            auto node = queue.front(); queue.pop();
+            auto node_pos = getNodeCoordinate(node);
+            auto node_pos_tl = node_pos - QPoint{NODE_WIDTH/2, 0};
 
-        // auto order = tree::helper::postOrder(tree);
+            auto node_area = QRect(node_pos_tl, QSize{NODE_WIDTH, NODE_WIDTH});
+            if (node_area.contains(x,y)) {
+                return node;
+            } else {
 
-        // for (auto nid : order) {
+                auto kids = tree.getNumberOfChildren(node);
 
+                for (auto i = 0; i < kids; ++i) {
+                    auto kid = tree.getChild(node, i);
 
-        //     if (containsCoordinates(nid, m_layout, x, y)) {
-        //         // m_user_data.setSelectedNode(nid);
-        //         emit nodeClicked(nid);
-        //         break;
-        //     }
-        // }
-
-
+                    auto pair = getRealBB(kid, tree, m_layout, m_options);
+                    if (pair.first <= x && pair.second >= x) {
+                        queue.push(kid);
+                    }
+                }
+            }
+        }
 
         return NodeID::NoNode;
     }
 
     void TreeScrollArea::mousePressEvent(QMouseEvent* me) {
-        qDebug() << "mouse press";
         auto n = findNodeClicked(me->x(), me->y());
-
-        // emit needsRedrawing();
+        emit nodeClicked(n);
         update();
     }
 
-    TreeScrollArea::TreeScrollArea(const NodeTree& tree, const UserData& user_data, const Layout& layout, const DisplayState& options, const NodeFlags& nf)
+    TreeScrollArea::TreeScrollArea(const NodeTree& tree, const UserData& user_data, const Layout& layout, DisplayState& options, const NodeFlags& nf)
         : m_tree(tree), m_user_data(user_data), m_layout(layout), m_options(options), m_node_flags(nf) {
+    }
+
+    void TreeScrollArea::centerX(int x) {
+        auto viewport_size = viewport()->size();
+        auto h_page_step = viewport_size.width() / m_options.scale;
+        auto value = std::max(0, static_cast<int>(x - h_page_step/2));
+        horizontalScrollBar()->setValue(value);
     }
 
 
@@ -135,7 +231,7 @@ TraditionalView::TraditionalView(const NodeTree& tree)
   m_user_data(utils::make_unique<UserData>()),
   m_scroll_area(tree, *m_user_data, *m_layout, m_options, m_flags),
   m_tree(tree.tree_structure()),
-  m_layout_computer{utils::make_unique<LayoutComputer>(m_tree, *m_layout)}
+  m_layout_computer{utils::make_unique<LayoutComputer>(m_tree, *m_layout, m_flags)}
 {
 
     // m_scroll_area
@@ -145,7 +241,7 @@ TraditionalView::TraditionalView(const NodeTree& tree)
     /// NOTE: for now, compute layout here
     m_layout_computer->compute();
 
-    connect(&m_scroll_area, &TreeScrollArea::nodeClicked, this, &TraditionalView::nodeClicked);
+    connect(&m_scroll_area, &TreeScrollArea::nodeClicked, this, &TraditionalView::selectNode);
 
     connect(this, &TraditionalView::needsRedrawing, [this]() {
         m_scroll_area.viewport()->update();
@@ -163,7 +259,9 @@ void TraditionalView::navDown() {
     if (kids > 0) {
         auto first_kid = m_tree.getChild(cur_nid, 0);
         m_user_data->setSelectedNode(first_kid);
+        centerCurrentNode();
     }
+
     emit needsRedrawing();
 }
 
@@ -175,8 +273,8 @@ void TraditionalView::navUp() {
 
     if (pid != NodeID::NoNode) {
         m_user_data->setSelectedNode(pid);
+        centerCurrentNode();
     }
-
     emit needsRedrawing();
 }
 
@@ -193,6 +291,7 @@ void TraditionalView::navLeft() {
 
     if (cur_alt > 0) {
         m_user_data->setSelectedNode(m_tree.getChild(pid, cur_alt - 1));
+        centerCurrentNode();
     }
 
     emit needsRedrawing();
@@ -211,6 +310,7 @@ void TraditionalView::navRight() {
 
     if (cur_alt + 1 < kids) {
         m_user_data->setSelectedNode(m_tree.getChild(pid, cur_alt + 1));
+        centerCurrentNode();
     }
 
     emit needsRedrawing();
@@ -231,16 +331,43 @@ QWidget* TraditionalView::widget() {
 }
 
 void TraditionalView::setScale(int scale) {
-    m_options.scale = scale / 100.0f;
+    m_options.scale = scale / 50.0f;
     m_scroll_area.viewport()->update();
 }
 
+/// relative to the root
+static int global_node_x_offset(const Structure& tree, const Layout& layout, NodeID nid) {
+    auto x_off = 0;
+
+    while (nid != NodeID::NoNode) {
+        x_off += layout.getOffset(nid);
+        nid = tree.getParent(nid);
+    }
+
+    return x_off;
+}
+
+
 void TraditionalView::centerNode(NodeID nid) {
 
+    auto x_offset = global_node_x_offset(m_tree, *m_layout, nid);
+
+    auto root_nid = m_tree.getRoot();
+    auto bb = m_layout->getBoundingBox(root_nid);
+
+    auto value = x_offset - bb.left;
+
+    m_scroll_area.centerX(value);
+}
+
+void TraditionalView::centerCurrentNode() {
+    auto cur_nid = m_user_data->getSelectedNode();
+    centerNode(cur_nid);
 }
 
 void TraditionalView::selectNode(NodeID nid) {
     m_user_data->setSelectedNode(nid);
+    emit needsRedrawing();
 }
 
 void TraditionalView::forceComputeLayout() {
@@ -252,6 +379,17 @@ void TraditionalView::forceComputeLayout() {
 void TraditionalView::setLayoutOutdated() {
     /// TODO: change to re-layout on fewer nodes
     forceComputeLayout();
+}
+
+void TraditionalView::printNodeInfo() {
+    auto cur_nid = m_user_data->getSelectedNode();
+
+    if (cur_nid == NodeID::NoNode) return;
+
+    qDebug() << "---- Node Info:" << cur_nid << "----";
+    qDebug() << "offset:" << m_layout->getOffset(cur_nid);
+    auto bb = m_layout->getBoundingBox(cur_nid);
+    qDebug() << "bb:[" << bb.left << "," << bb.right << "]";
 }
 
 

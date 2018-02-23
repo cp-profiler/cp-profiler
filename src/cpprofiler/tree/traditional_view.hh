@@ -21,8 +21,10 @@ class Structure;
 
 struct DisplayState {
     float scale;
-    int x_off = 0;
-    int y_off = 0;
+
+
+    int root_x = 0;
+    int root_y = 0;
 };
 
 class NodeFlags {
@@ -40,9 +42,11 @@ Q_OBJECT
     const UserData& m_user_data;
     const Layout& m_layout;
 
-    const DisplayState& m_options;
+    DisplayState& m_options;
     const NodeFlags& m_node_flags;
 
+
+    QPoint getNodeCoordinate(NodeID nid);
     NodeID findNodeClicked(int x, int y);
 
     void paintEvent(QPaintEvent* e) override;
@@ -56,8 +60,11 @@ public:
     TreeScrollArea(const NodeTree&,
                    const UserData&,
                    const Layout&,
-                   const DisplayState&,
+                   DisplayState&,
                    const NodeFlags&);
+
+    /// center the x coordinate
+    void centerX(int x);
 
 };
 
@@ -81,7 +88,7 @@ public:
     QWidget* widget();
 
 signals:
-    void nodeClicked(NodeID nid);
+    // void nodeClicked(NodeID nid);
 
     void needsRedrawing();
 
@@ -89,6 +96,7 @@ public slots:
     void setScale(int scale);
 
     void centerNode(NodeID nid);
+    void centerCurrentNode();
 
     void navUp();
     void navDown();
@@ -102,6 +110,8 @@ public slots:
     void forceComputeLayout();
 
     void setLayoutOutdated();
+
+    void printNodeInfo();
 
 
 };

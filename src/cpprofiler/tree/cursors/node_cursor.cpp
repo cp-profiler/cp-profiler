@@ -42,5 +42,9 @@ namespace cpprofiler { namespace tree {
         m_cur_alt = m_tree.getAlternative(m_cur_node);
     }
 
+    void NodeCursor::finalize() {
+        /// do nothing
+    }
+
 
 }}

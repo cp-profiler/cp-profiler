@@ -103,7 +103,7 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto n31 =  tree.addNode(n29, 0, 2, tree::NodeStatus::BRANCH);
         auto n32 =  tree.addNode(n29, 1, 0, tree::NodeStatus::FAILED);
 
-        // conductor.showTraditionalView(ex);
+        conductor.showTraditionalView(ex);
 
         // auto n3 = tree.addChild(n1, 0, 0);
         // auto n4 = tree.addChild(n1, 1, 0);

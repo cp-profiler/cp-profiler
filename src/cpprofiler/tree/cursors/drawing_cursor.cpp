@@ -35,17 +35,9 @@ namespace cpprofiler { namespace tree {
         static QColor lightBlue(0, 92, 161, 120);
     }
 
-    namespace traditional {
-        constexpr double NODE_WIDTH = 20;
-        constexpr double FAILED_WIDTH = 14;
-        constexpr double HALF_FAILED_WIDTH = FAILED_WIDTH / 2;
-        constexpr double HALF_NODE_WIDTH = NODE_WIDTH / 2;
-        constexpr double SHADOW_OFFSET = 3.0;
-    }
-
     DrawingCursor::DrawingCursor(NodeID start, const NodeTree& tree,
-        const Layout& layout, const UserData& user_data, const NodeFlags& flags, QPainter& painter, QPoint start_pos)
-    : NodeCursor(start, tree), m_layout(layout), m_user_data(user_data), m_flags(flags), m_painter(painter) {
+        const Layout& layout, const UserData& user_data, const NodeFlags& flags, QPainter& painter, QPoint start_pos, const QRect& clip)
+    : NodeCursor(start, tree), m_layout(layout), m_user_data(user_data), m_flags(flags), m_painter(painter), clippingRect(clip) {
         cur_x = start_pos.x(); cur_y = start_pos.y();
     }
 
@@ -64,52 +56,82 @@ namespace cpprofiler { namespace tree {
         painter.drawConvexPolygon(points, 4);
     }
 
-    static void drawBranchNode(QPainter& painter, int x, int y, bool selected) {
+    static void drawBranchNode(QPainter& painter, int x, int y, bool selected, bool phantom) {
         using namespace traditional;
         if (selected) {
             painter.setBrush(colors::gold);
         } else {
             painter.setBrush(colors::blue);
         }
+
+        if (phantom) {
+            auto brush = painter.brush();
+            brush.setStyle(Qt::Dense4Pattern);
+            painter.setBrush(brush);
+        }
         painter.drawEllipse(x - HALF_NODE_WIDTH, y, NODE_WIDTH, NODE_WIDTH);
     }
 
-    static void drawFailedNode(QPainter& painter, int x, int y, bool selected) {
+    static void drawFailedNode(QPainter& painter, int x, int y, bool selected, bool phantom) {
         using namespace traditional;
         if (selected) {
             painter.setBrush(colors::gold);
         } else {
             painter.setBrush(colors::red);
         }
+
+        if (phantom) {
+            auto brush = painter.brush();
+            brush.setStyle(Qt::Dense4Pattern);
+            painter.setBrush(brush);
+        }
         painter.drawRect(x - HALF_FAILED_WIDTH, y, FAILED_WIDTH, FAILED_WIDTH);
     }
 
-    static void drawUndeterminedNode(QPainter& painter, int x, int y, bool selected) {
+    static void drawUndeterminedNode(QPainter& painter, int x, int y, bool selected, bool phantom) {
         using namespace traditional;
         if (selected) {
             painter.setBrush(colors::gold);
         } else {
             painter.setBrush(colors::white);
         }
+
+        if (phantom) {
+            auto brush = painter.brush();
+            brush.setStyle(Qt::Dense4Pattern);
+            painter.setBrush(brush);
+        }
         painter.drawEllipse(x - HALF_NODE_WIDTH, y, NODE_WIDTH, NODE_WIDTH);
     }
 
-    static void drawSolutionNode(QPainter& painter, int x, int y, bool selected) {
+    static void drawSolutionNode(QPainter& painter, int x, int y, bool selected, bool phantom) {
         using namespace traditional;
         if (selected) {
             painter.setBrush(colors::gold);
         } else {
             painter.setBrush(colors::green);
         }
+
+        if (phantom) {
+            auto brush = painter.brush();
+            brush.setStyle(Qt::Dense4Pattern);
+            painter.setBrush(brush);
+        }
         drawDiamond(painter, x, y, selected);
     }
 
-    static void drawSkippedNode(QPainter& painter, int x, int y, bool selected) {
+    static void drawSkippedNode(QPainter& painter, int x, int y, bool selected, bool phantom) {
         using namespace traditional;
         if (selected) {
             painter.setBrush(colors::gold);
         } else {
             painter.setBrush(colors::grey);
+        }
+
+        if (phantom) {
+            auto brush = painter.brush();
+            brush.setStyle(Qt::Dense4Pattern);
+            painter.setBrush(brush);
         }
         painter.drawRect(x - HALF_FAILED_WIDTH, y, FAILED_WIDTH, FAILED_WIDTH);
     }
@@ -118,7 +140,18 @@ namespace cpprofiler { namespace tree {
 
         using namespace traditional;
 
+        /// used for debugging
+        bool phantom_node = isClipped();
+
+        if (!phantom_node) {
+            nodes_drawn++;
+        }
+
         m_painter.setPen(QColor{Qt::black});
+
+        // if (phantom_node) {
+        //     m_painter.setPen(QColor{colors::grey});
+        // }
 
         if (m_cur_node != m_start_node) {
 
@@ -128,32 +161,31 @@ namespace cpprofiler { namespace tree {
             m_painter.drawLine(parent_x, parent_y + NODE_WIDTH, cur_x, cur_y);
         }
 
-        m_painter.setBrush(Qt::white);
-
         auto status = m_node_info.getStatus(m_cur_node);
 
         auto selected = (m_user_data.getSelectedNode() == m_cur_node) ? true : false;
 
 
         if (m_flags.get_label_shown(m_cur_node)) {
-            m_painter.setPen(QPen{Qt::black, 2});
+            // m_painter.setPen(QPen{Qt::black, 2});
+            m_painter.drawText(QPoint{cur_x, cur_y}, "hello");
         }
 
         switch (status) {
             case NodeStatus::SOLVED: {
-                drawSolutionNode(m_painter, cur_x, cur_y, selected);
+                drawSolutionNode(m_painter, cur_x, cur_y, selected, phantom_node);
             } break;
             case NodeStatus::FAILED: {
-                drawFailedNode(m_painter, cur_x, cur_y, selected);
+                drawFailedNode(m_painter, cur_x, cur_y, selected, phantom_node);
             } break;
             case NodeStatus::BRANCH: {
-                drawBranchNode(m_painter, cur_x, cur_y, selected);
+                drawBranchNode(m_painter, cur_x, cur_y, selected, phantom_node);
             } break;
             case NodeStatus::SKIPPED: {
-                drawSkippedNode(m_painter, cur_x, cur_y, selected);
+                drawSkippedNode(m_painter, cur_x, cur_y, selected, phantom_node);
             } break;
             default: {
-                drawUndeterminedNode(m_painter, cur_x, cur_y, selected);
+                drawUndeterminedNode(m_painter, cur_x, cur_y, selected, phantom_node);
             } break;
         }
 
@@ -185,10 +217,44 @@ namespace cpprofiler { namespace tree {
         cur_x += m_layout.getOffset(m_cur_node);
     }
 
+    bool DrawingCursor::mayMoveSidewards() {
+        return NodeCursor::mayMoveSidewards();
+
+
+    }
+
     bool DrawingCursor::mayMoveDownwards() {
         /// TODO: this should be about children?
-        return NodeCursor::mayMoveDownwards() &&
-                m_layout.getLayoutDone(m_cur_node);
+        return NodeCursor::mayMoveDownwards() && m_layout.getLayoutDone(m_cur_node) && !isClipped();
+    }
+    
+    bool DrawingCursor::mayMoveUpwards() {
+
+        return NodeCursor::mayMoveUpwards();
+    }
+
+    bool DrawingCursor::isClipped() {
+        auto bb = m_layout.getBoundingBox(m_cur_node);
+        
+        if (m_user_data.getSelectedNode() == m_cur_node) {
+            qDebug() << "cur_x:" << cur_x;
+        }
+        if (
+            (cur_x + bb.left > clippingRect.x() + clippingRect.width()) ||
+            (cur_x + bb.right < clippingRect.x()) ||
+            (cur_y > clippingRect.y() + clippingRect.height()) ||
+            (cur_y + (m_layout.getDepth(m_cur_node) + 1) * Layout::dist_y < clippingRect.y())
+        ) {
+            // qDebug() << "node clipped";
+            return true;
+        }
+
+        return false;
+
+    }
+
+    void DrawingCursor::finalize() {
+        qDebug() << "nodes displayed: " << nodes_drawn;
     }
 
 }}

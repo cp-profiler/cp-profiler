@@ -10,6 +10,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/execution_list.cpp \
     $$PWD/src/cpprofiler/execution_window.cpp \
     $$PWD/src/cpprofiler/utils/utils.cpp \
+    $$PWD/src/cpprofiler/utils/perf_helper.cpp \
     $$PWD/src/cpprofiler/utils/array.cpp \
     $$PWD/src/cpprofiler/utils/std_ext.cpp \
     $$PWD/src/cpprofiler/tree/node.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/execution_list.hh \
     $$PWD/src/cpprofiler/execution_window.hh \
     $$PWD/src/cpprofiler/utils/utils.hh \
+    $$PWD/src/cpprofiler/utils/perf_helper.hh \
     $$PWD/src/cpprofiler/utils/array.hh \
     $$PWD/src/cpprofiler/utils/std_ext.hh \
     $$PWD/src/cpprofiler/tree/node.hh \
