@@ -5,6 +5,7 @@
 #include "node_tree.hh"
 
 #include <queue>
+#include <thread>
 #include <cmath>
 
 #include <QPainter>
@@ -113,14 +114,14 @@ namespace cpprofiler { namespace tree {
         m_options.root_y = y_margin / m_options.scale;
         auto start_pos = QPoint{m_options.root_x, m_options.root_y};
 
-        const auto clip_margin = 100 / m_options.scale;
+        const auto clip_margin = 0 / m_options.scale;
 
         QRect clip{ QPoint{x_off + clip_margin, y_off + clip_margin},
                     QSize{displayed_width - 2 * clip_margin, displayed_height - 2 * clip_margin} };
 
         painter.drawRect(clip);
 
-        drawGrid(painter, {std::max(tree_width, displayed_width), std::max(tree_height, displayed_height)});
+        // drawGrid(painter, {std::max(tree_width, displayed_width), std::max(tree_height, displayed_height)});
 
         // perfHelper.begin("tree drawing");
         DrawingCursor dc(m_tree.tree_structure().getRoot(), m_tree, m_layout, m_user_data, m_node_flags, painter, start_pos, clip);
@@ -227,12 +228,15 @@ namespace cpprofiler { namespace tree {
 namespace cpprofiler { namespace tree {
 
 TraditionalView::TraditionalView(const NodeTree& tree)
-: m_layout(utils::make_unique<Layout>()),
+: m_tree(tree.tree_structure()),
   m_user_data(utils::make_unique<UserData>()),
-  m_scroll_area(tree, *m_user_data, *m_layout, m_options, m_flags),
-  m_tree(tree.tree_structure()),
-  m_layout_computer{utils::make_unique<LayoutComputer>(m_tree, *m_layout, m_flags)}
+  m_layout(utils::make_unique<Layout>()),
+  m_flags(utils::make_unique<NodeFlags>()),
+  m_layout_computer(utils::make_unique<LayoutComputer>(tree, *m_layout, *m_flags)),
+  m_scroll_area(tree, *m_user_data, *m_layout, m_options, *m_flags)
 {
+
+    std::cerr << "traditional view thread:" << std::this_thread::get_id() << std::endl;
 
     // m_scroll_area
     m_scroll_area.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -319,11 +323,15 @@ void TraditionalView::navRight() {
 void TraditionalView::toggleShowLabel() {
     auto cur_nid = m_user_data->getSelectedNode();
 
-    auto val = !m_flags.get_label_shown(cur_nid);
-    m_flags.set_label_shown(cur_nid, val);
+    auto val = !m_flags->get_label_shown(cur_nid);
+    m_flags->set_label_shown(cur_nid, val);
     emit needsRedrawing();
 
     /// TODO: needs re-layout as well
+}
+
+void TraditionalView::toggleHideFailed() {
+    qDebug() << "TODO: hide failed";
 }
 
 QWidget* TraditionalView::widget() {
@@ -371,8 +379,10 @@ void TraditionalView::selectNode(NodeID nid) {
 }
 
 void TraditionalView::forceComputeLayout() {
+    perfHelper.begin("layout");
     m_layout_computer->markAsOutdated();
     m_layout_computer->compute();
+    perfHelper.end();
     emit needsRedrawing();
 }
 
@@ -398,6 +408,10 @@ void TraditionalView::printNodeInfo() {
 
 namespace cpprofiler { namespace tree {
 
+    void NodeFlags::ensure_id_exists(int id) {
+        
+    }
+
 
     void NodeFlags::set_label_shown(NodeID nid, bool val) {
         auto id = static_cast<int>(nid);
@@ -417,6 +431,16 @@ namespace cpprofiler { namespace tree {
         }
 
         return m_label_shown[id];
+    }
+
+    void NodeFlags::set_hidden(NodeID nid, bool val) {
+        // auto id = static_cast<int>(nid);
+        // if ()
+        /// TODO
+    }
+
+    bool NodeFlags::get_hidden(NodeID nid) const {
+        return false; // TODO
     }
 
 }}

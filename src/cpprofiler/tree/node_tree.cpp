@@ -30,15 +30,19 @@ NodeInfo& NodeTree::node_info() {
 
 NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus status) {
 
+    auto nodes_created = 0;
+
     NodeID nid;
     if (parent_id == tree::NodeID::NoNode) {
         nid = m_structure->createRoot(kids);
         m_node_info->addEntry(nid);
+        nodes_created += (1 + kids);
     } else {
         nid = m_structure->getChild(parent_id, alt);
 
         if (kids > 0) {
             m_structure->resetNumberOfChildren(nid, kids);
+            nodes_created += (kids - 1);
         }
     }
 
@@ -51,8 +55,13 @@ NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus s
     m_node_info->setStatus(nid, status);
 
     emit structureUpdated();
+    emit nodesCreated(nodes_created);
 
     return nid;
+}
+
+int NodeTree::nodeCount() const {
+    return m_structure->nodeCount();
 }
 
 

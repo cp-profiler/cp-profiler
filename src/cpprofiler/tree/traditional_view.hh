@@ -31,9 +31,16 @@ class NodeFlags {
 
     std::vector<bool> m_label_shown;
 
+    std::vector<bool> m_node_hidden;
+
+    void ensure_id_exists(int id);
+
 public:
     void set_label_shown(NodeID nid, bool val);
     bool get_label_shown(NodeID nid) const;
+
+    void set_hidden(NodeID nid, bool val);
+    bool get_hidden(NodeID nid) const;
 };
 
 class TreeScrollArea : public QAbstractScrollArea {
@@ -72,14 +79,16 @@ public:
 class TraditionalView : public QObject {
     Q_OBJECT
 
-    NodeFlags m_flags;
-    std::unique_ptr<Layout> m_layout;
-    std::unique_ptr<UserData> m_user_data;
-    TreeScrollArea m_scroll_area;
-    DisplayState m_options;
     const Structure& m_tree;
+    std::unique_ptr<UserData> m_user_data;
+
+    std::unique_ptr<NodeFlags> m_flags;
+    std::unique_ptr<Layout> m_layout;
+
     std::unique_ptr<LayoutComputer> m_layout_computer;
 
+    DisplayState m_options;
+    TreeScrollArea m_scroll_area;
 public:
 
     TraditionalView(const NodeTree& tree);
@@ -104,6 +113,7 @@ public slots:
     void navRight();
 
     void toggleShowLabel();
+    void toggleHideFailed();
 
     void selectNode(NodeID nid);
 

@@ -1,8 +1,13 @@
 #include "layout_computer.hh"
 #include "layout.hh"
 #include "structure.hh"
+#include "node_tree.hh"
 #include "shape.hh"
 #include "../utils/std_ext.hh"
+#include "../utils/perf_helper.hh"
+
+#include "cursors/layout_cursor.hh"
+#include "cursors/nodevisitor.hh"
 
 #include <QMutex>
 #include <QDebug>
@@ -11,8 +16,8 @@
 
 namespace cpprofiler { namespace tree {
 
-LayoutComputer::LayoutComputer(const Structure& tree, Layout& layout, const NodeFlags& nf)
-: m_tree(tree), m_layout(layout), m_flags(nf)
+LayoutComputer::LayoutComputer(const NodeTree& tree, Layout& layout, const NodeFlags& nf)
+: m_node_tree(tree), m_layout(layout), m_flags(nf)
 {
 
 }
@@ -32,7 +37,7 @@ static int distance_between(const Shape& s1, const Shape& s2) {
     return max + Layout::min_dist_x;
 }
 
-std::unique_ptr<Shape> combine_shapes(const Shape& s1, const Shape& s2, std::vector<int>& offsets) {
+std::unique_ptr<Shape, ShapeDeleter> combine_shapes(const Shape& s1, const Shape& s2, std::vector<int>& offsets) {
 
     auto depth_left = s1.depth();
     auto depth_right = s2.depth();
@@ -40,7 +45,8 @@ std::unique_ptr<Shape> combine_shapes(const Shape& s1, const Shape& s2, std::vec
     auto max_depth = std::max(depth_left, depth_right);
     auto common_depth = std::min(depth_left, depth_right);
 
-    auto combined = utils::make_unique<Shape>(max_depth+1);
+    // auto combined = utils::make_unique<Shape, ShapeDeleter>(max_depth+1);
+    auto combined = std::unique_ptr<Shape, ShapeDeleter>(new Shape{max_depth+1});
 
     auto distance = distance_between(s1, s2);
     auto half_dist = distance / 2;
@@ -78,36 +84,46 @@ bool LayoutComputer::compute() {
         return false;
     }
 
+    auto& tree = m_node_tree.tree_structure();
+
+    QMutexLocker tree_locker(&tree.getMutex());
     QMutexLocker locker(&m_layout.getMutex());
 
-    auto order = helper::postOrder(m_tree);
+    perfHelper.begin("get layout order");
+    std::vector<NodeID> layout_order;
+    // LayoutCursor lc(tree.getRoot_unsafe(), m_node_tree, layout_order);
+    // PostorderNodeVisitor<LayoutCursor>(lc).run();
+    layout_order = helper::postOrder_unsafe(tree);
+    perfHelper.end();
 
-    for (auto nid : order) {
+    perfHelper.begin("layout: actually compute");
 
-        auto nkids = m_tree.getNumberOfChildren(nid);
+    for (auto nid : layout_order) {
+
+        auto nkids = tree.getNumberOfChildren_unsafe(nid);
 
         if (nkids == 0) {
-            m_layout.setShape_unprotected(nid, &Shape::leaf);
+            m_layout.setShape_unsafe(nid, std::unique_ptr<Shape, ShapeDeleter>(&Shape::leaf));
             // continue;
         }
 
         if (nkids == 2) {
 
-            auto kid_l = m_tree.getChild(nid, 0);
-            auto kid_r = m_tree.getChild(nid, 1);
+            auto kid_l = tree.getChild_unsafe(nid, 0);
+            auto kid_r = tree.getChild_unsafe(nid, 1);
 
-            const auto& s1 = m_layout.getShape_unprotected(kid_l);
-            const auto& s2 = m_layout.getShape_unprotected(kid_r);
+            const auto& s1 = m_layout.getShape_unsafe(kid_l);
+            const auto& s2 = m_layout.getShape_unsafe(kid_r);
 
             std::vector<int> offsets(2);
             auto combined = combine_shapes(s1, s2, offsets);
 
-            m_layout.setShape_unprotected(nid, std::move(combined));
+            m_layout.setShape_unsafe(nid, std::move(combined));
 
-            m_layout.setChildOffset_unprotected(kid_l, offsets[0]);
-            m_layout.setChildOffset_unprotected(kid_r, offsets[1]);
+            m_layout.setChildOffset_unsafe(kid_l, offsets[0]);
+            m_layout.setChildOffset_unsafe(kid_r, offsets[1]);
 
-            m_layout.setLayoutDone_unprotected(nid, true);
+            m_layout.setLayoutDone_unsafe(nid, true);
 
         }
         // check if has children
@@ -116,12 +132,14 @@ bool LayoutComputer::compute() {
 
         /// get their extents
 
-        // auto& shape = m_layout.getShape_unprotected(nid);
+        // auto& shape = m_layout.getShape_unsafe(nid);
 
         // std::cerr << shape << "\n";
     }
 
     m_needs_update = false;
+
+    perfHelper.end();
 
     return true;
 

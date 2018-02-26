@@ -4,7 +4,7 @@
 #include "node.hh"
 #include "memory"
 
-#include <QReadWriteLock>
+#include <QMutex>
 
 namespace cpprofiler { namespace tree {
 
@@ -14,11 +14,19 @@ struct invalid_tree : std::exception {
     }
 };
 
+class LayoutComputer;
+
 class Structure {
 
-    mutable QReadWriteLock m_lock;
+    friend class LayoutComputer;
+    friend class TraditionalView;
+
+    // mutable QReadWriteLock m_lock;
+    mutable QMutex m_structure_mutex;
 
     std::vector<std::unique_ptr<Node>> m_nodes;
+
+public:
 
     /// Same as `getParent` without holding a mutex
     NodeID getParent_unsafe(NodeID nid) const;
@@ -31,8 +39,9 @@ class Structure {
 
     NodeID getRoot_unsafe() const;
 
+    int nodeCount_unsafe() const;
 
-public:
+    QMutex& getMutex() const;
 
     Structure();
 
@@ -65,6 +74,8 @@ public:
 namespace cpprofiler { namespace tree { namespace helper {
 
 std::vector<NodeID> postOrder(const Structure& tree);
+
+std::vector<NodeID> postOrder_unsafe(const Structure& tree);
 
 std::vector<NodeID> preOrder(const Structure& tree);
 

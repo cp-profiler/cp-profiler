@@ -34,6 +34,23 @@ public:
     void run();
 };
 
+template<typename Cursor>
+class PostorderNodeVisitor : public NodeVisitor<Cursor> {
+
+    using NodeVisitor<Cursor>::m_cursor;
+
+protected:
+    /// Move the cursor to the left-most leaf
+    void moveToLeaf();
+public:
+    /// Constructor
+    PostorderNodeVisitor(const Cursor& c);
+    /// Move cursor to next node, return true if succeeded
+    bool next();
+    /// Execute visitor
+    void run();
+};
+
 #include "nodevisitor.hpp"
 
 }}

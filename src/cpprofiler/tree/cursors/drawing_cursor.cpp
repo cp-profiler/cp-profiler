@@ -141,11 +141,8 @@ namespace cpprofiler { namespace tree {
         using namespace traditional;
 
         /// used for debugging
-        bool phantom_node = isClipped();
-
-        if (!phantom_node) {
-            nodes_drawn++;
-        }
+        // bool phantom_node = isClipped();
+        bool phantom_node = false;
 
         m_painter.setPen(QColor{Qt::black});
 
@@ -235,10 +232,7 @@ namespace cpprofiler { namespace tree {
 
     bool DrawingCursor::isClipped() {
         auto bb = m_layout.getBoundingBox(m_cur_node);
-        
-        if (m_user_data.getSelectedNode() == m_cur_node) {
-            qDebug() << "cur_x:" << cur_x;
-        }
+
         if (
             (cur_x + bb.left > clippingRect.x() + clippingRect.width()) ||
             (cur_x + bb.right < clippingRect.x()) ||
@@ -254,7 +248,6 @@ namespace cpprofiler { namespace tree {
     }
 
     void DrawingCursor::finalize() {
-        qDebug() << "nodes displayed: " << nodes_drawn;
     }
 
 }}

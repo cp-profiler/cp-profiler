@@ -8,81 +8,85 @@
 
 namespace cpprofiler { namespace tree {
 
-    const Shape& Layout::getShape_unprotected(NodeID nid) const {
+    const Shape& Layout::getShape_unsafe(NodeID nid) const {
 
-        return *m_shape_map.at(nid);
+        // if (m_shapes.size() <= nid) {
+        //     m_shapes.resize(static_cast<int>(nid)+1);
+        // }
+
+        return *m_shapes[nid];
     }
 
-    void Layout::setShape_unprotected(NodeID nid, Shape* shape) {
+    void Layout::setShape_unsafe(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape) {
 
-        m_shape_map[nid] = shape;
-        /// always check if the node had a unique shape associated with it
-        /// if yes, remove it
-        {
-            auto it = m_shapes.find(nid);
-            if (it != m_shapes.end()) {
-                m_shapes.erase(it);
-            }
+        if (m_shapes.size() <= nid) {
+            m_shapes.resize(static_cast<int>(nid)+1);
         }
 
+        m_shapes[nid] = std::move(shape);
     }
 
     QMutex& Layout::getMutex() {
         return m_layout_mutex;
     }
 
-    void Layout::setChildOffset_unprotected(NodeID nid, double offset) {
+    void Layout::setChildOffset_unsafe(NodeID nid, double offset) {
+
+        if (m_child_offsets.size() <= nid) {
+            m_child_offsets.resize(static_cast<int>(nid)+1);
+        }
+
         m_child_offsets[nid] = offset;
     }
 
-    void Layout::setShape_unprotected(NodeID nid, std::unique_ptr<Shape> shape) {
 
-        setShape_unprotected(nid, shape.get());
+    void Layout::setLayoutDone_unsafe(NodeID nid, bool val) {
 
-        m_shapes[nid] = std::move(shape);
-    }
+        if (m_layout_done.size() <= nid) {
+            m_layout_done.resize(static_cast<int>(nid)+1);
+        }
 
-    void Layout::setLayoutDone_unprotected(NodeID nid, bool val) {
         m_layout_done[nid] = val;
     }
 
-    bool Layout::getLayoutDone_unprotected(NodeID nid) const {
-        if (m_layout_done.find(nid) == m_layout_done.end()) {
-            return false;
-        }
+    bool Layout::getLayoutDone_unsafe(NodeID nid) const {
+
         return m_layout_done.at(nid);
     }
 
-    Layout::Layout() {
-    }
+    Layout::Layout() {}
 
     Layout::~Layout() = default;
 
     double Layout::getOffset(NodeID nid) const {
         QMutexLocker locker(&m_layout_mutex);
 
-        auto it = m_child_offsets.find(nid);
-
-        if (it == m_child_offsets.end()) {
+        if (m_child_offsets.size() <= nid) {
             return 0;
         }
 
-        return m_child_offsets.at(nid);
+        return m_child_offsets[nid];
     }
 
     int Layout::getDepth(NodeID nid) const {
-        return getShape_unprotected(nid).depth();
+        QMutexLocker locker(&m_layout_mutex);
+        return getShape_unsafe(nid).depth();
     }
 
     const BoundingBox& Layout::getBoundingBox(NodeID nid) const {
         QMutexLocker locker(&m_layout_mutex);
-
-        return getShape_unprotected(nid).boundingBox();
+        return getShape_unsafe(nid).boundingBox();
     }
 
     bool Layout::getLayoutDone(NodeID nid) const {
         QMutexLocker locker(&m_layout_mutex);
-        return getLayoutDone_unprotected(nid);
+        return getLayoutDone_unsafe(nid);
+    }
+
+    void Layout::growDataStructures(int n_nodes) {
+        QMutexLocker locker(&m_layout_mutex);
+        auto old_size = m_child_offsets.size();
+        m_child_offsets.resize(old_size + n_nodes);
     }
 
 

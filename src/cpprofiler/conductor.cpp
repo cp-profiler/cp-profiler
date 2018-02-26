@@ -22,6 +22,8 @@ namespace cpprofiler {
 
         setWindowTitle("CP-Profiler");
 
+        std::cerr << "conductor thread:" << std::this_thread::get_id() << std::endl;
+
         auto layout = new QGridLayout();
 
         {
@@ -112,7 +114,7 @@ namespace cpprofiler {
 
         /// create new one if doesn't already exist
         if (maybe_view == m_execution_windows.end()) {
-            // m_execution_windows[e] = std::unique_ptr<ExecutionWindow>(new ExecutionWindow);
+
             m_execution_windows[e] = utils::make_unique<ExecutionWindow>(*e);
         }
 

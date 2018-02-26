@@ -67,6 +67,15 @@ public:
 
 };
 
+class ShapeDeleter {
+public:
+    void operator() (Shape* s) {
+        if (s != &Shape::leaf) {
+            delete s;
+        }
+    }
+};
+
 }}
 
 

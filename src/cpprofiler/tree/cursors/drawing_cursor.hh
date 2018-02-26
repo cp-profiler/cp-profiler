@@ -42,8 +42,6 @@ class DrawingCursor : public NodeCursor {
 
     int cur_x, cur_y;
 
-    int nodes_drawn = 0;
-
     bool isClipped();
 
 public:

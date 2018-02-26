@@ -90,6 +90,12 @@ namespace cpprofiler {
                 toggleShowLabel->setShortcut(QKeySequence("L"));
                 nodeMenu->addAction(toggleShowLabel);
                 connect(toggleShowLabel, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::toggleShowLabel);
+
+                auto toggleHideFailed = new QAction{"Toggle hide failed", this};
+                toggleHideFailed->setShortcut(QKeySequence("F"));
+                nodeMenu->addAction(toggleHideFailed);
+                connect(toggleHideFailed, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::toggleHideFailed);
+
             }
 
 

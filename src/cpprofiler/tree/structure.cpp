@@ -9,13 +9,15 @@
 namespace cpprofiler { namespace tree {
 
     Structure::Structure() {
-        std::cerr << "Structure()\n";
         m_nodes.reserve(100);
+    }
 
+    QMutex& Structure::getMutex() const {
+        return m_structure_mutex;
     }
 
     NodeID Structure::createRoot(int kids) {
-        QWriteLocker locker(&m_lock);
+        QMutexLocker locker(&m_structure_mutex);
         if (m_nodes.size() > 0) {
             throw invalid_tree();
         }
@@ -31,8 +33,6 @@ namespace cpprofiler { namespace tree {
         return root_nid;
     }
 
-    
-    
     NodeID Structure::addChild_unsafe(NodeID pid, int alt, int kids) {
         auto nid = NodeID{m_nodes.size()};
         m_nodes.push_back(std::unique_ptr<Node>{new Node(pid, kids)});
@@ -46,12 +46,12 @@ namespace cpprofiler { namespace tree {
     }
 
     NodeID Structure::addChild(NodeID pid, int alt, int kids) {
-        QWriteLocker locker(&m_lock);
+        QMutexLocker locker(&m_structure_mutex);
         return addChild_unsafe(pid, alt, kids);
     }
 
     void Structure::resetNumberOfChildren(NodeID nid, int kids) {
-        QWriteLocker locker(&m_lock);
+        QMutexLocker locker(&m_structure_mutex);
         m_nodes[nid]->resetNumberOfChildren(kids);
 
         for (auto i = 0; i < kids; ++i) {
@@ -64,7 +64,7 @@ namespace cpprofiler { namespace tree {
     }
 
     NodeID Structure::getChild(NodeID pid, int alt) const {
-        QReadLocker locker(&m_lock);
+        QMutexLocker locker(&m_structure_mutex);
         return getChild_unsafe(pid, alt);;
     }
 
@@ -73,7 +73,7 @@ namespace cpprofiler { namespace tree {
     }
 
     NodeID Structure::getParent(NodeID nid) const {
-        QReadLocker locker(&m_lock);
+        QMutexLocker locker(&m_structure_mutex);
         return getParent_unsafe(nid);
     }
 
@@ -82,13 +82,13 @@ namespace cpprofiler { namespace tree {
     }
 
     int Structure::getNumberOfChildren(NodeID pid) const {
-        QReadLocker locker(&m_lock);
+        QMutexLocker locker(&m_structure_mutex);
         return getNumberOfChildren_unsafe(pid);
     }
 
 
     int Structure::getNumberOfSiblings(NodeID nid) const {
-        QReadLocker locker(&m_lock);
+        QMutexLocker locker(&m_structure_mutex);
         auto pid = getParent_unsafe(nid);
         return getNumberOfChildren_unsafe(pid);
     }
@@ -98,12 +98,12 @@ namespace cpprofiler { namespace tree {
     }
 
     NodeID Structure::getRoot() const {
-        QReadLocker locker(&m_lock);
+        QMutexLocker locker(&m_structure_mutex);
         return getRoot_unsafe();
     }
 
     int Structure::getAlternative(NodeID nid) const {
-        QReadLocker locker(&m_lock);
+        QMutexLocker locker(&m_structure_mutex);
         auto parent_nid = getParent_unsafe(nid);
 
         if (parent_nid == NodeID::NoNode) return -1;
@@ -118,7 +118,11 @@ namespace cpprofiler { namespace tree {
     }
 
     int Structure::nodeCount() const {
-        QReadLocker locker(&m_lock);
+        QMutexLocker locker(&m_structure_mutex);
+        return nodeCount_unsafe();
+    }
+
+    int Structure::nodeCount_unsafe() const {
         return m_nodes.size();
     }
 
@@ -150,10 +154,17 @@ std::vector<NodeID> preOrder(const Structure& tree) {
 }
 
 std::vector<NodeID> postOrder(const Structure& tree) {
+    QMutexLocker lock(&tree.getMutex());
+    return postOrder_unsafe(tree);
 
-  /// PO-traversal requires two stacks
+}
+
+std::vector<NodeID> postOrder_unsafe(const Structure& tree) {
+    /// PO-traversal requires two stacks
     std::stack<NodeID> stk_1;
     std::vector<NodeID> result;
+
+    result.reserve(tree.nodeCount_unsafe());
 
     NodeID root = NodeID{0};
 
@@ -164,8 +175,8 @@ std::vector<NodeID> postOrder(const Structure& tree) {
 
         result.push_back(nid);
 
-        for (auto i = 0; i < tree.getNumberOfChildren(nid); ++i) {
-            auto child = tree.getChild(nid, i);
+        for (auto i = 0; i < tree.getNumberOfChildren_unsafe(nid); ++i) {
+            auto child = tree.getChild_unsafe(nid, i);
             stk_1.push(child);
         }
     }
@@ -173,7 +184,6 @@ std::vector<NodeID> postOrder(const Structure& tree) {
     std::reverse(result.begin(), result.end());
 
     return result;
-
 }
 
 }}}

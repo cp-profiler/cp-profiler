@@ -18,11 +18,13 @@ int main(int argc, char *argv[]) {
 
     // cpprofiler::tests::tree_test::run();
 
+    std::cerr << "main thread:" << std::this_thread::get_id() << std::endl;
+
     cpprofiler::Conductor conductor;
 
     conductor.show();
 
-    cpprofiler::tests::execution::run(conductor);
+    // cpprofiler::tests::execution::run(conductor);
 
     return app.exec();
 }

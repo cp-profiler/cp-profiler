@@ -36,3 +36,36 @@ template<typename Cursor>
 void PreorderNodeVisitor<Cursor>::run() {
     while (next()) {}
 }
+
+
+template<typename Cursor>
+void PostorderNodeVisitor<Cursor>::moveToLeaf() {
+    while (m_cursor.mayMoveDownwards()) {
+    m_cursor.moveDownwards();
+    }
+}
+
+template<typename Cursor>
+PostorderNodeVisitor<Cursor>::PostorderNodeVisitor(const Cursor& c)
+    : NodeVisitor<Cursor>(c) {
+    moveToLeaf();
+}
+
+template<class Cursor>
+bool PostorderNodeVisitor<Cursor>::next() {
+    m_cursor.processCurrentNode();
+    if (m_cursor.mayMoveSidewards()) {
+    m_cursor.moveSidewards();
+    moveToLeaf();
+    } else if (m_cursor.mayMoveUpwards()) {
+        m_cursor.moveUpwards();
+    } else {
+        return false;
+    }
+    return true;
+}
+
+template<typename Cursor>
+void PostorderNodeVisitor<Cursor>::run() {
+    while(next()) {}
+}

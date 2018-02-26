@@ -21,7 +21,7 @@ namespace cpprofiler { namespace tree {
     }
 
     Shape::~Shape() {
-        // qDebug() << "~Shape()";
+
     }
 
     std::ostream& operator<<(std::ostream& os, const cpprofiler::tree::Shape& s) {

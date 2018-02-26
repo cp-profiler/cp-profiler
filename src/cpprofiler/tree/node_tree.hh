@@ -15,6 +15,8 @@ class NodeTree : public QObject {
 Q_OBJECT
     std::unique_ptr<Structure> m_structure;
 
+
+    ///
     std::unique_ptr<NodeInfo> m_node_info;
 
 public:
@@ -30,10 +32,15 @@ public:
 
     NodeID addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus status);
 
+    /// Total number of nodes (including undetermined)
+    int nodeCount() const;
+
 
 signals:
 
     void structureUpdated();
+
+    void nodesCreated(int count);
 
 
 

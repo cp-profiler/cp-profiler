@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_map>
 #include <QMutex>
+#include <QObject>
 
 #include "node_id.hh"
 
@@ -14,37 +15,37 @@ class Shape;
 class LayoutComputer;
 class Structure;
 class BoundingBox;
+class ShapeDeleter;
 
-class Layout {
+class Layout : public QObject {
+Q_OBJECT
 
     friend class LayoutComputer;
 
     mutable QMutex m_layout_mutex;
 
-    std::unordered_map<NodeID, Shape*> m_shape_map;
-
-    std::unordered_map<NodeID, std::unique_ptr<Shape>> m_shapes;
+    std::vector<std::unique_ptr<Shape, ShapeDeleter>> m_shapes;
 
     /// Relative offset from the parent node along the x axis
-    std::unordered_map<NodeID, double> m_child_offsets;
+    std::vector<double> m_child_offsets;
 
-    std::unordered_map<NodeID, bool> m_layout_done;
+    std::vector<bool> m_layout_done;
 
-    void setChildOffset_unprotected(NodeID nid, double offset);
+    void setChildOffset_unsafe(NodeID nid, double offset);
 
-    void setLayoutDone_unprotected(NodeID nid, bool);
+    void setLayoutDone_unsafe(NodeID nid, bool);
 
-    bool getLayoutDone_unprotected(NodeID nid) const;
+    bool getLayoutDone_unsafe(NodeID nid) const;
 
-    const Shape& getShape_unprotected(NodeID nid) const;
+    const Shape& getShape_unsafe(NodeID nid) const;
 
     /// just remember the pointer, it is managed elsewhere
-    void setShape_unprotected(NodeID nid, Shape* shape);
+    // void setShape_unsafe(NodeID nid, Shape* shape);
 
     QMutex& getMutex();
 
     /// take ownership over shape
-    void setShape_unprotected(NodeID nid, std::unique_ptr<Shape> shape);
+    void setShape_unsafe(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape);
 
 public:
 
@@ -61,6 +62,10 @@ public:
 
     Layout();
     ~Layout();
+
+public slots:
+
+    void growDataStructures(int n_nodes);
 
 };
 
