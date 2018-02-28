@@ -7,7 +7,7 @@
 #include <QMutex>
 #include <QObject>
 
-#include "node_id.hh"
+#include "../global.hh"
 
 namespace cpprofiler { namespace tree {
 
@@ -17,12 +17,12 @@ class Structure;
 class BoundingBox;
 class ShapeDeleter;
 
+
+/// IMPORTANT: Methods marked as `unsafe` require the caller to hold m_layout_mutex
 class Layout : public QObject {
 Q_OBJECT
 
-    friend class LayoutComputer;
-
-    mutable QMutex m_layout_mutex;
+    mutable utils::Mutex m_layout_mutex;
 
     std::vector<std::unique_ptr<Shape, ShapeDeleter>> m_shapes;
 
@@ -30,35 +30,38 @@ Q_OBJECT
     std::vector<double> m_child_offsets;
 
     std::vector<bool> m_layout_done;
-
-    void setChildOffset_unsafe(NodeID nid, double offset);
-
-    void setLayoutDone_unsafe(NodeID nid, bool);
-
-    bool getLayoutDone_unsafe(NodeID nid) const;
-
-    const Shape& getShape_unsafe(NodeID nid) const;
-
-    /// just remember the pointer, it is managed elsewhere
-    // void setShape_unsafe(NodeID nid, Shape* shape);
-
-    QMutex& getMutex();
-
-    /// take ownership over shape
-    void setShape_unsafe(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape);
+    std::vector<bool> m_dirty;
 
 public:
 
     static constexpr int dist_y = 38;
     static constexpr int min_dist_x = 16;
 
+    utils::Mutex& getMutex() const;
+
+    void setChildOffset_unsafe(NodeID nid, double offset);
+
+    void setLayoutDone_unsafe(NodeID nid, bool);
+
+    const Shape& getShape_unsafe(NodeID nid) const;
+
+    void setShape_unsafe(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape);
+
     double getOffset(NodeID nid) const;
+    double getOffset_unsafe(NodeID nid) const;
 
     int getDepth(NodeID nid) const;
+    int getDepth_unsafe(NodeID nid) const;
 
     bool getLayoutDone(NodeID nid) const;
+    bool getLayoutDone_unsafe(NodeID nid) const;
+
+    bool isDirty_unsafe(NodeID nid) const;
+
+    void setDirty_unsafe(NodeID nid, bool val);
 
     const BoundingBox& getBoundingBox(NodeID nid) const;
+    const BoundingBox& getBoundingBox_unsafe(NodeID nid) const;
 
     Layout();
     ~Layout();

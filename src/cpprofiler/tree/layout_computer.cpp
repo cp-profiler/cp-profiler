@@ -11,7 +11,6 @@
 
 #include <QMutex>
 #include <QDebug>
-#include <QMutexLocker>
 #include <iostream>
 
 namespace cpprofiler { namespace tree {
@@ -23,59 +22,18 @@ LayoutComputer::LayoutComputer(const NodeTree& tree, Layout& layout, const NodeF
 }
 
 
-static int distance_between(const Shape& s1, const Shape& s2) {
-    auto depth_left = s1.depth();
-    auto depth_right = s2.depth();
-    auto common_depth = std::min(depth_left, depth_right);
+void LayoutComputer::dirtyUp(NodeID nid) {
 
-    auto max = 0;
-    for (auto i = 0; i < common_depth; ++i) {
-        auto cur_dist = s1[i].r - s2[i].l;
-        if (cur_dist > max) max = cur_dist; 
+    auto& tree = m_node_tree.tree_structure();
+    auto& tree_mutex = tree.getMutex();
+    auto& layout_mutex = m_layout.getMutex();
+
+
+    while (nid != NodeID::NoNode) {
+        m_layout.setDirty_unsafe(nid, true);
+        nid = tree.getParent(nid);
     }
 
-    return max + Layout::min_dist_x;
-}
-
-std::unique_ptr<Shape, ShapeDeleter> combine_shapes(const Shape& s1, const Shape& s2, std::vector<int>& offsets) {
-
-    auto depth_left = s1.depth();
-    auto depth_right = s2.depth();
-
-    auto max_depth = std::max(depth_left, depth_right);
-    auto common_depth = std::min(depth_left, depth_right);
-
-    // auto combined = utils::make_unique<Shape, ShapeDeleter>(max_depth+1);
-    auto combined = std::unique_ptr<Shape, ShapeDeleter>(new Shape{max_depth+1});
-
-    auto distance = distance_between(s1, s2);
-    auto half_dist = distance / 2;
-
-    {
-        auto bb_left = std::min(s1.boundingBox().left - half_dist, s2.boundingBox().left + half_dist);
-        auto bb_right = std::max(s1.boundingBox().right - half_dist, s2.boundingBox().right + half_dist);
-        combined->setBoundingBox(BoundingBox{bb_left, bb_right});
-    }
-
-    (*combined)[0] = {-half_dist, half_dist};
-
-    offsets[0] = -half_dist; offsets[1] = half_dist;
-
-    for (auto depth = 0; depth < common_depth; ++depth) {
-        (*combined)[depth+1] = {s1[depth].l - half_dist, s2[depth].r + half_dist};
-    }
-
-    if (max_depth != common_depth) {
-        const auto& longer_shape = depth_left > depth_right ? s1 : s2;
-        const int offset = depth_left > depth_right ? -half_dist : half_dist;
-
-        for (auto depth = common_depth; depth < max_depth; ++depth) {
-            (*combined)[depth+1] = {longer_shape[depth].l + offset,
-                                    longer_shape[depth].r + offset};
-        }
-    }
-
-    return std::move(combined);
 }
 
 bool LayoutComputer::compute() {
@@ -86,60 +44,24 @@ bool LayoutComputer::compute() {
 
     auto& tree = m_node_tree.tree_structure();
 
-    QMutexLocker tree_locker(&tree.getMutex());
-    QMutexLocker locker(&m_layout.getMutex());
+    auto& tree_mutex = tree.getMutex();
+    auto& layout_mutex = m_layout.getMutex();
 
-    perfHelper.begin("get layout order");
-    std::vector<NodeID> layout_order;
-    // LayoutCursor lc(tree.getRoot_unsafe(), m_node_tree, layout_order);
-    // PostorderNodeVisitor<LayoutCursor>(lc).run();
-    layout_order = helper::postOrder_unsafe(tree);
-    perfHelper.end();
+    // auto tree_locked = tree_mutex.tryLock();
+    // auto layout_locked = layout_mutex.tryLock();
 
-    perfHelper.begin("layout: actually compute");
 
-    for (auto nid : layout_order) {
+    // perfHelper.begin("get layout order");
+    LayoutCursor lc(tree.getRoot_unsafe(), m_node_tree, m_layout);
+    PostorderNodeVisitor<LayoutCursor>(lc).run();
+    // perfHelper.end();
 
-        auto nkids = tree.getNumberOfChildren_unsafe(nid);
+    // perfHelper.begin("layout: actually compute");
 
-        if (nkids == 0) {
-            m_layout.setShape_unsafe(nid, std::unique_ptr<Shape, ShapeDeleter>(&Shape::leaf));
-            // continue;
-        }
-
-        if (nkids == 2) {
-
-            auto kid_l = tree.getChild_unsafe(nid, 0);
-            auto kid_r = tree.getChild_unsafe(nid, 1);
-
-            const auto& s1 = m_layout.getShape_unsafe(kid_l);
-            const auto& s2 = m_layout.getShape_unsafe(kid_r);
-
-            std::vector<int> offsets(2);
-            auto combined = combine_shapes(s1, s2, offsets);
-
-            m_layout.setShape_unsafe(nid, std::move(combined));
-
-            m_layout.setChildOffset_unsafe(kid_l, offsets[0]);
-            m_layout.setChildOffset_unsafe(kid_r, offsets[1]);
-
-            m_layout.setLayoutDone_unsafe(nid, true);
-
-        }
-        // check if has children
-
-        // get children
-
-        /// get their extents
-
-        // auto& shape = m_layout.getShape_unsafe(nid);
-
-        // std::cerr << shape << "\n";
-    }
 
     m_needs_update = false;
 
-    perfHelper.end();
+    // perfHelper.end();
 
     return true;
 

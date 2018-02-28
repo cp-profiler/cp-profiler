@@ -6,18 +6,20 @@
 #include <algorithm>
 #include <QDebug>
 
+using cpprofiler::utils::Mutex;
+
 namespace cpprofiler { namespace tree {
 
     Structure::Structure() {
         m_nodes.reserve(100);
     }
 
-    QMutex& Structure::getMutex() const {
+    Mutex& Structure::getMutex() const {
         return m_structure_mutex;
     }
 
     NodeID Structure::createRoot(int kids) {
-        QMutexLocker locker(&m_structure_mutex);
+        utils::MutexLocker locker(&m_structure_mutex);
         if (m_nodes.size() > 0) {
             throw invalid_tree();
         }
@@ -46,12 +48,12 @@ namespace cpprofiler { namespace tree {
     }
 
     NodeID Structure::addChild(NodeID pid, int alt, int kids) {
-        QMutexLocker locker(&m_structure_mutex);
+        utils::MutexLocker locker(&m_structure_mutex);
         return addChild_unsafe(pid, alt, kids);
     }
 
     void Structure::resetNumberOfChildren(NodeID nid, int kids) {
-        QMutexLocker locker(&m_structure_mutex);
+        utils::MutexLocker locker(&m_structure_mutex);
         m_nodes[nid]->resetNumberOfChildren(kids);
 
         for (auto i = 0; i < kids; ++i) {
@@ -64,7 +66,7 @@ namespace cpprofiler { namespace tree {
     }
 
     NodeID Structure::getChild(NodeID pid, int alt) const {
-        QMutexLocker locker(&m_structure_mutex);
+        utils::MutexLocker locker(&m_structure_mutex);
         return getChild_unsafe(pid, alt);;
     }
 
@@ -73,7 +75,7 @@ namespace cpprofiler { namespace tree {
     }
 
     NodeID Structure::getParent(NodeID nid) const {
-        QMutexLocker locker(&m_structure_mutex);
+        utils::MutexLocker locker(&m_structure_mutex);
         return getParent_unsafe(nid);
     }
 
@@ -82,13 +84,17 @@ namespace cpprofiler { namespace tree {
     }
 
     int Structure::getNumberOfChildren(NodeID pid) const {
-        QMutexLocker locker(&m_structure_mutex);
+        utils::MutexLocker locker(&m_structure_mutex);
         return getNumberOfChildren_unsafe(pid);
     }
 
 
     int Structure::getNumberOfSiblings(NodeID nid) const {
-        QMutexLocker locker(&m_structure_mutex);
+        utils::MutexLocker locker(&m_structure_mutex);
+        return getNumberOfSiblings_unsafe(nid);
+    }
+
+    int Structure::getNumberOfSiblings_unsafe(NodeID nid) const {
         auto pid = getParent_unsafe(nid);
         return getNumberOfChildren_unsafe(pid);
     }
@@ -98,12 +104,16 @@ namespace cpprofiler { namespace tree {
     }
 
     NodeID Structure::getRoot() const {
-        QMutexLocker locker(&m_structure_mutex);
+        utils::MutexLocker locker(&m_structure_mutex);
         return getRoot_unsafe();
     }
 
     int Structure::getAlternative(NodeID nid) const {
-        QMutexLocker locker(&m_structure_mutex);
+        utils::MutexLocker locker(&m_structure_mutex);
+        return getAlternative_unsafe(nid);
+    }
+
+    int Structure::getAlternative_unsafe(NodeID nid) const {
         auto parent_nid = getParent_unsafe(nid);
 
         if (parent_nid == NodeID::NoNode) return -1;
@@ -118,7 +128,7 @@ namespace cpprofiler { namespace tree {
     }
 
     int Structure::nodeCount() const {
-        QMutexLocker locker(&m_structure_mutex);
+        utils::MutexLocker locker(&m_structure_mutex);
         return nodeCount_unsafe();
     }
 
@@ -154,7 +164,7 @@ std::vector<NodeID> preOrder(const Structure& tree) {
 }
 
 std::vector<NodeID> postOrder(const Structure& tree) {
-    QMutexLocker lock(&tree.getMutex());
+    utils::MutexLocker lock(&tree.getMutex());
     return postOrder_unsafe(tree);
 
 }

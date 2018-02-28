@@ -10,6 +10,11 @@
 #include <QMenuBar>
 #include <QTextEdit>
 #include <QFile>
+#include <QStatusBar>
+
+#include "tree/node_tree.hh"
+
+#include "stats_bar.hpp"
 
 namespace cpprofiler {
 
@@ -20,6 +25,12 @@ namespace cpprofiler {
         m_traditional_view.reset(new tree::TraditionalView(node_tree));
 
         auto layout = new QGridLayout();
+
+        statusBar()->showMessage("Ready");
+
+
+        auto stats_bar = new NodeStatsBar(this, node_tree.node_stats());
+        statusBar()->addPermanentWidget(stats_bar);
 
         resize(500,700);
 
@@ -52,6 +63,9 @@ namespace cpprofiler {
 
             connect(&m_execution.tree(), &tree::NodeTree::structureUpdated,
                     m_traditional_view.get(), &tree::TraditionalView::setLayoutOutdated);
+
+            connect(&m_execution.tree(), &tree::NodeTree::node_stats_changed,
+                stats_bar, &NodeStatsBar::update);
 
         }
 

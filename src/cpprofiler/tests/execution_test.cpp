@@ -1,5 +1,6 @@
 #include "execution_test.hh"
 
+#include "../global.hh"
 #include "../conductor.hh"
 #include "../user_data.hh"
 
@@ -28,6 +29,13 @@ namespace cpprofiler { namespace tests { namespace execution {
     }
 
     void run(Conductor& conductor) {
+
+
+        utils::Mutex mutex;
+
+        {
+            utils::MutexLocker locker(&mutex);
+        }
 
         auto ex = new Execution("test execution");
 

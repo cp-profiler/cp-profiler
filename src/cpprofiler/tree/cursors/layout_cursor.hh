@@ -6,13 +6,18 @@
 
 namespace cpprofiler { namespace tree {
 
-class LayoutCursor : public NodeCursor {
+    class Layout;
 
-    std::vector<NodeID>& m_layout_order;
+class LayoutCursor : public UnsafeNodeCursor {
+
+    Layout& m_layout;
+    const Structure& m_tree;
 
 public:
     // Constructor
-    LayoutCursor(NodeID start, const NodeTree& tree, std::vector<NodeID>& order);
+    LayoutCursor(NodeID start, const NodeTree& tree, Layout& lo);
+
+    void computeForNode(NodeID nid);
 
     bool mayMoveDownwards();
 

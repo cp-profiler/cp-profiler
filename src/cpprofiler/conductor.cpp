@@ -107,6 +107,8 @@ namespace cpprofiler {
         m_executions.push_back(std::shared_ptr<Execution>(e));
         m_execution_list->addExecution(*e);
 
+        showTraditionalView(e);
+
     }
 
     ExecutionWindow& Conductor::getExecutionWindow(Execution* e) {

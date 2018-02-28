@@ -48,3 +48,48 @@ namespace cpprofiler { namespace tree {
 
 
 }}
+
+namespace cpprofiler { namespace tree {
+
+    UnsafeNodeCursor::UnsafeNodeCursor(NodeID start, const NodeTree& tree)
+    : m_tree(tree.tree_structure()), m_node_info(tree.node_info()), m_start_node(start), m_cur_node(start), m_cur_alt(0) {
+
+    }
+
+    bool UnsafeNodeCursor::mayMoveDownwards() const {
+        auto n = m_tree.getNumberOfChildren_unsafe(m_cur_node);
+        return (n > 0);
+    }
+
+    void UnsafeNodeCursor::moveDownwards() {
+        m_cur_alt = 0;
+        m_cur_node = m_tree.getChild_unsafe(m_cur_node, 0);
+    }
+
+    bool UnsafeNodeCursor::mayMoveSidewards() const {
+        return (m_cur_node != m_start_node)
+            && (m_cur_node != m_tree.getRoot_unsafe())
+            && (m_cur_alt < m_tree.getNumberOfSiblings_unsafe(m_cur_node) - 1);
+    }
+
+    void UnsafeNodeCursor::moveSidewards() {
+        auto parent_nid = m_tree.getParent_unsafe(m_cur_node);
+        m_cur_node = m_tree.getChild_unsafe(parent_nid, ++m_cur_alt);
+    }
+
+    bool UnsafeNodeCursor::mayMoveUpwards() const {
+        return (m_cur_node != m_start_node) && (m_cur_node != m_tree.getRoot_unsafe());
+    }
+
+    void UnsafeNodeCursor::moveUpwards() {
+
+        m_cur_node = m_tree.getParent_unsafe(m_cur_node);
+        m_cur_alt = m_tree.getAlternative_unsafe(m_cur_node);
+    }
+
+    void UnsafeNodeCursor::finalize() {
+        /// do nothing
+    }
+
+
+}}

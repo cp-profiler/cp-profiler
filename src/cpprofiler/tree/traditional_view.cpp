@@ -63,9 +63,9 @@ namespace cpprofiler { namespace tree {
 
         auto root_nid = m_tree.tree_structure().getRoot();
 
+        if (!m_layout.getLayoutDone(root_nid)) { return; }
         auto bb = m_layout.getBoundingBox(root_nid);
 
-        if (!m_layout.getLayoutDone(root_nid)) { return; }
         auto tree_width = bb.right - bb.left;
         auto tree_height = m_layout.getDepth(root_nid) * Layout::dist_y;
 
@@ -124,7 +124,15 @@ namespace cpprofiler { namespace tree {
         // drawGrid(painter, {std::max(tree_width, displayed_width), std::max(tree_height, displayed_height)});
 
         // perfHelper.begin("tree drawing");
-        DrawingCursor dc(m_tree.tree_structure().getRoot(), m_tree, m_layout, m_user_data, m_node_flags, painter, start_pos, clip);
+
+
+        /// TODO: see if I can remove mutexes
+        auto& tree_mutex = m_tree.tree_structure().getMutex();
+        auto& layout_mutex = m_layout.getMutex();
+        utils::MutexLocker t_lock(&tree_mutex);
+        utils::MutexLocker l_lock(&layout_mutex);
+
+        DrawingCursor dc(m_tree.tree_structure().getRoot_unsafe(), m_tree, m_layout, m_user_data, m_node_flags, painter, start_pos, clip);
         PreorderNodeVisitor<DrawingCursor>(dc).run();
         // perfHelper.end();
 
@@ -144,7 +152,7 @@ namespace cpprofiler { namespace tree {
     }
 
     static std::pair<int,int> getRealBB(NodeID nid, const Structure& tree, const Layout& layout, const DisplayState& ds) {
-        
+
         auto bb = layout.getBoundingBox(nid);
 
         auto node = nid;
@@ -163,6 +171,8 @@ namespace cpprofiler { namespace tree {
     NodeID TreeScrollArea::findNodeClicked(int x, int y) {
 
         using traditional::NODE_WIDTH;
+
+        /// TODO: disable while constructing
         /// calculate real x and y
         auto x_off = horizontalScrollBar()->value();
         auto y_off = verticalScrollBar()->value();
@@ -242,14 +252,22 @@ TraditionalView::TraditionalView(const NodeTree& tree)
     m_scroll_area.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     m_scroll_area.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-    /// NOTE: for now, compute layout here
-    m_layout_computer->compute();
-
     connect(&m_scroll_area, &TreeScrollArea::nodeClicked, this, &TraditionalView::selectNode);
 
     connect(this, &TraditionalView::needsRedrawing, [this]() {
         m_scroll_area.viewport()->update();
     });
+
+    connect(&tree, &NodeTree::childrenStructureChanged, [this](NodeID nid) {
+        // std::cerr << "dirty up thread:" << std::this_thread::get_id() << std::endl;
+        m_layout_computer->dirtyUp(nid);
+    });
+
+    /// NOTE: for now, compute layout here
+    if (tree.nodeCount() > 0) {
+        m_layout_computer->compute();
+    }
+
 }
 
 TraditionalView::~TraditionalView() = default;
@@ -379,16 +397,21 @@ void TraditionalView::selectNode(NodeID nid) {
 }
 
 void TraditionalView::forceComputeLayout() {
-    perfHelper.begin("layout");
+    // perfHelper.begin("layout");
     m_layout_computer->markAsOutdated();
     m_layout_computer->compute();
-    perfHelper.end();
+    // perfHelper.end();
     emit needsRedrawing();
 }
 
 void TraditionalView::setLayoutOutdated() {
     /// TODO: change to re-layout on fewer nodes
-    forceComputeLayout();
+
+    static int counter = 0;
+
+    if (counter++ % 1 == 0) {
+        forceComputeLayout();
+    }
 }
 
 void TraditionalView::printNodeInfo() {

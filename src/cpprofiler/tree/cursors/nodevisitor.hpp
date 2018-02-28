@@ -60,6 +60,7 @@ bool PostorderNodeVisitor<Cursor>::next() {
     } else if (m_cursor.mayMoveUpwards()) {
         m_cursor.moveUpwards();
     } else {
+        m_cursor.finalize();
         return false;
     }
     return true;

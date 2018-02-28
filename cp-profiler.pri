@@ -54,6 +54,8 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/layout_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hh \
+    $$PWD/src/cpprofiler/global.hh \
+    $$PWD/src/cpprofiler/utils/debug_mutex.hh \
 
 SOURCES += \
     $$PWD/src/cpprofiler/tests/tree_test.cpp \

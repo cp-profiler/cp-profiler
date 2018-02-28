@@ -1,6 +1,8 @@
 #ifndef CPPROFILER_TREE_NODE_INFO
 #define CPPROFILER_TREE_NODE_INFO
 
+#include "../global.hh"
+
 #include <bitset>
 #include <vector>
 #include <QMutex>
@@ -37,7 +39,7 @@ public:
 
 class NodeInfo {
 
-    mutable QMutex m_mutex;
+    mutable utils::Mutex m_mutex;
 
     std::vector<NodeInfoEntry> m_flags;
 

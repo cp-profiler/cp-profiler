@@ -28,7 +28,9 @@ namespace traditional {
 
 class Layout;
 
-class DrawingCursor : public NodeCursor {
+
+/// This uses unsafe methods for tree structure!
+class DrawingCursor : public UnsafeNodeCursor {
 
     const Layout& m_layout;
 

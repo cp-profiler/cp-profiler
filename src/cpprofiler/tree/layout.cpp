@@ -3,6 +3,7 @@
 
 
 #include <QDebug>
+#include <iostream>
 
 #include "../utils/std_ext.hh"
 
@@ -26,7 +27,7 @@ namespace cpprofiler { namespace tree {
         m_shapes[nid] = std::move(shape);
     }
 
-    QMutex& Layout::getMutex() {
+    utils::Mutex& Layout::getMutex() const {
         return m_layout_mutex;
     }
 
@@ -51,16 +52,24 @@ namespace cpprofiler { namespace tree {
 
     bool Layout::getLayoutDone_unsafe(NodeID nid) const {
 
+        if (m_layout_done.size() <= nid) {
+            return false;
+        }
+
         return m_layout_done.at(nid);
     }
 
-    Layout::Layout() {}
+    Layout::Layout() {
+    }
 
     Layout::~Layout() = default;
 
     double Layout::getOffset(NodeID nid) const {
-        QMutexLocker locker(&m_layout_mutex);
+        utils::MutexLocker locker(&m_layout_mutex);
+        return getOffset_unsafe(nid);
+    }
 
+    double Layout::getOffset_unsafe(NodeID nid) const {
         if (m_child_offsets.size() <= nid) {
             return 0;
         }
@@ -69,24 +78,64 @@ namespace cpprofiler { namespace tree {
     }
 
     int Layout::getDepth(NodeID nid) const {
-        QMutexLocker locker(&m_layout_mutex);
+        utils::MutexLocker locker(&m_layout_mutex);
+        return getDepth_unsafe(nid);
+    }
+
+    int Layout::getDepth_unsafe(NodeID nid) const {
         return getShape_unsafe(nid).depth();
     }
 
     const BoundingBox& Layout::getBoundingBox(NodeID nid) const {
-        QMutexLocker locker(&m_layout_mutex);
+        utils::MutexLocker locker(&m_layout_mutex);
+        return getBoundingBox_unsafe(nid);
+    }
+
+    const BoundingBox& Layout::getBoundingBox_unsafe(NodeID nid) const {
         return getShape_unsafe(nid).boundingBox();
     }
 
     bool Layout::getLayoutDone(NodeID nid) const {
-        QMutexLocker locker(&m_layout_mutex);
+        utils::MutexLocker locker(&m_layout_mutex);
         return getLayoutDone_unsafe(nid);
     }
 
     void Layout::growDataStructures(int n_nodes) {
-        QMutexLocker locker(&m_layout_mutex);
+        utils::MutexLocker locker(&m_layout_mutex);
         auto old_size = m_child_offsets.size();
         m_child_offsets.resize(old_size + n_nodes);
+    }
+
+    bool Layout::isDirty_unsafe(NodeID nid) const {
+
+        // qDebug() << "is Dirty";
+
+        // for (auto el : m_dirty) {
+        //     std::cerr << el << " ";
+        // }
+        // std::cerr << "\n";
+
+        if (m_dirty.size() <= nid) {
+            return true;
+        }
+
+        return m_dirty[nid];
+    }
+
+    void Layout::setDirty_unsafe(NodeID nid, bool val) {
+
+        // qDebug() << "set Dirty";
+
+        if (m_dirty.size() <= nid) {
+            m_dirty.resize(static_cast<int>(nid)+1, true);
+        }
+
+        m_dirty[nid] = val;
+
+        // for (auto el : m_dirty) {
+        //     std::cerr << el << " ";
+        // }
+        // std::cerr << "\n";
     }
 
 

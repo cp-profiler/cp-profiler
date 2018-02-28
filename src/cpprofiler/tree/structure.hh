@@ -2,9 +2,11 @@
 #define CPPROFILER_NODE_TREE_HH
 
 #include "node.hh"
+
+#include "../global.hh"
+
 #include "memory"
 
-#include <QMutex>
 
 namespace cpprofiler { namespace tree {
 
@@ -22,7 +24,7 @@ class Structure {
     friend class TraditionalView;
 
     // mutable QReadWriteLock m_lock;
-    mutable QMutex m_structure_mutex;
+    mutable utils::Mutex m_structure_mutex;
 
     std::vector<std::unique_ptr<Node>> m_nodes;
 
@@ -41,7 +43,7 @@ public:
 
     int nodeCount_unsafe() const;
 
-    QMutex& getMutex() const;
+    utils::Mutex& getMutex() const;
 
     Structure();
 
@@ -58,11 +60,13 @@ public:
     int getNumberOfChildren(NodeID pid) const;
 
     int getNumberOfSiblings(NodeID nid) const;
+    int getNumberOfSiblings_unsafe(NodeID nid) const;
 
     NodeID getRoot() const;
 
     /// which alternative the current node is relative to its parent
     int getAlternative(NodeID nid) const;
+    int getAlternative_unsafe(NodeID nid) const;
 
     int nodeCount() const;
 

@@ -8,6 +8,8 @@ namespace cpprofiler { namespace tree {
 
 NodeTree::NodeTree() : m_structure{new Structure()} {
     m_node_info.reset(new NodeInfo);
+
+    connect(&m_node_stats, &NodeStats::stats_changed, this, &NodeTree::node_stats_changed);
 }
 
 NodeTree::~NodeTree() = default;
@@ -34,6 +36,7 @@ NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus s
 
     NodeID nid;
     if (parent_id == tree::NodeID::NoNode) {
+
         nid = m_structure->createRoot(kids);
         m_node_info->addEntry(nid);
         nodes_created += (1 + kids);
@@ -44,15 +47,37 @@ NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus s
             m_structure->resetNumberOfChildren(nid, kids);
             nodes_created += (kids - 1);
         }
+
+        emit childrenStructureChanged(parent_id);
     }
 
     for (auto i = 0; i < kids; ++i) {
         auto child_nid = m_structure->getChild(nid, i);
         m_node_info->addEntry(child_nid);
         m_node_info->setStatus(child_nid, NodeStatus::UNDETERMINED);
+
+        m_node_stats.add_undetermined(kids);
     }
 
     m_node_info->setStatus(nid, status);
+
+    switch (status) {
+        case NodeStatus::BRANCH: {
+            m_node_stats.subtract_undetermined(1);
+            m_node_stats.add_branch(1);
+        } break;
+        case NodeStatus::FAILED: {
+            m_node_stats.subtract_undetermined(1);
+            m_node_stats.add_failed(1);
+        } break;
+        case NodeStatus::SOLVED: {
+            m_node_stats.subtract_undetermined(1);
+            m_node_stats.add_solved(1);
+        } break;
+        case NodeStatus::UNDETERMINED: {
+            // do nothing
+        } break;
+    }
 
     emit structureUpdated();
     emit nodesCreated(nodes_created);
@@ -62,6 +87,10 @@ NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus s
 
 int NodeTree::nodeCount() const {
     return m_structure->nodeCount();
+}
+
+const NodeStats& NodeTree::node_stats() const {
+    return m_node_stats;
 }
 
 

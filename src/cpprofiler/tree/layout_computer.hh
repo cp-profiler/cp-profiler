@@ -3,6 +3,8 @@
 
 class QMutex;
 
+#include "node_id.hh"
+
 namespace cpprofiler { namespace tree {
 
     class Layout;
@@ -23,6 +25,8 @@ public:
         bool compute();
 
         void markAsOutdated();
+
+        void dirtyUp(NodeID nid);
     };
 
 

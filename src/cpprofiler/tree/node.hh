@@ -2,7 +2,7 @@
 #define CPPROFILER_TREE_NODE
 
 #include <vector>
-#include "node_id.hh"
+#include "../global.hh"
 
 namespace cpprofiler { namespace tree {
 
