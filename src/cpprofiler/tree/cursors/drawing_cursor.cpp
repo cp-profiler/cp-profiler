@@ -85,7 +85,9 @@ namespace cpprofiler { namespace tree {
             brush.setStyle(Qt::Dense4Pattern);
             painter.setBrush(brush);
         }
+
         painter.drawRect(x - HALF_FAILED_WIDTH, y, FAILED_WIDTH, FAILED_WIDTH);
+        painter.drawRect(x, y, 2, 2);
     }
 
     static void drawUndeterminedNode(QPainter& painter, int x, int y, bool selected, bool phantom) {
@@ -117,7 +119,7 @@ namespace cpprofiler { namespace tree {
             brush.setStyle(Qt::Dense4Pattern);
             painter.setBrush(brush);
         }
-        drawDiamond(painter, x, y, selected);
+        drawDiamond(painter, x, y, false);
     }
 
     static void drawSkippedNode(QPainter& painter, int x, int y, bool selected, bool phantom) {
@@ -134,6 +136,35 @@ namespace cpprofiler { namespace tree {
             painter.setBrush(brush);
         }
         painter.drawRect(x - HALF_FAILED_WIDTH, y, FAILED_WIDTH, FAILED_WIDTH);
+    }
+
+    static void drawShape(QPainter& painter, int x, int y, NodeID nid, const Layout& layout) {
+        using namespace traditional;
+        painter.setPen(Qt::NoPen);
+
+        auto& shape = layout.getShape_unsafe(nid);
+
+        int depth = shape.depth();
+        QPointF *points = new QPointF[depth * 2];
+
+        int l_x = x + shape[0].l;
+        int r_x = x + shape[0].r;
+        y = y + NODE_WIDTH / 2;
+
+        points[0] = QPointF(l_x, y);
+        points[depth * 2 - 1] = QPointF(r_x, y);
+
+        for (int i = 1; i <  depth; i++){
+            y += static_cast<double>(Layout::dist_y);
+            l_x = x + shape[i].l;
+            r_x = x + shape[i].r;
+            points[i] = QPointF(l_x, y);
+            points[depth * 2 - i - 1] = QPointF(r_x, y);
+        }
+
+        painter.drawConvexPolygon(points, shape.depth() * 2);
+
+        delete[] points;
     }
 
     void DrawingCursor::processCurrentNode() {
@@ -193,6 +224,10 @@ namespace cpprofiler { namespace tree {
 
             auto height = m_layout.getDepth_unsafe(m_cur_node) * Layout::dist_y;
             m_painter.drawRect(cur_x + bb.left, cur_y, bb.right - bb.left, height);
+
+
+            m_painter.setBrush(QColor{0, 0, 0, 80});
+            drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
         }
     }
 

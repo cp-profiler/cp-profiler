@@ -50,8 +50,7 @@ bool LayoutComputer::compute() {
     // auto tree_locked = tree_mutex.tryLock();
     // auto layout_locked = layout_mutex.tryLock();
 
-
-    // perfHelper.begin("get layout order");
+    // perfHelper.begin("layout");
     LayoutCursor lc(tree.getRoot_unsafe(), m_node_tree, m_layout);
     PostorderNodeVisitor<LayoutCursor>(lc).run();
     // perfHelper.end();

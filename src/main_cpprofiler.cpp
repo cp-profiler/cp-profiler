@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
 
-    // cpprofiler::tests::tree_test::run();
+    cpprofiler::tests::tree_test::run();
 
     std::cerr << "main thread:" << std::this_thread::get_id() << std::endl;
 

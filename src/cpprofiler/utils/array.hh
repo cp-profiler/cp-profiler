@@ -1,7 +1,7 @@
 #ifndef CPPROFILER_UTILS_ARRAY_HH
 #define CPPROFILER_UTILS_ARRAY_HH
 
-#include <new>
+#include <stdlib.h>
 #include <initializer_list>
 #include <algorithm>
 
@@ -22,7 +22,7 @@ public:
     ~Array();
 
     Array(const Array& other);
-    Array& operator=(const Array& other) = delete;
+    Array& operator=(const Array& other);
 
     Array(Array&& other);
 
@@ -35,14 +35,27 @@ public:
 };
 
 template<typename T>
+Array<T>& Array<T>::operator=(const Array<T>& other) {
+    free(m_data);
+    m_size = other.m_size;
+    m_data = static_cast<T*>(malloc(m_size * sizeof(T)));
+
+    for (auto i = 0; i < m_size; ++i) {
+        m_data[i] = other[i];
+    }
+
+    return *this;
+}
+
+template<typename T>
 Array<T>::Array(int size) : m_size(size) {
-    m_data = new T[size];
+    m_data = static_cast<T*>(malloc(size * sizeof(T)));
 }
 
 template<typename T>
 Array<T>::Array(std::initializer_list<T> init_list)
 : m_size(init_list.size()) {
-    m_data = new T[m_size];
+    m_data = static_cast<T*>(malloc(m_size * sizeof(T)));
 
     int i = 0;
     for (auto&& el : init_list) {
@@ -57,7 +70,7 @@ Array<T>::Array() : m_size(0) {
 
 template<typename T>
 Array<T>::Array(const Array& other) : m_size(other.size()) {
-    m_data = new T[m_size];
+    m_data = static_cast<T*>(malloc(m_size * sizeof(T)));
 
     for (auto i = 0; i < m_size; ++i) {
         m_data[i] = other[i];
@@ -73,7 +86,7 @@ Array<T>::Array(Array&& other) : m_size(other.size()) {
 
 template<typename T>
 Array<T>::~Array() {
-    delete[] m_data;
+    free(m_data);
 }
 
 template<typename T>

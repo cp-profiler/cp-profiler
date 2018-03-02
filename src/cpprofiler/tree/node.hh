@@ -35,6 +35,8 @@ private:
     /// The children, or in case there are at most two, the first child
     void* m_childrenOrFirstChild;
 
+    NodeID* m_children;
+
     // The number of children, in case it is greater than 2, or the second child (if negative)
     int m_noOfChildren;
 
@@ -57,6 +59,10 @@ public:
     NodeID getChild(int alt);
 
     NodeID getParent() const;
+
+    ~Node();
+    Node& operator=(const Node&) = delete;
+    Node(const Node&) = delete;
 
 };
 

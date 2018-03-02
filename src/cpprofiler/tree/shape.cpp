@@ -24,6 +24,12 @@ namespace cpprofiler { namespace tree {
 
     }
 
+    Shape& Shape::operator=(const Shape& s) {
+        m_extents = s.m_extents;
+        m_bb = s.m_bb;
+        return *this;
+    }
+
     std::ostream& operator<<(std::ostream& os, const cpprofiler::tree::Shape& s) {
         os << "{ depth: " << s.depth() << ", [ ";
         

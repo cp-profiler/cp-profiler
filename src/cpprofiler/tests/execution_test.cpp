@@ -28,35 +28,17 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     }
 
-    void run(Conductor& conductor) {
-
-
-        utils::Mutex mutex;
-
-        {
-            utils::MutexLocker locker(&mutex);
-        }
+    void binary_tree_execution(Conductor& conductor) {
 
         auto ex = new Execution("test execution");
 
         conductor.addNewExecution(ex);
-
-        // auto& tree = ex->tree_structure();
-
-        // auto nid = tree.createRoot(2);
-
-        // auto n1 = tree.getChild(nid, 0);
-        // auto n2 = tree.getChild(nid, 1);
-
-        // tree.resetNumberOfChildren(n1, 2);
-
 
         auto& tree = ex->tree();
 
         auto root = tree.addNode(tree::NodeID::NoNode, -1, 2, tree::NodeStatus::BRANCH);
         auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH);
         auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH);
-
 
         conductor.getExecutionWindow(ex).traditional_view().selectNode(n1);
 
@@ -112,25 +94,88 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto n32 =  tree.addNode(n29, 1, 0, tree::NodeStatus::FAILED);
 
         conductor.showTraditionalView(ex);
+    }
 
-        // auto n3 = tree.addChild(n1, 0, 0);
-        // auto n4 = tree.addChild(n1, 1, 0);
+    void nary_execution(Conductor& conductor) {
 
-        // auto post_order = tree::helper::postOrder(tree);
+        auto ex = new Execution("n-ary execution");
 
-        // for (auto i : post_order) {
-        //     std::cerr << i << " ";
-        // }
-        // std::cerr << std::endl;
+        conductor.addNewExecution(ex);
 
-        // auto pre_order = tree::helper::preOrder(tree);
+        auto& tree = ex->tree();
 
-        // for (auto i : pre_order) {
-        //     std::cerr << i << " ";
-        // }
-        // std::cerr << std::endl;
+        auto root = tree.addNode(tree::NodeID::NoNode, -1, 4, tree::NodeStatus::BRANCH);
+        auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH);
+        auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH);
+        auto n3 =  tree.addNode(root, 2, 0, tree::NodeStatus::FAILED);
+        auto n4 =  tree.addNode(root, 3, 2, tree::NodeStatus::BRANCH);
 
-        array_test();
+        auto n5 =  tree.addNode(n1, 0, 0, tree::NodeStatus::FAILED);
+        auto n6 =  tree.addNode(n1, 1, 0, tree::NodeStatus::FAILED);
+
+        auto n7 =  tree.addNode(n2, 0, 0, tree::NodeStatus::FAILED);
+        auto n8 =  tree.addNode(n2, 1, 2, tree::NodeStatus::BRANCH);
+
+        auto n9 =  tree.addNode(n4, 0, 0, tree::NodeStatus::FAILED);
+        auto n10 =  tree.addNode(n4, 1, 0, tree::NodeStatus::FAILED);
+
+        auto n11 =  tree.addNode(n8, 0, 0, tree::NodeStatus::FAILED);
+        auto n12 =  tree.addNode(n8, 1, 0, tree::NodeStatus::FAILED);
+    }
+
+    void larger_nary_execution(Conductor& conductor) {
+
+        auto ex = new Execution("n-ary execution");
+
+        conductor.addNewExecution(ex);
+
+        auto& tree = ex->tree();
+
+        auto root = tree.addNode(tree::NodeID::NoNode, -1, 4, tree::NodeStatus::BRANCH);
+        auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH);
+        auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH);
+        auto n3 =  tree.addNode(root, 2, 0, tree::NodeStatus::FAILED);
+        auto n4 =  tree.addNode(root, 3, 2, tree::NodeStatus::BRANCH);
+
+        auto n5 =  tree.addNode(n1, 0, 0, tree::NodeStatus::FAILED);
+        auto n6 =  tree.addNode(n1, 1, 4, tree::NodeStatus::BRANCH);
+
+            auto n6a =  tree.addNode(n6, 0, 0, tree::NodeStatus::FAILED);
+            auto n6b =  tree.addNode(n6, 1, 0, tree::NodeStatus::FAILED);
+            auto n6c =  tree.addNode(n6, 2, 0, tree::NodeStatus::FAILED);
+            auto n6d =  tree.addNode(n6, 3, 0, tree::NodeStatus::FAILED);
+
+        auto n7 =  tree.addNode(n2, 0, 0, tree::NodeStatus::FAILED);
+        auto n8 =  tree.addNode(n2, 1, 2, tree::NodeStatus::BRANCH);
+
+        auto n9 =  tree.addNode(n4, 0, 0, tree::NodeStatus::FAILED);
+        auto n10 =  tree.addNode(n4, 1, 0, tree::NodeStatus::FAILED);
+
+        auto n11 =  tree.addNode(n8, 0, 0, tree::NodeStatus::FAILED);
+        auto n12 =  tree.addNode(n8, 1, 0, tree::NodeStatus::FAILED);
+    }
+
+    void simple_nary_execution(Conductor& conductor) {
+
+        auto ex = new Execution("n-ary execution");
+
+        conductor.addNewExecution(ex);
+
+        auto& tree = ex->tree();
+
+        auto root = tree.addNode(tree::NodeID::NoNode, -1, 4, tree::NodeStatus::BRANCH);
+        auto n1 =  tree.addNode(root, 0, 0, tree::NodeStatus::FAILED);
+        auto n2 =  tree.addNode(root, 1, 0, tree::NodeStatus::FAILED);
+        auto n3 =  tree.addNode(root, 2, 0, tree::NodeStatus::FAILED);
+        auto n4 =  tree.addNode(root, 3, 0, tree::NodeStatus::FAILED);
+    }
+
+    void run(Conductor& conductor) {
+
+        // binary_tree_execution(conductor);
+        // simple_nary_execution(conductor);
+        nary_execution(conductor);
+        larger_nary_execution(conductor);
 
     }
 

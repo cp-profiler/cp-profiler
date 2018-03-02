@@ -47,6 +47,7 @@ namespace cpprofiler { namespace tree {
             default: {
                 setTag(Tag::MORE_CHILDREN);
                 m_noOfChildren = n;
+                m_children = new NodeID[n];
             } break;
         }
 
@@ -54,9 +55,18 @@ namespace cpprofiler { namespace tree {
 
     void Node::resetNumberOfChildren(int n) {
         // can only change from 0 to 2 for now
-        if (getNumberOfChildren() != 0 || n != 2) throw std::exception();
+        if (getNumberOfChildren() != 0) throw std::exception();
 
-        setTag(Tag::TWO_CHILDREN);
+        if (n == 2) {
+            setTag(Tag::TWO_CHILDREN);
+        }
+
+        if (n > 2) {
+            setTag(Tag::MORE_CHILDREN);
+            m_noOfChildren = n;
+            m_children = new NodeID[n];
+        }
+
     }
 
     Node::Node(NodeID parent_nid, int kids) : m_parent(parent_nid) {
@@ -79,7 +89,7 @@ namespace cpprofiler { namespace tree {
                 m_noOfChildren = -static_cast<int>(nid);
             }
         } else {
-
+            m_children[alt] = nid;
         }
 
         auto kids2 = getNumberOfChildren();
@@ -102,13 +112,19 @@ namespace cpprofiler { namespace tree {
                 return NodeID{-m_noOfChildren};
             }
         } else {
-            return NodeID{-1};
+            return m_children[alt];
         }
 
     }
 
     NodeID Node::getParent() const {
         return m_parent;
+    }
+
+    Node::~Node() {
+        if (getTag() == Tag::MORE_CHILDREN) {
+            delete[] m_children;
+        }
     }
 
 

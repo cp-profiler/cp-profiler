@@ -25,6 +25,10 @@ public:
 struct BoundingBox {
     int left;
     int right;
+
+    int width() const {
+        return right - left;
+    }
 };
 
 
@@ -45,6 +49,8 @@ class Shape {
 public:
     Shape(int depth);
     ~Shape();
+
+    Shape& operator=(const Shape& s);
 
     Shape(std::initializer_list<Extent> init_list)
     : m_extents{init_list} {}

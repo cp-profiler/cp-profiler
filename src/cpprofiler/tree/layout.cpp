@@ -19,7 +19,6 @@ namespace cpprofiler { namespace tree {
     }
 
     void Layout::setShape_unsafe(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape) {
-
         if (m_shapes.size() <= nid) {
             m_shapes.resize(static_cast<int>(nid)+1);
         }
