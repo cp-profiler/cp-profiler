@@ -49,7 +49,7 @@ Q_OBJECT
     const UserData& m_user_data;
     const Layout& m_layout;
 
-    DisplayState& m_options;
+    DisplayState m_options;
     const NodeFlags& m_node_flags;
 
 
@@ -67,11 +67,12 @@ public:
     TreeScrollArea(const NodeTree&,
                    const UserData&,
                    const Layout&,
-                   DisplayState&,
                    const NodeFlags&);
 
     /// center the x coordinate
     void centerX(int x);
+
+    void setScale(int val);
 
 };
 
@@ -86,8 +87,6 @@ class TraditionalView : public QObject {
     std::unique_ptr<Layout> m_layout;
 
     std::unique_ptr<LayoutComputer> m_layout_computer;
-
-    DisplayState m_options;
     TreeScrollArea m_scroll_area;
 public:
 
@@ -95,6 +94,8 @@ public:
     ~TraditionalView();
 
     QWidget* widget();
+
+    const Layout& layout() const;
 
 signals:
     // void nodeClicked(NodeID nid);

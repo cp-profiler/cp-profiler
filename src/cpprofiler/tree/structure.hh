@@ -3,7 +3,7 @@
 
 #include "node.hh"
 
-#include "../global.hh"
+#include "../core.hh"
 
 #include "memory"
 

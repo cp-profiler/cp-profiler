@@ -7,7 +7,7 @@
 #include <QMutex>
 #include <QObject>
 
-#include "../global.hh"
+#include "../core.hh"
 
 namespace cpprofiler { namespace tree {
 

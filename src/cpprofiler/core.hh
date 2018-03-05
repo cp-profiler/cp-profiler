@@ -4,6 +4,9 @@
 
 #include "tree/node_id.hh"
 #include "utils/debug_mutex.hh"
+#include "utils/std_ext.hh"
 
+
+using cpprofiler::tree::NodeID;
 
 #endif

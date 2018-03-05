@@ -1,7 +1,7 @@
 #ifndef CPPROFILER_TREE_NODE_INFO
 #define CPPROFILER_TREE_NODE_INFO
 
-#include "../global.hh"
+#include "../core.hh"
 
 #include <bitset>
 #include <vector>

@@ -14,6 +14,8 @@
 
 #include "tree/node_tree.hh"
 
+#include "analyses/similar_subtree_window.hh"
+
 #include "stats_bar.hpp"
 
 namespace cpprofiler {
@@ -117,16 +119,26 @@ namespace cpprofiler {
                 auto debugMenu = menuBar->addMenu("&Debug");
 
                 auto computeLayout = new QAction{"Compute layout", this};
-
                 debugMenu->addAction(computeLayout);
-
                 connect(computeLayout, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::forceComputeLayout);
 
                 auto getNodeInfo = new QAction{"Print node info", this};
                 getNodeInfo->setShortcut(QKeySequence("I"));
                 debugMenu->addAction(getNodeInfo);
-
                 connect(getNodeInfo, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::printNodeInfo);
+            }
+
+            {
+                auto analysisMenu = menuBar->addMenu("&Analyses");
+                auto similarSubtree = new QAction{"Similar Subtrees", this};
+                similarSubtree->setShortcut(QKeySequence("Shift+S"));
+                analysisMenu->addAction(similarSubtree);
+
+                const auto& tree_layout = m_traditional_view->layout();
+                connect(similarSubtree, &QAction::triggered, [this, &ex, &tree_layout]() {
+                    auto ssw = new analysis::SimilarSubtreeWindow(this, ex.tree(), tree_layout);
+                    ssw->show();
+                });
             }
 
             // auto debugText = new QTextEdit{this};

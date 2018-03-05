@@ -168,6 +168,11 @@ namespace cpprofiler { namespace tree {
         return {bb.left, bb.right};
     }
 
+    void TreeScrollArea::setScale(int val) {
+        m_options.scale = val / 50.0f;
+        viewport()->update();
+    }
+
     NodeID TreeScrollArea::findNodeClicked(int x, int y) {
 
         using traditional::NODE_WIDTH;
@@ -221,8 +226,8 @@ namespace cpprofiler { namespace tree {
         update();
     }
 
-    TreeScrollArea::TreeScrollArea(const NodeTree& tree, const UserData& user_data, const Layout& layout, DisplayState& options, const NodeFlags& nf)
-        : m_tree(tree), m_user_data(user_data), m_layout(layout), m_options(options), m_node_flags(nf) {
+    TreeScrollArea::TreeScrollArea(const NodeTree& tree, const UserData& user_data, const Layout& layout, const NodeFlags& nf)
+        : m_tree(tree), m_user_data(user_data), m_layout(layout), m_node_flags(nf) {
     }
 
     void TreeScrollArea::centerX(int x) {
@@ -243,7 +248,7 @@ TraditionalView::TraditionalView(const NodeTree& tree)
   m_layout(utils::make_unique<Layout>()),
   m_flags(utils::make_unique<NodeFlags>()),
   m_layout_computer(utils::make_unique<LayoutComputer>(tree, *m_layout, *m_flags)),
-  m_scroll_area(tree, *m_user_data, *m_layout, m_options, *m_flags)
+  m_scroll_area(tree, *m_user_data, *m_layout, *m_flags)
 {
 
     std::cerr << "traditional view thread:" << std::this_thread::get_id() << std::endl;
@@ -356,9 +361,12 @@ QWidget* TraditionalView::widget() {
     return &m_scroll_area;
 }
 
-void TraditionalView::setScale(int scale) {
-    m_options.scale = scale / 50.0f;
-    m_scroll_area.viewport()->update();
+const Layout& TraditionalView::layout() const {
+    return *m_layout;
+}
+
+void TraditionalView::setScale(int val) {
+    m_scroll_area.setScale(val);
 }
 
 /// relative to the root

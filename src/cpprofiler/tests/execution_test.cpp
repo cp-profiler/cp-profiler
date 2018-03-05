@@ -1,6 +1,6 @@
 #include "execution_test.hh"
 
-#include "../global.hh"
+#include "../core.hh"
 #include "../conductor.hh"
 #include "../user_data.hh"
 
@@ -174,7 +174,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         // binary_tree_execution(conductor);
         // simple_nary_execution(conductor);
-        nary_execution(conductor);
+        // nary_execution(conductor);
         larger_nary_execution(conductor);
 
     }
