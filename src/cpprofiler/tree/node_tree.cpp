@@ -35,11 +35,12 @@ NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus s
     auto nodes_created = 0;
 
     NodeID nid;
-    if (parent_id == tree::NodeID::NoNode) {
+    if (parent_id == NodeID::NoNode) {
 
         nid = m_structure->createRoot(kids);
         m_node_info->addEntry(nid);
         nodes_created += (1 + kids);
+
     } else {
         nid = m_structure->getChild(parent_id, alt);
 
@@ -79,6 +80,9 @@ NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus s
         } break;
     }
 
+    auto cur_depth = m_structure->calculateDepth(nid);
+    m_node_stats.inform_depth(cur_depth);
+
     emit structureUpdated();
     emit nodesCreated(nodes_created);
 
@@ -89,8 +93,36 @@ int NodeTree::nodeCount() const {
     return m_structure->nodeCount();
 }
 
+NodeID NodeTree::getParent(NodeID nid) const {
+    return m_structure->getParent(nid);
+}
+
+NodeID NodeTree::getChild(NodeID nid, int alt) const {
+    return m_structure->getChild(nid, alt);
+}
+
 const NodeStats& NodeTree::node_stats() const {
     return m_node_stats;
+}
+
+NodeStatus NodeTree::status(NodeID nid) const {
+    m_node_info->getStatus(nid);
+}
+
+int NodeTree::depth() const {
+    m_node_stats.max_depth();
+}
+
+int NodeTree::calculateDepth(NodeID nid) const {
+    return m_structure->calculateDepth(nid);
+}
+
+int NodeTree::getAlternative(NodeID nid) const {
+    return m_structure->getAlternative(nid);
+}
+
+int NodeTree::getNumberOfChildren(NodeID nid) const {
+    return m_structure->getNumberOfChildren(nid);
 }
 
 

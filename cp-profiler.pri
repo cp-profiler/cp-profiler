@@ -53,12 +53,14 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/traditional_view.hh \
     $$PWD/src/cpprofiler/tree/subtree_view.hh \
     $$PWD/src/cpprofiler/tree/cursors/node_cursor.hh \
+    $$PWD/src/cpprofiler/tree/cursors/height_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/layout_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hh \
     $$PWD/src/cpprofiler/core.hh \
     $$PWD/src/cpprofiler/utils/debug_mutex.hh \
     $$PWD/src/cpprofiler/analyses/similar_subtree_window.hh \
+    $$PWD/src/cpprofiler/analyses/subtree_pattern.hh \
     $$PWD/src/cpprofiler/analyses/histogram_scene.hh \
 
 SOURCES += \

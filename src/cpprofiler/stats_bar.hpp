@@ -51,6 +51,7 @@ public slots:
 
   void update() {
 
+      depthLabel->setNum(stats.max_depth());
       openLabel->setNum(stats.undetermined_count());
       solvedLabel->setNum(stats.solved_count());
       failedLabel->setNum(stats.failed_count());

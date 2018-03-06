@@ -127,5 +127,26 @@ namespace cpprofiler { namespace tree {
         }
     }
 
+    QDebug&& operator<<(QDebug&& out, NodeStatus status) {
+        switch (status) {
+            case NodeStatus::SOLVED: {
+                out << "SOLVED";
+            } break;
+            case NodeStatus::FAILED: {
+                out << "FAILED";
+            } break;
+            case NodeStatus::BRANCH: {
+                out << "BRANCH";
+            } break;
+            case NodeStatus::SKIPPED: {
+                out << "SKIPPED";
+            } break;
+            case NodeStatus::UNDETERMINED: {
+                out << "UNDETERMINED";
+            } break;
+        }
+        return std::move(out);
+    }
+
 
 }}

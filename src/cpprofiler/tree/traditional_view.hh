@@ -5,6 +5,7 @@
 #include <QAbstractScrollArea>
 
 #include <memory>
+#include <set>
 #include "node_id.hh"
 
 namespace cpprofiler {
@@ -33,7 +34,13 @@ class NodeFlags {
 
     std::vector<bool> m_node_hidden;
 
-    void ensure_id_exists(int id);
+    std::vector<bool> m_shape_highlighted;
+
+    /// this duplicates m_shape_highlighted, but more suitable for
+    /// unhighlighting previously highlighted
+    std::set<NodeID> m_highlighted_shapes;
+
+    void ensure_id_exists(NodeID id);
 
 public:
     void set_label_shown(NodeID nid, bool val);
@@ -41,6 +48,11 @@ public:
 
     void set_hidden(NodeID nid, bool val);
     bool get_hidden(NodeID nid) const;
+
+    void set_highlighted(NodeID nid, bool val);
+    bool get_highlighted(NodeID nid) const;
+
+    void unhighlight_all();
 };
 
 class TreeScrollArea : public QAbstractScrollArea {
@@ -52,6 +64,7 @@ Q_OBJECT
     DisplayState m_options;
     const NodeFlags& m_node_flags;
 
+    NodeID m_start_node;
 
     QPoint getNodeCoordinate(NodeID nid);
     NodeID findNodeClicked(int x, int y);
@@ -64,7 +77,8 @@ signals:
 
 public:
 
-    TreeScrollArea(const NodeTree&,
+    TreeScrollArea(NodeID start,
+                   const NodeTree&,
                    const UserData&,
                    const Layout&,
                    const NodeFlags&);
@@ -73,6 +87,8 @@ public:
     void centerX(int x);
 
     void setScale(int val);
+
+    void changeStartNode(NodeID nid);
 
 };
 
@@ -87,7 +103,11 @@ class TraditionalView : public QObject {
     std::unique_ptr<Layout> m_layout;
 
     std::unique_ptr<LayoutComputer> m_layout_computer;
-    TreeScrollArea m_scroll_area;
+    std::unique_ptr<TreeScrollArea> m_scroll_area;
+
+
+    /// returns currently selected node; can be NodeID::NoNode
+    NodeID node() const;
 public:
 
     TraditionalView(const NodeTree& tree);
@@ -116,6 +136,8 @@ public slots:
     void toggleShowLabel();
     void toggleHideFailed();
 
+    void toggleHighlighted();
+
     void selectNode(NodeID nid);
 
     void forceComputeLayout();
@@ -123,6 +145,8 @@ public slots:
     void setLayoutOutdated();
 
     void printNodeInfo();
+
+    void highlight_subtrees(const std::vector<NodeID>& nodes);
 
 
 };

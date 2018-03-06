@@ -13,6 +13,7 @@ struct NodeID {
 
     operator int() const { return id; }
     explicit NodeID(int nid = -1): id(nid) { }
+
 };
 
 }}

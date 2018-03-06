@@ -68,6 +68,9 @@ public:
     int getAlternative(NodeID nid) const;
     int getAlternative_unsafe(NodeID nid) const;
 
+    int calculateDepth(NodeID nid) const;
+    int calculateDepth_unsafe(NodeID nid) const;
+
     int nodeCount() const;
 
 };
@@ -82,6 +85,8 @@ std::vector<NodeID> postOrder(const Structure& tree);
 std::vector<NodeID> postOrder_unsafe(const Structure& tree);
 
 std::vector<NodeID> preOrder(const Structure& tree);
+
+std::vector<NodeID> anyOrder(const Structure& tree);
 
 
 }}}

@@ -87,7 +87,7 @@ namespace cpprofiler { namespace tree {
         }
 
         painter.drawRect(x - HALF_FAILED_WIDTH, y, FAILED_WIDTH, FAILED_WIDTH);
-        painter.drawRect(x, y, 2, 2);
+        // painter.drawRect(x, y, 2, 2);
     }
 
     static void drawUndeterminedNode(QPainter& painter, int x, int y, bool selected, bool phantom) {
@@ -140,6 +140,11 @@ namespace cpprofiler { namespace tree {
 
     static void drawShape(QPainter& painter, int x, int y, NodeID nid, const Layout& layout) {
         using namespace traditional;
+
+        auto old_pen = painter.pen();
+        auto old_brush = painter.brush();
+
+        painter.setBrush(QColor{0, 0, 0, 50});
         painter.setPen(Qt::NoPen);
 
         auto& shape = layout.getShape_unsafe(nid);
@@ -165,6 +170,9 @@ namespace cpprofiler { namespace tree {
         painter.drawConvexPolygon(points, shape.depth() * 2);
 
         delete[] points;
+
+        painter.setPen(old_pen);
+        painter.setBrush(old_brush);
     }
 
     void DrawingCursor::processCurrentNode() {
@@ -199,6 +207,20 @@ namespace cpprofiler { namespace tree {
             m_painter.drawText(QPoint{cur_x, cur_y}, "hello");
         }
 
+        if (m_flags.get_highlighted(m_cur_node)) {
+            drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
+        }
+
+                /// draw bounding box and shape
+        if (m_user_data.getSelectedNode() == m_cur_node) {
+            m_painter.setBrush(QColor{0, 0, 0, 20});
+            auto bb = m_layout.getBoundingBox_unsafe(m_cur_node);
+
+            auto height = m_layout.getDepth_unsafe(m_cur_node) * Layout::dist_y;
+            m_painter.drawRect(cur_x + bb.left, cur_y, bb.right - bb.left, height);
+            // drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
+        }
+
         switch (status) {
             case NodeStatus::SOLVED: {
                 drawSolutionNode(m_painter, cur_x, cur_y, selected, phantom_node);
@@ -215,19 +237,6 @@ namespace cpprofiler { namespace tree {
             default: {
                 drawUndeterminedNode(m_painter, cur_x, cur_y, selected, phantom_node);
             } break;
-        }
-
-        /// draw bounding box
-        if (m_user_data.getSelectedNode() == m_cur_node) {
-            m_painter.setBrush(QColor{0, 0, 0, 20});
-            auto bb = m_layout.getBoundingBox_unsafe(m_cur_node);
-
-            auto height = m_layout.getDepth_unsafe(m_cur_node) * Layout::dist_y;
-            m_painter.drawRect(cur_x + bb.left, cur_y, bb.right - bb.left, height);
-
-
-            m_painter.setBrush(QColor{0, 0, 0, 80});
-            drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
         }
     }
 

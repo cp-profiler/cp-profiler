@@ -59,11 +59,14 @@ namespace cpprofiler { namespace tree {
         QPainter painter(this->viewport());
         painter.setRenderHint(QPainter::Antialiasing);
 
+        if (m_start_node == NodeID::NoNode) { return; }
+
         painter.scale(m_options.scale,m_options.scale);
 
         auto root_nid = m_tree.tree_structure().getRoot();
 
         if (!m_layout.getLayoutDone(root_nid)) { return; }
+
         auto bb = m_layout.getBoundingBox(root_nid);
 
         auto tree_width = bb.right - bb.left;
@@ -132,7 +135,7 @@ namespace cpprofiler { namespace tree {
         utils::MutexLocker t_lock(&tree_mutex);
         utils::MutexLocker l_lock(&layout_mutex);
 
-        DrawingCursor dc(m_tree.tree_structure().getRoot_unsafe(), m_tree, m_layout, m_user_data, m_node_flags, painter, start_pos, clip);
+        DrawingCursor dc(m_start_node, m_tree, m_layout, m_user_data, m_node_flags, painter, start_pos, clip);
         PreorderNodeVisitor<DrawingCursor>(dc).run();
         // perfHelper.end();
 
@@ -226,8 +229,8 @@ namespace cpprofiler { namespace tree {
         update();
     }
 
-    TreeScrollArea::TreeScrollArea(const NodeTree& tree, const UserData& user_data, const Layout& layout, const NodeFlags& nf)
-        : m_tree(tree), m_user_data(user_data), m_layout(layout), m_node_flags(nf) {
+    TreeScrollArea::TreeScrollArea(NodeID start, const NodeTree& tree, const UserData& user_data, const Layout& layout, const NodeFlags& nf)
+        : m_start_node(start), m_tree(tree), m_user_data(user_data), m_layout(layout), m_node_flags(nf) {
     }
 
     void TreeScrollArea::centerX(int x) {
@@ -235,6 +238,10 @@ namespace cpprofiler { namespace tree {
         auto h_page_step = viewport_size.width() / m_options.scale;
         auto value = std::max(0, static_cast<int>(x - h_page_step/2));
         horizontalScrollBar()->setValue(value);
+    }
+
+    void TreeScrollArea::changeStartNode(NodeID nid) {
+        m_start_node = nid;
     }
 
 
@@ -247,20 +254,22 @@ TraditionalView::TraditionalView(const NodeTree& tree)
   m_user_data(utils::make_unique<UserData>()),
   m_layout(utils::make_unique<Layout>()),
   m_flags(utils::make_unique<NodeFlags>()),
-  m_layout_computer(utils::make_unique<LayoutComputer>(tree, *m_layout, *m_flags)),
-  m_scroll_area(tree, *m_user_data, *m_layout, *m_flags)
+  m_layout_computer(utils::make_unique<LayoutComputer>(tree, *m_layout, *m_flags))
 {
+
+    auto root_node = m_tree.getRoot();
+    m_scroll_area.reset(new TreeScrollArea(root_node, tree, *m_user_data, *m_layout, *m_flags));
 
     std::cerr << "traditional view thread:" << std::this_thread::get_id() << std::endl;
 
     // m_scroll_area
-    m_scroll_area.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    m_scroll_area.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    m_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    m_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-    connect(&m_scroll_area, &TreeScrollArea::nodeClicked, this, &TraditionalView::selectNode);
+    connect(m_scroll_area.get(), &TreeScrollArea::nodeClicked, this, &TraditionalView::selectNode);
 
     connect(this, &TraditionalView::needsRedrawing, [this]() {
-        m_scroll_area.viewport()->update();
+        m_scroll_area->viewport()->update();
     });
 
     connect(&tree, &NodeTree::childrenStructureChanged, [this](NodeID nid) {
@@ -276,6 +285,10 @@ TraditionalView::TraditionalView(const NodeTree& tree)
 }
 
 TraditionalView::~TraditionalView() = default;
+
+NodeID TraditionalView::node() const {
+    return m_user_data->getSelectedNode();
+}
 
 void TraditionalView::navDown() {
     auto cur_nid = m_user_data->getSelectedNode();
@@ -357,8 +370,14 @@ void TraditionalView::toggleHideFailed() {
     qDebug() << "TODO: hide failed";
 }
 
+void TraditionalView::toggleHighlighted() {
+    auto nid = node();
+    auto val = !m_flags->get_highlighted(nid);
+    m_flags->set_highlighted(nid, val);
+}
+
 QWidget* TraditionalView::widget() {
-    return &m_scroll_area;
+    return m_scroll_area.get();
 }
 
 const Layout& TraditionalView::layout() const {
@@ -366,7 +385,7 @@ const Layout& TraditionalView::layout() const {
 }
 
 void TraditionalView::setScale(int val) {
-    m_scroll_area.setScale(val);
+    m_scroll_area->setScale(val);
 }
 
 /// relative to the root
@@ -391,7 +410,7 @@ void TraditionalView::centerNode(NodeID nid) {
 
     auto value = x_offset - bb.left;
 
-    m_scroll_area.centerX(value);
+    m_scroll_area->centerX(value);
 }
 
 void TraditionalView::centerCurrentNode() {
@@ -433,35 +452,44 @@ void TraditionalView::printNodeInfo() {
     qDebug() << "bb:[" << bb.left << "," << bb.right << "]";
 }
 
+void TraditionalView::highlight_subtrees(const std::vector<NodeID>& nodes) {
+
+    m_flags->unhighlight_all();
+
+    for (auto nid : nodes) {
+        m_flags->set_highlighted(nid, true);
+    }
+
+    emit needsRedrawing();
+}
+
 
 }}
 
 
 namespace cpprofiler { namespace tree {
 
-    void NodeFlags::ensure_id_exists(int id) {
-        
+    void NodeFlags::ensure_id_exists(NodeID nid) {
+        auto id = static_cast<int>(nid);
+        if (m_label_shown.size() < id) {
+            m_label_shown.resize(id + 1);
+            m_node_hidden.resize(id + 1);
+            m_shape_highlighted.resize(id + 1);
+        }
     }
 
 
     void NodeFlags::set_label_shown(NodeID nid, bool val) {
-        auto id = static_cast<int>(nid);
-        if (m_label_shown.size() < id) {
-            m_label_shown.resize(id + 1);
-        }
-
-        m_label_shown[id] = val;
+        ensure_id_exists(nid);
+        m_label_shown[nid] = val;
     }
 
     bool NodeFlags::get_label_shown(NodeID nid) const {
 
-        // return true; // TODO
-        auto id = static_cast<int>(nid);
-        if (m_label_shown.size() <= id) {
-            return false;
-        }
+        return false; // TODO
+        // ensure_id_exists(nid);
 
-        return m_label_shown[id];
+        return m_label_shown.at(nid);
     }
 
     void NodeFlags::set_hidden(NodeID nid, bool val) {
@@ -473,5 +501,34 @@ namespace cpprofiler { namespace tree {
     bool NodeFlags::get_hidden(NodeID nid) const {
         return false; // TODO
     }
+
+    void NodeFlags::set_highlighted(NodeID nid, bool val) {
+        ensure_id_exists(nid);
+
+        if (val) {
+            m_highlighted_shapes.insert(nid);
+        } else {
+            m_highlighted_shapes.erase(nid);
+        }
+        m_shape_highlighted[nid] = val;
+    }
+
+    bool NodeFlags::get_highlighted(NodeID nid) const {
+
+        if (m_shape_highlighted.size() <= nid) {
+            return false;
+        }
+        return m_shape_highlighted[nid];
+    }
+
+    void NodeFlags::unhighlight_all() {
+        for (auto nid : m_highlighted_shapes) {
+            m_shape_highlighted[nid] = false;
+        }
+
+        m_highlighted_shapes.clear();
+    }
+
+
 
 }}

@@ -136,6 +136,20 @@ namespace cpprofiler { namespace tree {
         return m_nodes.size();
     }
 
+    int Structure::calculateDepth(NodeID nid) const {
+        utils::MutexLocker locker(&m_structure_mutex);
+        return calculateDepth_unsafe(nid);
+    }
+
+    int Structure::calculateDepth_unsafe(NodeID nid) const {
+        int depth = 0;
+        while (nid != NodeID::NoNode) {
+            nid = getParent_unsafe(nid);
+            ++depth;
+        }
+        return depth;
+    }
+
 }}
 
 
@@ -167,6 +181,20 @@ std::vector<NodeID> postOrder(const Structure& tree) {
     utils::MutexLocker lock(&tree.getMutex());
     return postOrder_unsafe(tree);
 
+}
+
+std::vector<NodeID> anyOrder(const Structure& tree) {
+    utils::MutexLocker lock(&tree.getMutex());
+
+    auto count = tree.nodeCount_unsafe();
+    std::vector<NodeID> result;
+    result.reserve(count);
+
+    for (auto i = 0; i < count; ++i) {
+        result.push_back(NodeID(i));
+    }
+
+    return result;
 }
 
 std::vector<NodeID> postOrder_unsafe(const Structure& tree) {

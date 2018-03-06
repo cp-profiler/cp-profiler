@@ -5,11 +5,14 @@
 #include <QDialog>
 #include <memory>
 
+#include "../core.hh"
+
 class QGraphicsScene;
 
 namespace cpprofiler { namespace tree {
     class NodeTree;
     class Layout;
+    class SubtreeView;
 }}
 
 namespace cpprofiler { namespace analysis {
@@ -17,7 +20,7 @@ namespace cpprofiler { namespace analysis {
 class HistogramScene;
 
 class SimilarSubtreeWindow : public QDialog {
-
+Q_OBJECT
 private:
 
     // void analyse_shapes();
@@ -27,12 +30,18 @@ private:
 
     std::unique_ptr<HistogramScene> m_histogram;
 
+    std::unique_ptr<tree::SubtreeView> m_subtree_view;
+
 public:
     SimilarSubtreeWindow(QWidget* parent, const tree::NodeTree& nt, const tree::Layout& lo);
 
+    ~SimilarSubtreeWindow();
+
     void analyse();
 
+signals:
 
+    void should_be_highlighted(const std::vector<NodeID>& nodes);
 
 };
 

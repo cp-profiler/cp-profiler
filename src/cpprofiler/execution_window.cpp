@@ -112,6 +112,11 @@ namespace cpprofiler {
                 nodeMenu->addAction(toggleHideFailed);
                 connect(toggleHideFailed, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::toggleHideFailed);
 
+                auto toggleHighlighted = new QAction{"Toggle hide failed", this};
+                toggleHighlighted->setShortcut(QKeySequence("H"));
+                nodeMenu->addAction(toggleHighlighted);
+                connect(toggleHighlighted, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::toggleHighlighted);
+
             }
 
 
@@ -135,9 +140,13 @@ namespace cpprofiler {
                 analysisMenu->addAction(similarSubtree);
 
                 const auto& tree_layout = m_traditional_view->layout();
+
                 connect(similarSubtree, &QAction::triggered, [this, &ex, &tree_layout]() {
                     auto ssw = new analysis::SimilarSubtreeWindow(this, ex.tree(), tree_layout);
                     ssw->show();
+
+                    connect(ssw, &analysis::SimilarSubtreeWindow::should_be_highlighted,
+                        m_traditional_view.get(), &tree::TraditionalView::highlight_subtrees);
                 });
             }
 

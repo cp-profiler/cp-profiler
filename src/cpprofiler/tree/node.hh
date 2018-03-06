@@ -20,6 +20,8 @@ enum class NodeStatus  {
     UNDETERMINED = 4
 };
 
+QDebug&& operator<<(QDebug&& out, NodeStatus status);
+
 class Node {
 private:
     enum class Tag {

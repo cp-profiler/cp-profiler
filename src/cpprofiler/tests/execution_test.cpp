@@ -170,12 +170,84 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto n4 =  tree.addNode(root, 3, 0, tree::NodeStatus::FAILED);
     }
 
+    void binary_test_1_for_identical_subtrees(Conductor& conductor) {
+
+        auto ex = new Execution("test for identical subtree algorithm");
+
+        conductor.addNewExecution(ex);
+
+        auto& tree = ex->tree();
+
+        auto root = tree.addNode(tree::NodeID::NoNode, -1, 2, tree::NodeStatus::BRANCH);
+        auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH);
+        auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH);
+
+        auto n3 =  tree.addNode(n1, 0, 2, tree::NodeStatus::BRANCH);
+        auto n4 =  tree.addNode(n1, 1, 2, tree::NodeStatus::BRANCH);
+        auto n11 =  tree.addNode(n2, 0, 0, tree::NodeStatus::FAILED);
+        auto n12 =  tree.addNode(n2, 1, 2, tree::NodeStatus::BRANCH);
+
+        auto n5 =  tree.addNode(n3, 0, 0, tree::NodeStatus::FAILED);
+        auto n6 =  tree.addNode(n3, 1, 2, tree::NodeStatus::BRANCH);
+        auto n9 =  tree.addNode(n4, 0, 0, tree::NodeStatus::FAILED);
+        auto n10 =  tree.addNode(n4, 1, 0, tree::NodeStatus::FAILED);
+        auto n13 =  tree.addNode(n12, 0, 0, tree::NodeStatus::FAILED);
+        auto n14 =  tree.addNode(n12, 1, 0, tree::NodeStatus::FAILED);
+
+        auto n7 =  tree.addNode(n6, 0, 0, tree::NodeStatus::FAILED);
+        auto n8 =  tree.addNode(n6, 1, 0, tree::NodeStatus::FAILED);
+
+    }
+
+    void binary_test_2_for_identical_subtrees(Conductor& conductor) {
+
+        auto ex = new Execution("test for identical subtree algorithm");
+
+        conductor.addNewExecution(ex);
+
+        auto& tree = ex->tree();
+
+        auto root = tree.addNode(tree::NodeID::NoNode, -1, 2, tree::NodeStatus::BRANCH);
+        auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH);
+        auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH);
+
+        auto n3 =  tree.addNode(n1, 0, 2, tree::NodeStatus::BRANCH);
+        auto n4 =  tree.addNode(n1, 1, 2, tree::NodeStatus::BRANCH);
+        auto n11 =  tree.addNode(n2, 0, 2, tree::NodeStatus::BRANCH);
+        auto n12 =  tree.addNode(n2, 1, 2, tree::NodeStatus::BRANCH);
+
+        auto n5 =  tree.addNode(n3, 0, 0, tree::NodeStatus::FAILED);
+        auto n6 =  tree.addNode(n3, 1, 0, tree::NodeStatus::FAILED);
+        auto n9 =  tree.addNode(n4, 0, 0, tree::NodeStatus::FAILED);
+        auto n10 =  tree.addNode(n4, 1, 2, tree::NodeStatus::BRANCH);
+        auto n13 =  tree.addNode(n12, 0, 2, tree::NodeStatus::BRANCH);
+        auto n14 =  tree.addNode(n12, 1, 2, tree::NodeStatus::BRANCH);
+
+        auto n15 =  tree.addNode(n10, 0, 0, tree::NodeStatus::FAILED);
+        auto n16 =  tree.addNode(n10, 1, 0, tree::NodeStatus::FAILED);
+
+        auto n17 =  tree.addNode(n11, 0, 0, tree::NodeStatus::FAILED);
+        auto n18 =  tree.addNode(n11, 1, 0, tree::NodeStatus::FAILED);
+
+        auto n19 =  tree.addNode(n13, 0, 0, tree::NodeStatus::FAILED);
+        auto n20 =  tree.addNode(n13, 1, 0, tree::NodeStatus::FAILED);
+
+        auto n21 =  tree.addNode(n14, 0, 0, tree::NodeStatus::FAILED);
+        auto n22 =  tree.addNode(n14, 1, 2, tree::NodeStatus::BRANCH);
+
+        auto n23 =  tree.addNode(n22, 0, 0, tree::NodeStatus::FAILED);
+        auto n24 =  tree.addNode(n22, 1, 0, tree::NodeStatus::FAILED);
+
+    }
+
     void run(Conductor& conductor) {
 
+        // binary_test_1_for_identical_subtrees(conductor);
+        binary_test_2_for_identical_subtrees(conductor);
         // binary_tree_execution(conductor);
         // simple_nary_execution(conductor);
         // nary_execution(conductor);
-        larger_nary_execution(conductor);
+        // larger_nary_execution(conductor);
 
     }
 

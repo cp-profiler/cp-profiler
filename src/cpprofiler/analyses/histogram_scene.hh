@@ -6,6 +6,7 @@
 #include <QGraphicsSimpleTextItem>
 
 #include "../core.hh"
+#include "subtree_pattern.hh"
 
 namespace cpprofiler { namespace analysis {
 
@@ -47,7 +48,7 @@ static void addText(QGraphicsScene& scene, int col, int row,
 
 class PatternRect;
 
-class HistogramScene : QObject {
+class HistogramScene : public QObject {
 Q_OBJECT
     std::unique_ptr<QGraphicsScene> m_scene;
 
@@ -75,18 +76,18 @@ public:
 
     void handleClick(PatternRect* prect);
 
-    template<typename Pattern>
-    void drawPatterns(std::vector<Pattern>& patterns);
+    void drawPatterns(std::vector<SubtreePattern>&& patterns);
 
 signals:
 
     void pattern_selected(NodeID);
+    void should_be_highlighted(const std::vector<NodeID>&);
 
 };
 
 class PatternRect : public QGraphicsRectItem {
 
-    NodeID m_node;
+    SubtreePattern m_pattern;
 
     QGraphicsRectItem visible_rect;
 
@@ -100,9 +101,9 @@ class PatternRect : public QGraphicsRectItem {
     static QColor highlighted_outline;
 
 public:
-    PatternRect(HistogramScene& hist_scene, int x, int y, int width, int height, NodeID nid)
+    PatternRect(HistogramScene& hist_scene, int x, int y, int width, int height, SubtreePattern&& pattern)
     : QGraphicsRectItem(x, y, SELECTION_WIDTH, height),
-      m_node(nid), visible_rect(x, y, width, height), m_hist_scene(hist_scene) {
+      m_pattern(std::move(pattern)), visible_rect(x, y, width, height), m_hist_scene(hist_scene) {
 
         //   setFlag(QGraphicsItem::ItemIsSelectable);
 
@@ -124,7 +125,11 @@ public:
     }
 
     NodeID node() {
-        return m_node;
+        return m_pattern.first();
+    }
+
+    const std::vector<NodeID>& nodes() {
+        return m_pattern.nodes();
     }
 
 };
@@ -134,7 +139,7 @@ inline QColor PatternRect::highlighted_outline{252, 22, 22};
 
 
 
-static void addRect(HistogramScene& hist_scene, int row, int val, NodeID nid) {
+static void addRect(HistogramScene& hist_scene, int row, int val, SubtreePattern&& pattern) {
 
     int x = 0;
     int y = row * ROW_HEIGHT;
@@ -142,7 +147,7 @@ static void addRect(HistogramScene& hist_scene, int row, int val, NodeID nid) {
     int width = val * 40;
 
     /// Note: items will be deleted when the scene is destroyed
-    auto item = new PatternRect{hist_scene, x, y, width, SHAPE_RECT_HEIGHT, nid};
+    auto item = new PatternRect{hist_scene, x, y, width, SHAPE_RECT_HEIGHT, std::move(pattern)};
     item->addToScene();
 }
 
@@ -156,8 +161,7 @@ static void addText(QGraphicsScene& scene, int col, int row, int value) {
     addText(scene, col, row, int_text_item, Align::RIGHT);
 }
 
-template<typename Pattern>
-void HistogramScene::drawPatterns(std::vector<Pattern>& patterns) {
+inline void HistogramScene::drawPatterns(std::vector<SubtreePattern>&& patterns) {
 
     auto& scene = *m_scene.get();
 
@@ -167,13 +171,13 @@ void HistogramScene::drawPatterns(std::vector<Pattern>& patterns) {
 
     int row = 1;
 
-    for (auto& pattern : patterns) {
+    for (auto&& pattern : patterns) {
 
         const auto nid = pattern.first();
         const int count = pattern.count();
         const int height = pattern.height();
 
-        addRect(*this, row, count, nid);
+        addRect(*this, row, count, std::move(pattern));
 
         addText(scene, 0, row, height);
         addText(scene, 1, row, count);
@@ -187,6 +191,8 @@ inline void HistogramScene::handleClick(PatternRect* prect) {
 
 
     emit pattern_selected(prect->node());
+
+    emit should_be_highlighted(prect->nodes());
 
     {
         if (prect == m_selected) {
