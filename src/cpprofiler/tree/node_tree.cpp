@@ -130,6 +130,18 @@ int NodeTree::getAlternative(NodeID nid) const {
     return m_structure->getAlternative(nid);
 }
 
+bool NodeTree::isRightMostChild_unsafe(NodeID nid) const {
+    // QMutexLocker lock(&m_structure->getMutex());
+    auto pid = m_structure->getParent_unsafe(nid);
+
+    /// root is treated as the left-most child
+    if (pid == NodeID::NoNode) return false;
+
+    auto kids = m_structure->getNumberOfChildren_unsafe(pid);
+    auto alt = m_structure->getAlternative_unsafe(nid);
+    if (alt == kids-1) { return true; } else { return false; }
+}
+
 int NodeTree::getNumberOfChildren(NodeID nid) const {
     return m_structure->getNumberOfChildren(nid);
 }

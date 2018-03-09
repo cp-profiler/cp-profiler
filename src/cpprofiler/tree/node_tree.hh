@@ -129,6 +129,9 @@ public:
 
     int getAlternative(NodeID nid) const;
 
+    /// whether the node is the right-most child
+    bool isRightMostChild_unsafe(NodeID nid) const;
+
     int getNumberOfChildren(NodeID nid) const;
 
     NodeID getParent(NodeID nid) const;

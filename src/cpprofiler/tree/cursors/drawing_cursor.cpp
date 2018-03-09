@@ -203,11 +203,22 @@ namespace cpprofiler { namespace tree {
 
         auto selected = (m_user_data.getSelectedNode() == m_cur_node) ? true : false;
 
-
+        /// NOTE: this should be consisten with the layout
         if (m_flags.get_label_shown(m_cur_node)) {
+
+            auto draw_left = !m_node_tree.isRightMostChild_unsafe(m_cur_node);
             // m_painter.setPen(QPen{Qt::black, 2});
             const auto& label = m_node_tree.getLabel(m_cur_node);
-            m_painter.drawText(QPoint{cur_x, cur_y}, label.c_str());
+
+            int label_x;
+            if (draw_left) {
+                label_x = cur_x - HALF_NODE_WIDTH - label.size() * 10;
+            } else {
+                label_x = cur_x + HALF_NODE_WIDTH;
+            }
+
+
+            m_painter.drawText(QPoint{label_x, cur_y}, label.c_str());
         }
 
         if (m_flags.get_highlighted(m_cur_node)) {

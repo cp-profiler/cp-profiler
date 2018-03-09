@@ -12,6 +12,7 @@ namespace cpprofiler { namespace tree {
 class LayoutCursor : public UnsafeNodeCursor {
 
     Layout& m_layout;
+    const NodeTree& m_nt;
     const Structure& m_tree;
     const NodeFlags& m_node_flags;
 

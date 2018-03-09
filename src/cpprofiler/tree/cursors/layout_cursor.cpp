@@ -20,7 +20,7 @@
 namespace cpprofiler { namespace tree {
 
     LayoutCursor::LayoutCursor(NodeID start, const NodeTree& tree, const NodeFlags& nf, Layout& lo)
-        : UnsafeNodeCursor(start, tree), m_layout(lo), m_tree(tree.tree_structure()), m_node_flags(nf) {}
+        : UnsafeNodeCursor(start, tree), m_layout(lo), m_nt(tree), m_tree(tree.tree_structure()), m_node_flags(nf) {}
 
     bool LayoutCursor::mayMoveDownwards() {
         return UnsafeNodeCursor::mayMoveDownwards() &&
@@ -66,9 +66,6 @@ namespace cpprofiler { namespace tree {
                                            s2.boundingBox().right + half_dist);
             combined->setBoundingBox(BoundingBox{bb_left, bb_right});
         }
-
-        /// if no labels are displayed for the root (current) node
-        (*combined)[0] = {-traditional::HALF_NODE_WIDTH, traditional::HALF_NODE_WIDTH};
 
         offsets[0] = -half_dist; offsets[1] = half_dist;
 
@@ -135,7 +132,33 @@ namespace cpprofiler { namespace tree {
         return result;
     }
 
-    static inline void computeForNodeBinary(NodeID nid, Layout& layout, const Structure& tree, const NodeFlags& nf) {
+    static Extent calculateForSingleNode(NodeID nid, const NodeTree& nt, const NodeFlags& nf) {
+
+        Extent result{-traditional::HALF_NODE_WIDTH, traditional::HALF_NODE_WIDTH};
+        /// see if the node dispays labels and needs its (top) extents extended
+        if (nf.get_label_shown(nid)) {
+
+            auto& tree = nt.tree_structure();
+
+            /// Note that labels are shown on the left for all alt
+            /// except the last one (right-most)
+            const auto& label = nt.getLabel(nid);
+            auto label_width = label.size() * 10;
+
+            bool draw_left = nt.isRightMostChild_unsafe(nid) ? false : true;
+
+            if (draw_left) {
+                result.l -= label_width;
+            } else {
+                result.r += label_width;
+            }
+        }
+        return result;
+    }
+
+    static inline void computeForNodeBinary(NodeID nid, Layout& layout, const NodeTree& nt, const NodeFlags& nf) {
+
+        auto& tree = nt.tree_structure();
         auto kid_l = tree.getChild_unsafe(nid, 0);
         auto kid_r = tree.getChild_unsafe(nid, 1);
 
@@ -144,12 +167,7 @@ namespace cpprofiler { namespace tree {
 
         std::vector<int> offsets(2);
         auto combined = combine_shapes(s1, s2, offsets);
-
-        /// see if the node dispays labels and needs its (top) extents extended
-        if (nf.get_label_shown(nid)) {
-            (*combined)[0] = {-traditional::HALF_NODE_WIDTH - 20,
-                              traditional::HALF_NODE_WIDTH + 20};
-        }
+        (*combined)[0] = calculateForSingleNode(nid, nt, nf);
 
         layout.setShape_unsafe(nid, std::move(combined));
 
@@ -310,7 +328,7 @@ namespace cpprofiler { namespace tree {
         }
 
         if (nkids == 2) {
-            computeForNodeBinary(nid, m_layout, m_tree, m_node_flags);
+            computeForNodeBinary(nid, m_layout, m_nt, m_node_flags);
         }
 
         if (nkids > 2) {
