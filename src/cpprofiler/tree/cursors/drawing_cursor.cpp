@@ -6,6 +6,8 @@
 #include "../../user_data.hh"
 #include "../traditional_view.hh"
 
+#include "../node_tree.hh"
+
 #include <QDebug>
 #include <QPainter>
 
@@ -37,7 +39,7 @@ namespace cpprofiler { namespace tree {
 
     DrawingCursor::DrawingCursor(NodeID start, const NodeTree& tree,
         const Layout& layout, const UserData& user_data, const NodeFlags& flags, QPainter& painter, QPoint start_pos, const QRect& clip)
-    : UnsafeNodeCursor(start, tree), m_layout(layout), m_user_data(user_data), m_flags(flags), m_painter(painter), clippingRect(clip) {
+    : UnsafeNodeCursor(start, tree), m_node_tree(tree), m_layout(layout), m_user_data(user_data), m_flags(flags), m_painter(painter), clippingRect(clip) {
         cur_x = start_pos.x(); cur_y = start_pos.y();
     }
 
@@ -204,7 +206,8 @@ namespace cpprofiler { namespace tree {
 
         if (m_flags.get_label_shown(m_cur_node)) {
             // m_painter.setPen(QPen{Qt::black, 2});
-            m_painter.drawText(QPoint{cur_x, cur_y}, "hello");
+            const auto& label = m_node_tree.getLabel(m_cur_node);
+            m_painter.drawText(QPoint{cur_x, cur_y}, label.c_str());
         }
 
         if (m_flags.get_highlighted(m_cur_node)) {

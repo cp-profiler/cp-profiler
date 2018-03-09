@@ -34,10 +34,11 @@ class DrawingCursor : public UnsafeNodeCursor {
 
     const Layout& m_layout;
 
+    const NodeTree& m_node_tree;
+
     const UserData& m_user_data;
 
     const NodeFlags& m_flags;
-
 
     QPainter& m_painter;
     QRect clippingRect;

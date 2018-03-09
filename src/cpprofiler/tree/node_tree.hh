@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <memory>
+#include <string>
+#include <stack>
 #include "node_id.hh"
 #include "node.hh"
 
@@ -81,13 +83,26 @@ signals:
 
 };
 
+using Label = std::string;
+
+static Label emptyLabel = {};
+
+
+/// Node tree encapsulates tree structure,
+/// node statistics (number of nodes etc.),
+/// status for nodes (m_node_info), labels
 class NodeTree : public QObject {
 Q_OBJECT
     std::unique_ptr<Structure> m_structure;
 
     std::unique_ptr<NodeInfo> m_node_info;
 
+    std::vector<Label> m_labels;
+
     NodeStats m_node_stats;
+
+    /// update data structures to contain this node
+    void addEntry(NodeID nid);
 
 public:
 
@@ -102,7 +117,7 @@ public:
 
     NodeStatus status(NodeID nid) const;
 
-    NodeID addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus status);
+    NodeID addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus status, Label = emptyLabel);
 
     /// Total number of nodes (including undetermined)
     int nodeCount() const;
@@ -123,6 +138,13 @@ public:
     /// return the depth of the node
     int calculateDepth(NodeID nid) const;
 
+    const Label& getLabel(NodeID nid) const;
+
+    void setLabel(NodeID nid, const Label& label);
+
+    template<typename Callback>
+    void preOrderApply(NodeID start, Callback cb) const;
+
 
 signals:
 
@@ -134,9 +156,26 @@ signals:
 
     void node_stats_changed();
 
-
-
 };
+
+
+template<typename Callback>
+void NodeTree::preOrderApply(NodeID start, Callback cb) const {
+    std::stack<NodeID> stk;
+
+    stk.push(start);
+
+    while(stk.size() > 0) {
+        auto nid = stk.top(); stk.pop();
+
+        cb(nid);
+
+        for (auto i = getNumberOfChildren(nid) - 1; i >= 0; --i) {
+            auto child = getChild(nid, i);
+            stk.push(child);
+        }
+    }
+}
 
 }}
 

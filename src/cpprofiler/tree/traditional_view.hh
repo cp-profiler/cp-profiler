@@ -36,8 +36,8 @@ class NodeFlags {
 
     std::vector<bool> m_shape_highlighted;
 
-    /// this duplicates m_shape_highlighted, but more suitable for
-    /// unhighlighting previously highlighted
+    /// This is somewhat redundant given m_shape_highlighted, but
+    /// it is more suitable for unhighlighting previously highlighted
     std::set<NodeID> m_highlighted_shapes;
 
     void ensure_id_exists(NodeID id);
@@ -96,6 +96,7 @@ public:
 class TraditionalView : public QObject {
     Q_OBJECT
 
+    const NodeTree& m_node_tree;
     const Structure& m_tree;
     std::unique_ptr<UserData> m_user_data;
 
@@ -115,6 +116,7 @@ public:
 
     QWidget* widget();
 
+    void set_label_shown(NodeID nid, bool val);
     const Layout& layout() const;
 
 signals:
@@ -134,6 +136,9 @@ public slots:
     void navRight();
 
     void toggleShowLabel();
+    void showLabelsDown();
+    void showLabelsUp();
+
     void toggleHideFailed();
 
     void toggleHighlighted();

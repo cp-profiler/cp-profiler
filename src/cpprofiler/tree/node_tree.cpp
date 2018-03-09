@@ -6,6 +6,7 @@
 
 namespace cpprofiler { namespace tree {
 
+
 NodeTree::NodeTree() : m_structure{new Structure()} {
     m_node_info.reset(new NodeInfo);
 
@@ -13,6 +14,11 @@ NodeTree::NodeTree() : m_structure{new Structure()} {
 }
 
 NodeTree::~NodeTree() = default;
+
+void NodeTree::addEntry(NodeID nid) {
+    m_node_info->addEntry(nid);
+    m_labels.push_back({});
+}
 
 const Structure& NodeTree::tree_structure() const {
     return *m_structure;
@@ -30,7 +36,7 @@ NodeInfo& NodeTree::node_info() {
     return *m_node_info;
 }
 
-NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus status) {
+NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus status, Label label) {
 
     auto nodes_created = 0;
 
@@ -38,7 +44,8 @@ NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus s
     if (parent_id == NodeID::NoNode) {
 
         nid = m_structure->createRoot(kids);
-        m_node_info->addEntry(nid);
+        addEntry(nid);
+        setLabel(nid, label);
         nodes_created += (1 + kids);
 
     } else {
@@ -49,12 +56,14 @@ NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus s
             nodes_created += (kids - 1);
         }
 
+        setLabel(nid, label);
+
         emit childrenStructureChanged(parent_id);
     }
 
     for (auto i = 0; i < kids; ++i) {
         auto child_nid = m_structure->getChild(nid, i);
-        m_node_info->addEntry(child_nid);
+        addEntry(child_nid);
         m_node_info->setStatus(child_nid, NodeStatus::UNDETERMINED);
 
         m_node_stats.add_undetermined(kids);
@@ -123,6 +132,14 @@ int NodeTree::getAlternative(NodeID nid) const {
 
 int NodeTree::getNumberOfChildren(NodeID nid) const {
     return m_structure->getNumberOfChildren(nid);
+}
+
+const Label& NodeTree::getLabel(NodeID nid) const {
+    return m_labels.at(nid);
+}
+
+void NodeTree::setLabel(NodeID nid, const Label& label) {
+    m_labels[nid] = label;
 }
 
 

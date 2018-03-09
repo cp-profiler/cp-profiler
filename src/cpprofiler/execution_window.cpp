@@ -102,10 +102,15 @@ namespace cpprofiler {
                 nodeMenu->addAction(navRight);
                 connect(navRight, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navRight);
 
-                auto toggleShowLabel = new QAction{"Show label", this};
+                auto toggleShowLabel = new QAction{"Show labels down", this};
                 toggleShowLabel->setShortcut(QKeySequence("L"));
                 nodeMenu->addAction(toggleShowLabel);
-                connect(toggleShowLabel, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::toggleShowLabel);
+                connect(toggleShowLabel, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::showLabelsDown);
+
+                auto toggleShowLabelsUp = new QAction{"Show labels down", this};
+                toggleShowLabelsUp->setShortcut(QKeySequence("Shift+L"));
+                nodeMenu->addAction(toggleShowLabelsUp);
+                connect(toggleShowLabelsUp, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::showLabelsUp);
 
                 auto toggleHideFailed = new QAction{"Toggle hide failed", this};
                 toggleHideFailed->setShortcut(QKeySequence("F"));

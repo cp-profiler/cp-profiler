@@ -36,17 +36,19 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         auto& tree = ex->tree();
 
-        auto root = tree.addNode(tree::NodeID::NoNode, -1, 2, tree::NodeStatus::BRANCH);
-        auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH);
-        auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH);
+
+
+        auto root = tree.addNode(tree::NodeID::NoNode, -1, 2, tree::NodeStatus::BRANCH, "0");
+        auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
+        auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
 
         conductor.getExecutionWindow(ex).traditional_view().selectNode(n1);
 
-        auto n3 =  tree.addNode(n1, 0, 2, tree::NodeStatus::BRANCH);
-        auto n4 =  tree.addNode(n1, 1, 2, tree::NodeStatus::BRANCH);
+        auto n3 =  tree.addNode(n1, 0, 2, tree::NodeStatus::BRANCH, "3");
+        auto n4 =  tree.addNode(n1, 1, 2, tree::NodeStatus::BRANCH, "4");
 
-        auto n5 =  tree.addNode(n3, 0, 2, tree::NodeStatus::BRANCH);
-        auto n6 =  tree.addNode(n3, 1, 2, tree::NodeStatus::BRANCH);
+        auto n5 =  tree.addNode(n3, 0, 2, tree::NodeStatus::BRANCH, "7");
+        auto n6 =  tree.addNode(n3, 1, 2, tree::NodeStatus::BRANCH, "8");
 
         tree.addNode(n5, 0, 0, tree::NodeStatus::SOLVED);
         tree.addNode(n5, 1, 0, tree::NodeStatus::FAILED);
@@ -207,36 +209,36 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         auto& tree = ex->tree();
 
-        auto root = tree.addNode(tree::NodeID::NoNode, -1, 2, tree::NodeStatus::BRANCH);
-        auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH);
-        auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH);
+        auto root = tree.addNode(tree::NodeID::NoNode, -1, 2, tree::NodeStatus::BRANCH, "0");
+        auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
+        auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
 
-        auto n3 =  tree.addNode(n1, 0, 2, tree::NodeStatus::BRANCH);
-        auto n4 =  tree.addNode(n1, 1, 2, tree::NodeStatus::BRANCH);
-        auto n11 =  tree.addNode(n2, 0, 2, tree::NodeStatus::BRANCH);
-        auto n12 =  tree.addNode(n2, 1, 2, tree::NodeStatus::BRANCH);
+        auto n3 =  tree.addNode(n1, 0, 2, tree::NodeStatus::BRANCH, "3");
+        auto n4 =  tree.addNode(n1, 1, 2, tree::NodeStatus::BRANCH, "4");
+        auto n5 =  tree.addNode(n2, 0, 2, tree::NodeStatus::BRANCH, "5");
+        auto n6 =  tree.addNode(n2, 1, 2, tree::NodeStatus::BRANCH, "6");
 
-        auto n5 =  tree.addNode(n3, 0, 0, tree::NodeStatus::FAILED);
-        auto n6 =  tree.addNode(n3, 1, 0, tree::NodeStatus::FAILED);
-        auto n9 =  tree.addNode(n4, 0, 0, tree::NodeStatus::FAILED);
-        auto n10 =  tree.addNode(n4, 1, 2, tree::NodeStatus::BRANCH);
-        auto n13 =  tree.addNode(n12, 0, 2, tree::NodeStatus::BRANCH);
-        auto n14 =  tree.addNode(n12, 1, 2, tree::NodeStatus::BRANCH);
+        auto n7 =  tree.addNode(n3, 0, 0, tree::NodeStatus::FAILED, "7");
+        auto n8 =  tree.addNode(n3, 1, 0, tree::NodeStatus::FAILED, "8");
+        auto n9 =  tree.addNode(n4, 0, 0, tree::NodeStatus::FAILED, "9");
+        auto n10 =  tree.addNode(n4, 1, 2, tree::NodeStatus::BRANCH, "10");
+        auto n13 =  tree.addNode(n6, 0, 2, tree::NodeStatus::BRANCH, "13");
+        auto n14 =  tree.addNode(n6, 1, 2, tree::NodeStatus::BRANCH, "14");
 
-        auto n15 =  tree.addNode(n10, 0, 0, tree::NodeStatus::FAILED);
-        auto n16 =  tree.addNode(n10, 1, 0, tree::NodeStatus::FAILED);
+        auto n15 =  tree.addNode(n10, 0, 0, tree::NodeStatus::FAILED, "15");
+        auto n16 =  tree.addNode(n10, 1, 0, tree::NodeStatus::FAILED, "16");
 
-        auto n17 =  tree.addNode(n11, 0, 0, tree::NodeStatus::FAILED);
-        auto n18 =  tree.addNode(n11, 1, 0, tree::NodeStatus::FAILED);
+        auto n11 =  tree.addNode(n5, 0, 0, tree::NodeStatus::FAILED, "11");
+        auto n12 =  tree.addNode(n5, 1, 0, tree::NodeStatus::FAILED, "12");
 
-        auto n19 =  tree.addNode(n13, 0, 0, tree::NodeStatus::FAILED);
-        auto n20 =  tree.addNode(n13, 1, 0, tree::NodeStatus::FAILED);
+        auto n17 =  tree.addNode(n13, 0, 0, tree::NodeStatus::FAILED, "17");
+        auto n18 =  tree.addNode(n13, 1, 0, tree::NodeStatus::FAILED, "18");
 
-        auto n21 =  tree.addNode(n14, 0, 0, tree::NodeStatus::FAILED);
-        auto n22 =  tree.addNode(n14, 1, 2, tree::NodeStatus::BRANCH);
+        auto n19 =  tree.addNode(n14, 0, 0, tree::NodeStatus::FAILED, "19");
+        auto n20 =  tree.addNode(n14, 1, 2, tree::NodeStatus::BRANCH, "20");
 
-        auto n23 =  tree.addNode(n22, 0, 0, tree::NodeStatus::FAILED);
-        auto n24 =  tree.addNode(n22, 1, 0, tree::NodeStatus::FAILED);
+        auto n21 =  tree.addNode(n20, 0, 0, tree::NodeStatus::FAILED, "21");
+        auto n22 =  tree.addNode(n20, 1, 0, tree::NodeStatus::FAILED, "22");
 
     }
 

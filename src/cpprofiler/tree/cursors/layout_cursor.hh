@@ -7,15 +7,17 @@
 namespace cpprofiler { namespace tree {
 
     class Layout;
+    class NodeFlags;
 
 class LayoutCursor : public UnsafeNodeCursor {
 
     Layout& m_layout;
     const Structure& m_tree;
+    const NodeFlags& m_node_flags;
 
 public:
     // Constructor
-    LayoutCursor(NodeID start, const NodeTree& tree, Layout& lo);
+    LayoutCursor(NodeID start, const NodeTree& tree, const NodeFlags& nf, Layout& lo);
 
     void computeForNode(NodeID nid);
 

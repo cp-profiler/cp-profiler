@@ -12,12 +12,15 @@
 /// this include only needed for NODE_WIDTH (move out?)
 #include "drawing_cursor.hh"
 
+/// needed for NodeFlags
+#include "../traditional_view.hh"
+
 #include <numeric>
 
 namespace cpprofiler { namespace tree {
 
-    LayoutCursor::LayoutCursor(NodeID start, const NodeTree& tree, Layout& lo)
-        : UnsafeNodeCursor(start, tree), m_layout(lo), m_tree(tree.tree_structure()) {}
+    LayoutCursor::LayoutCursor(NodeID start, const NodeTree& tree, const NodeFlags& nf, Layout& lo)
+        : UnsafeNodeCursor(start, tree), m_layout(lo), m_tree(tree.tree_structure()), m_node_flags(nf) {}
 
     bool LayoutCursor::mayMoveDownwards() {
         return UnsafeNodeCursor::mayMoveDownwards() &&
@@ -64,6 +67,7 @@ namespace cpprofiler { namespace tree {
             combined->setBoundingBox(BoundingBox{bb_left, bb_right});
         }
 
+        /// if no labels are displayed for the root (current) node
         (*combined)[0] = {-traditional::HALF_NODE_WIDTH, traditional::HALF_NODE_WIDTH};
 
         offsets[0] = -half_dist; offsets[1] = half_dist;
@@ -131,7 +135,7 @@ namespace cpprofiler { namespace tree {
         return result;
     }
 
-    static inline void computeForNodeBinary(NodeID nid, Layout& layout, const Structure& tree) {
+    static inline void computeForNodeBinary(NodeID nid, Layout& layout, const Structure& tree, const NodeFlags& nf) {
         auto kid_l = tree.getChild_unsafe(nid, 0);
         auto kid_r = tree.getChild_unsafe(nid, 1);
 
@@ -140,6 +144,12 @@ namespace cpprofiler { namespace tree {
 
         std::vector<int> offsets(2);
         auto combined = combine_shapes(s1, s2, offsets);
+
+        /// see if the node dispays labels and needs its (top) extents extended
+        if (nf.get_label_shown(nid)) {
+            (*combined)[0] = {-traditional::HALF_NODE_WIDTH - 20,
+                              traditional::HALF_NODE_WIDTH + 20};
+        }
 
         layout.setShape_unsafe(nid, std::move(combined));
 
@@ -300,7 +310,7 @@ namespace cpprofiler { namespace tree {
         }
 
         if (nkids == 2) {
-            computeForNodeBinary(nid, m_layout, m_tree);
+            computeForNodeBinary(nid, m_layout, m_tree, m_node_flags);
         }
 
         if (nkids > 2) {

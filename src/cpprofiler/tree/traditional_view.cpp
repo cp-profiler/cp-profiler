@@ -250,7 +250,8 @@ namespace cpprofiler { namespace tree {
 namespace cpprofiler { namespace tree {
 
 TraditionalView::TraditionalView(const NodeTree& tree)
-: m_tree(tree.tree_structure()),
+: m_node_tree(tree),
+  m_tree(tree.tree_structure()),
   m_user_data(utils::make_unique<UserData>()),
   m_layout(utils::make_unique<Layout>()),
   m_flags(utils::make_unique<NodeFlags>()),
@@ -356,14 +357,59 @@ void TraditionalView::navRight() {
     emit needsRedrawing();
 }
 
+void TraditionalView::set_label_shown(NodeID nid, bool val) {
+    m_flags->set_label_shown(nid, val);
+    m_layout_computer->dirtyUp(nid);
+}
+
 void TraditionalView::toggleShowLabel() {
     auto cur_nid = m_user_data->getSelectedNode();
+    if (cur_nid == NodeID::NoNode) return;
 
     auto val = !m_flags->get_label_shown(cur_nid);
-    m_flags->set_label_shown(cur_nid, val);
+    set_label_shown(cur_nid, val);
     emit needsRedrawing();
 
     /// TODO: needs re-layout as well
+}
+
+void TraditionalView::showLabelsDown() {
+    auto cur_nid = m_user_data->getSelectedNode();
+    if (cur_nid == NodeID::NoNode) return;
+
+    auto val = !m_flags->get_label_shown(cur_nid);
+
+    m_node_tree.preOrderApply(cur_nid, [val, this](NodeID nid) {
+        set_label_shown(nid, val);
+    });
+
+
+    setLayoutOutdated();
+    emit needsRedrawing();
+}
+
+void TraditionalView::showLabelsUp() {
+    auto cur_nid = m_user_data->getSelectedNode();
+    if (cur_nid == NodeID::NoNode) return;
+
+    auto pid = m_node_tree.getParent(cur_nid);
+
+    /// if it is root, toggle for the root only
+    if (pid == NodeID::NoNode) {
+        toggleShowLabel();
+        return;
+    }
+
+    auto val = !m_flags->get_label_shown(pid);
+
+    while (cur_nid != NodeID::NoNode) {
+        set_label_shown(cur_nid, val);
+        cur_nid = m_node_tree.getParent(cur_nid);
+    }
+
+    
+    setLayoutOutdated();
+    emit needsRedrawing();
 }
 
 void TraditionalView::toggleHideFailed() {
@@ -450,6 +496,7 @@ void TraditionalView::printNodeInfo() {
     qDebug() << "offset:" << m_layout->getOffset(cur_nid);
     auto bb = m_layout->getBoundingBox(cur_nid);
     qDebug() << "bb:[" << bb.left << "," << bb.right << "]";
+    qDebug() << "dirty:" << m_layout->isDirty_unsafe(cur_nid);
 }
 
 void TraditionalView::highlight_subtrees(const std::vector<NodeID>& nodes) {
@@ -471,7 +518,7 @@ namespace cpprofiler { namespace tree {
 
     void NodeFlags::ensure_id_exists(NodeID nid) {
         auto id = static_cast<int>(nid);
-        if (m_label_shown.size() < id) {
+        if (m_label_shown.size() < id + 1) {
             m_label_shown.resize(id + 1);
             m_node_hidden.resize(id + 1);
             m_shape_highlighted.resize(id + 1);
@@ -486,8 +533,10 @@ namespace cpprofiler { namespace tree {
 
     bool NodeFlags::get_label_shown(NodeID nid) const {
 
-        return false; // TODO
+        // return false; // TODO
         // ensure_id_exists(nid);
+
+        if (m_label_shown.size() <= nid) return false;
 
         return m_label_shown.at(nid);
     }
