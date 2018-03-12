@@ -107,8 +107,8 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto& tree = ex->tree();
 
         auto root = tree.addNode(tree::NodeID::NoNode, -1, 4, tree::NodeStatus::BRANCH);
-        auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH);
-        auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH);
+        auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH, "five");
+        auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH, "seven");
         auto n3 =  tree.addNode(root, 2, 0, tree::NodeStatus::FAILED);
         auto n4 =  tree.addNode(root, 3, 2, tree::NodeStatus::BRANCH);
 
@@ -181,8 +181,8 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto& tree = ex->tree();
 
         auto root = tree.addNode(tree::NodeID::NoNode, -1, 2, tree::NodeStatus::BRANCH);
-        auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH);
-        auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH);
+        auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH, "abcde");
+        auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH, "efghijk");
 
         auto n3 =  tree.addNode(n1, 0, 2, tree::NodeStatus::BRANCH);
         auto n4 =  tree.addNode(n1, 1, 2, tree::NodeStatus::BRANCH);

@@ -106,7 +106,6 @@ class TraditionalView : public QObject {
     std::unique_ptr<LayoutComputer> m_layout_computer;
     std::unique_ptr<TreeScrollArea> m_scroll_area;
 
-
     /// returns currently selected node; can be NodeID::NoNode
     NodeID node() const;
 public:

@@ -3,6 +3,7 @@
 #include "../node_id.hh"
 #include <iostream>
 #include <QDebug>
+#include <QPainter>
 
 #include "../layout.hh"
 #include "../node_tree.hh"
@@ -25,6 +26,10 @@ namespace cpprofiler { namespace tree {
     bool LayoutCursor::mayMoveDownwards() {
         return UnsafeNodeCursor::mayMoveDownwards() &&
                m_layout.isDirty_unsafe(m_cur_node);
+    }
+
+    void LayoutCursor::setLabelPainter(QPainter* painter) {
+        m_painter = painter;
     }
 
     /// Compute the distance between s1 and s2 (that is, how far apart should the
@@ -138,13 +143,20 @@ namespace cpprofiler { namespace tree {
         /// see if the node dispays labels and needs its (top) extents extended
         if (nf.get_label_shown(nid)) {
 
+
             auto& tree = nt.tree_structure();
+
+            /// TODO: use font metrics?
+            const auto& label = nt.getLabel(nid);
+            auto label_width = label.size() * 9;
+
+            /// Note: this assumes that the default painter used for drawing text
+            // QPainter painter;
+            // auto fm = painter.fontMetrics();
+            // auto label_width = fm.width(label.c_str());
 
             /// Note that labels are shown on the left for all alt
             /// except the last one (right-most)
-            const auto& label = nt.getLabel(nid);
-            auto label_width = label.size() * 10;
-
             bool draw_left = nt.isRightMostChild_unsafe(nid) ? false : true;
 
             if (draw_left) {
@@ -324,7 +336,17 @@ namespace cpprofiler { namespace tree {
         auto nkids = m_tree.getNumberOfChildren_unsafe(nid);
 
         if (nkids == 0) {
+
+            if (!m_node_flags.get_label_shown(nid)) {
                 m_layout.setShape_unsafe(nid, ShapeUniqPtr(&Shape::leaf));
+            } else {
+                /// TODO
+                auto shape = ShapeUniqPtr{new Shape{1}};
+                (*shape)[0] = calculateForSingleNode(nid, m_nt, m_node_flags);
+
+                shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
+                m_layout.setShape_unsafe(nid, std::move(shape));
+            }
         }
 
         if (nkids == 2) {

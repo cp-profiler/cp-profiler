@@ -210,9 +210,18 @@ namespace cpprofiler { namespace tree {
             // m_painter.setPen(QPen{Qt::black, 2});
             const auto& label = m_node_tree.getLabel(m_cur_node);
 
+            auto fm = m_painter.fontMetrics();
+            auto label_width = fm.width(label.c_str());
+
+            {
+                auto font = m_painter.font();
+                font.setStyleHint(QFont::Monospace);
+                m_painter.setFont(font);
+            }
+
             int label_x;
             if (draw_left) {
-                label_x = cur_x - HALF_NODE_WIDTH - label.size() * 10;
+                label_x = cur_x - HALF_NODE_WIDTH - label_width;
             } else {
                 label_x = cur_x + HALF_NODE_WIDTH;
             }

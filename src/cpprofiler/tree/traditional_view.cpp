@@ -57,6 +57,7 @@ namespace cpprofiler { namespace tree {
 
     void TreeScrollArea::paintEvent(QPaintEvent* event) {
         QPainter painter(this->viewport());
+
         painter.setRenderHint(QPainter::Antialiasing);
 
         if (m_start_node == NodeID::NoNode) { return; }
@@ -231,6 +232,8 @@ namespace cpprofiler { namespace tree {
 
     TreeScrollArea::TreeScrollArea(NodeID start, const NodeTree& tree, const UserData& user_data, const Layout& layout, const NodeFlags& nf)
         : m_start_node(start), m_tree(tree), m_user_data(user_data), m_layout(layout), m_node_flags(nf) {
+            setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+            setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     }
 
     void TreeScrollArea::centerX(int x) {
@@ -261,11 +264,13 @@ TraditionalView::TraditionalView(const NodeTree& tree)
     auto root_node = m_tree.getRoot();
     m_scroll_area.reset(new TreeScrollArea(root_node, tree, *m_user_data, *m_layout, *m_flags));
 
-    std::cerr << "traditional view thread:" << std::this_thread::get_id() << std::endl;
+
+    // auto painter = m_scroll_area.getLabelPainter();
+    // m_layout_computer.setLabelPainter(painter);
+
+    // std::cerr << "traditional view thread:" << std::this_thread::get_id() << std::endl;
 
     // m_scroll_area
-    m_scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    m_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     connect(m_scroll_area.get(), &TreeScrollArea::nodeClicked, this, &TraditionalView::selectNode);
 
