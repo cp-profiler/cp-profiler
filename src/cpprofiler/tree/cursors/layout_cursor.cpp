@@ -181,6 +181,15 @@ namespace cpprofiler { namespace tree {
         auto combined = combine_shapes(s1, s2, offsets);
         (*combined)[0] = calculateForSingleNode(nid, nt, nf);
 
+        /// Extents for root node changed -> check if bounding box is correct
+        const auto& bb = combined->boundingBox();
+
+        if (bb.left > (*combined)[0].l || bb.right < (*combined)[0].r) {
+            combined->setBoundingBox({
+                std::min(bb.left, (*combined)[0].l), std::max(bb.right, (*combined)[0].r)
+            });
+        }
+
         layout.setShape_unsafe(nid, std::move(combined));
 
         layout.setChildOffset_unsafe(kid_l, offsets[0]);
@@ -267,67 +276,6 @@ namespace cpprofiler { namespace tree {
         layout.setShape_unsafe(nid, std::move(combined));
 
 
-    }
-
-    static inline void computeForNodeNary1(NodeID nid, int nkids, Layout& layout, const Structure& tree) {
-
-        /// distances from the left edge of the bounding box
-        std::vector<int> distances(nkids - 1);
-
-        const auto kid_l = tree.getChild_unsafe(nid, 0);
-        Shape resulting_shape = layout.getShape_unsafe(kid_l);
-
-        const auto first_shape_half_w = resulting_shape.boundingBox().width() / 2;
-
-        /// Merge shapes left into the `resulting shape`
-        for (auto i = 1; i < nkids; ++i) {
-            const auto kid = tree.getChild_unsafe(nid, i);
-            const auto& s = layout.getShape_unsafe(kid);
-
-            resulting_shape = merge_left(resulting_shape, s, distances[i-1]);
-        }
-
-        const auto bb = resulting_shape.boundingBox();
-
-        /// calculate offsets for children
-        /// offset of the first child should be -half_w;
-        /// then it is cumulative distance -half_w
-        {
-            auto width = bb.right - bb.left;
-
-            auto start = 0;
-            for (auto i = 0; i < nkids; ++i) {
-                auto kid = tree.getChild_unsafe(nid, i);
-                auto off = - width / 2 + first_shape_half_w;
-
-                if (i != 0) {
-                    off +=  distances[i-1] - first_shape_half_w;
-                }
-
-                layout.setChildOffset_unsafe(kid, off);
-            }
-        }
-
-        /// make a new shape, including the parent node
-        {
-            const auto new_depth = resulting_shape.depth() + 1;
-            const auto shape_width = bb.width();
-            const auto half_w = shape_width / 2;
-
-            auto combined = ShapeUniqPtr(new Shape{new_depth});
-
-            /// calculate shape 
-            (*combined)[0] = {-traditional::HALF_NODE_WIDTH, traditional::HALF_NODE_WIDTH};
-            for (auto depth = 1; depth < new_depth; ++depth) {
-                (*combined)[depth].l = resulting_shape[depth-1].l - half_w + first_shape_half_w;
-                (*combined)[depth].r = resulting_shape[depth-1].r - half_w + first_shape_half_w;
-            }
-
-            BoundingBox new_bb{bb.left - half_w + first_shape_half_w, bb.right - half_w + first_shape_half_w};
-            combined->setBoundingBox(new_bb);
-
-            layout.setShape_unsafe(nid, std::move(combined));
-        }
     }
 
     /// Computes layout for nid (shape, bounding box, offsets for its children)

@@ -402,7 +402,45 @@ static std::vector<SubtreePattern> runIdenticalSubtrees(const NodeTree& nt) {
 
 
 
+static vector<SubtreePattern> eliminateSubsumed(const NodeTree& tree, const vector<SubtreePattern>& patterns) {
 
+    std::set<NodeID> marked;
+
+    for (const auto& pattern : patterns) {
+        for (auto nid : pattern.nodes()) {
+
+            const auto kids = tree.getNumberOfChildren(nid);
+            for (auto alt = 0; alt < kids; ++alt) {
+                auto kid = tree.getChild(nid, alt);
+                marked.insert(kid);
+            }
+
+        }
+    }
+
+    vector<SubtreePattern> result;
+
+    for (const auto& pattern : patterns) {
+
+        const auto& nodes = pattern.nodes();
+
+        /// Determine if all nodes are in 'marked':
+        auto subset = true;
+
+        for (auto nid : nodes) {
+            if (marked.find(nid) == marked.end()) {
+                subset = false;
+                break;
+            }
+        }
+
+        if (!subset) {
+            result.push_back(pattern);
+        }
+    }
+
+    return result;
+}
 
 void SimilarSubtreeWindow::analyse() {
 
@@ -411,10 +449,19 @@ void SimilarSubtreeWindow::analyse() {
 
     /// TODO: make sure building is finished
 
-
     auto shapes = runSimilarShapes(m_nt.tree_structure(), m_lo);
 
     auto subtrees = runIdenticalSubtrees(m_nt);
+
+    /// make sure there are only patterns of cardinality > 1
+
+    auto new_end = std::remove_if(subtrees.begin(), subtrees.end(), [](const SubtreePattern& pattern) {
+        return pattern.count() <= 1;
+    });
+
+    subtrees.resize(std::distance(subtrees.begin(), new_end));
+
+    subtrees = eliminateSubsumed(m_nt, subtrees);
 
     m_histogram->drawPatterns(std::move(subtrees));
 

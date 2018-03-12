@@ -422,7 +422,9 @@ void TraditionalView::toggleHideFailed() {
 }
 
 void TraditionalView::toggleHighlighted() {
-    auto nid = node();
+    auto nid = m_user_data->getSelectedNode();
+    if (nid == NodeID::NoNode) return;
+
     auto val = !m_flags->get_highlighted(nid);
     m_flags->set_highlighted(nid, val);
 }
