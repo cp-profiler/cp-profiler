@@ -27,6 +27,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/tree/cursors/layout_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hpp \
     $$PWD/src/cpprofiler/analyses/similar_subtree_window.cpp \
+    $$PWD/src/cpprofiler/analyses/histogram_scene.cpp \
 
 HEADERS += \
     $$PWD/src/cpprofiler/config.hh \

@@ -5,6 +5,7 @@
 #include <QSplitter>
 #include <QGraphicsSimpleTextItem>
 #include <QDebug>
+#include <QAction>
 
 
 #include <iostream>
@@ -33,6 +34,8 @@ SimilarSubtreeWindow::SimilarSubtreeWindow(QWidget* parent, const tree::NodeTree
     m_histogram.reset(new HistogramScene);
     auto hist_view = new QGraphicsView{this};
 
+    hist_view->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+
     m_subtree_view.reset(new SubtreeView{nt});
 
     hist_view->setScene(m_histogram->scene());
@@ -48,6 +51,25 @@ SimilarSubtreeWindow::SimilarSubtreeWindow(QWidget* parent, const tree::NodeTree
     globalLayout->addWidget(splitter, 1);
 
     analyse();
+
+
+    /// see if I can add action here
+
+    auto keyDown = new QAction{"Press down", this};
+    keyDown->setShortcuts({QKeySequence("Down"), QKeySequence("J")});
+    addAction(keyDown);
+
+    connect(keyDown, &QAction::triggered, m_histogram.get(), &HistogramScene::nextPattern);
+
+    auto keyUp = new QAction{"Press up", this};
+    keyUp->setShortcuts({QKeySequence("Up"), QKeySequence("K")});
+    addAction(keyUp);
+
+    connect(keyUp, &QAction::triggered, m_histogram.get(), &HistogramScene::prevPattern);
+
+    connect(keyUp, &QAction::triggered, [this]() {
+        update();
+    });
 
 
 }
