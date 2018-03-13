@@ -236,7 +236,11 @@ namespace cpprofiler { namespace tree {
     void TreeScrollArea::mousePressEvent(QMouseEvent* me) {
         auto n = findNodeClicked(me->x(), me->y());
         emit nodeClicked(n);
-        update();
+    }
+
+    void TreeScrollArea::mouseDoubleClickEvent(QMouseEvent* me) {
+        auto n = findNodeClicked(me->x(), me->y());
+        emit nodeDoubleClicked(n);
     }
 
     TreeScrollArea::TreeScrollArea(NodeID start, const NodeTree& tree, const UserData& user_data, const Layout& layout, const NodeFlags& nf)
@@ -282,6 +286,7 @@ TraditionalView::TraditionalView(const NodeTree& tree)
     // m_scroll_area
 
     connect(m_scroll_area.get(), &TreeScrollArea::nodeClicked, this, &TraditionalView::selectNode);
+    connect(m_scroll_area.get(), &TreeScrollArea::nodeDoubleClicked, this, &TraditionalView::unhideNode);
 
     connect(this, &TraditionalView::needsRedrawing, [this]() {
         m_scroll_area->viewport()->update();
@@ -304,6 +309,7 @@ TraditionalView::~TraditionalView() = default;
 NodeID TraditionalView::node() const {
     return m_user_data->getSelectedNode();
 }
+
 
 void TraditionalView::navDown() {
     auto cur_nid = m_user_data->getSelectedNode();
@@ -373,7 +379,7 @@ void TraditionalView::navRight() {
 
 void TraditionalView::set_label_shown(NodeID nid, bool val) {
     m_flags->set_label_shown(nid, val);
-    m_layout_computer->dirtyUp(nid);
+    dirtyUp();
 }
 
 void TraditionalView::toggleShowLabel() {
@@ -435,10 +441,24 @@ void TraditionalView::toggleHidden() {
     auto val = !m_flags->get_hidden(cur_nid);
     m_flags->set_hidden(cur_nid, val);
 
-    m_layout_computer->dirtyUp(cur_nid);
+    dirtyUp();
 
     setLayoutOutdated();
     emit needsRedrawing();
+}
+
+void TraditionalView::unhideNode() {
+
+    auto cur_nid = m_user_data->getSelectedNode();
+    if (cur_nid == NodeID::NoNode) return;
+
+    auto hidden = m_flags->get_hidden(cur_nid);
+    if (hidden) {
+        m_flags->set_hidden(cur_nid, false);
+        dirtyUp();
+        setLayoutOutdated();
+        emit needsRedrawing();
+    }
 }
 
 void TraditionalView::toggleHighlighted() {

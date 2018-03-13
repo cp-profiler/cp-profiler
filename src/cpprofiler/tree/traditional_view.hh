@@ -71,9 +71,11 @@ Q_OBJECT
 
     void paintEvent(QPaintEvent* e) override;
     void mousePressEvent(QMouseEvent* event) override;
+    void mouseDoubleClickEvent(QMouseEvent* event) override;
 
 signals:
     void nodeClicked(NodeID nid);
+    void nodeDoubleClicked(NodeID nid);
 
 public:
 
@@ -140,6 +142,7 @@ public slots:
     void showLabelsUp();
 
     void toggleHidden();
+    void unhideNode();
 
     void toggleHighlighted();
 
