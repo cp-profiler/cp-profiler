@@ -1,4 +1,5 @@
 #include "drawing_cursor.hh"
+#include "../../config.hh"
 #include "../layout.hh"
 #include "../node_info.hh"
 #include "../node.hh"
@@ -108,6 +109,23 @@ namespace cpprofiler { namespace tree {
         painter.drawEllipse(x - HALF_NODE_WIDTH, y, NODE_WIDTH, NODE_WIDTH);
     }
 
+    static void drawTriangle(QPainter& painter, int x, int y, bool selected) {
+        using namespace traditional;
+
+        if (selected) {
+            painter.setBrush(colors::gold);
+        } else {
+            painter.setBrush(colors::red);
+        }
+
+        QPointF points[3] = { QPointF(x, y),
+            QPointF(x + NODE_WIDTH, y + HIDDEN_DEPTH),
+            QPointF(x - NODE_WIDTH, y + HIDDEN_DEPTH)
+        };
+
+        painter.drawConvexPolygon(points, 3);
+    }
+
     static void drawSolutionNode(QPainter& painter, int x, int y, bool selected, bool phantom) {
         using namespace traditional;
         if (selected) {
@@ -162,7 +180,7 @@ namespace cpprofiler { namespace tree {
         points[depth * 2 - 1] = QPointF(r_x, y);
 
         for (int i = 1; i <  depth; i++){
-            y += static_cast<double>(Layout::dist_y);
+            y += static_cast<double>(layout::dist_y);
             l_x = x + shape[i].l;
             r_x = x + shape[i].r;
             points[i] = QPointF(l_x, y);
@@ -194,7 +212,7 @@ namespace cpprofiler { namespace tree {
         if (m_cur_node != m_start_node) {
 
             auto parent_x = cur_x - m_layout.getOffset_unsafe(m_cur_node);
-            auto parent_y = cur_y - static_cast<double>(Layout::dist_y);
+            auto parent_y = cur_y - static_cast<double>(layout::dist_y);
 
             m_painter.drawLine(parent_x, parent_y + NODE_WIDTH, cur_x, cur_y);
         }
@@ -239,9 +257,25 @@ namespace cpprofiler { namespace tree {
             m_painter.setBrush(QColor{0, 0, 0, 20});
             auto bb = m_layout.getBoundingBox_unsafe(m_cur_node);
 
-            auto height = m_layout.getDepth_unsafe(m_cur_node) * Layout::dist_y;
+            auto height = m_layout.getDepth_unsafe(m_cur_node) * layout::dist_y;
             m_painter.drawRect(cur_x + bb.left, cur_y, bb.right - bb.left, height);
             // drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
+        }
+
+
+        /// see if the node is hidden
+
+        auto hidden = m_flags.get_hidden(m_cur_node);
+
+        if (hidden) {
+
+            /// completely failed
+            drawTriangle(m_painter, cur_x, cur_y, selected);
+            
+            /// has open nodes
+
+            /// has solutions
+            return;
         }
 
         switch (status) {
@@ -265,14 +299,14 @@ namespace cpprofiler { namespace tree {
 
     void DrawingCursor::moveUpwards() {
         cur_x -= m_layout.getOffset_unsafe(m_cur_node);
-        cur_y -= Layout::dist_y;
+        cur_y -= layout::dist_y;
         UnsafeNodeCursor::moveUpwards();
     }
 
     void DrawingCursor::moveDownwards() {
         UnsafeNodeCursor::moveDownwards();
         cur_x += m_layout.getOffset_unsafe(m_cur_node);
-        cur_y += Layout::dist_y;
+        cur_y += layout::dist_y;
     }
 
     void DrawingCursor::moveSidewards() {
@@ -289,7 +323,10 @@ namespace cpprofiler { namespace tree {
 
     bool DrawingCursor::mayMoveDownwards() {
         /// TODO: this should be about children?
-        return UnsafeNodeCursor::mayMoveDownwards() && m_layout.getLayoutDone_unsafe(m_cur_node) && !isClipped();
+        return UnsafeNodeCursor::mayMoveDownwards() &&
+               !m_flags.get_hidden(m_cur_node) &&
+               m_layout.getLayoutDone_unsafe(m_cur_node) &&
+               !isClipped();
     }
     
     bool DrawingCursor::mayMoveUpwards() {
@@ -304,7 +341,7 @@ namespace cpprofiler { namespace tree {
             (cur_x + bb.left > clippingRect.x() + clippingRect.width()) ||
             (cur_x + bb.right < clippingRect.x()) ||
             (cur_y > clippingRect.y() + clippingRect.height()) ||
-            (cur_y + (m_layout.getDepth_unsafe(m_cur_node) + 1) * Layout::dist_y < clippingRect.y())
+            (cur_y + (m_layout.getDepth_unsafe(m_cur_node) + 1) * layout::dist_y < clippingRect.y())
         ) {
             // qDebug() << "node clipped";
             return true;

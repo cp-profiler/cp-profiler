@@ -20,6 +20,7 @@
 #include "shape.hh"
 #include "../user_data.hh"
 #include "layout_computer.hh"
+#include "../config.hh"
 
 
 #include "../utils/perf_helper.hh"
@@ -71,7 +72,7 @@ namespace cpprofiler { namespace tree {
         auto bb = m_layout.getBoundingBox(root_nid);
 
         auto tree_width = bb.right - bb.left;
-        auto tree_height = m_layout.getDepth(root_nid) * Layout::dist_y;
+        auto tree_height = m_layout.getDepth(root_nid) * layout::dist_y;
 
         auto viewport_size = viewport()->size();
 
@@ -86,8 +87,8 @@ namespace cpprofiler { namespace tree {
         verticalScrollBar()->setRange(0, tree_height + y_margin / m_options.scale - v_page_step);
         verticalScrollBar()->setPageStep(v_page_step);
 
-        horizontalScrollBar()->setSingleStep(Layout::min_dist_x);
-        verticalScrollBar()->setSingleStep(Layout::dist_y);
+        horizontalScrollBar()->setSingleStep(layout::min_dist_x);
+        verticalScrollBar()->setSingleStep(layout::dist_y);
 
         {
             QPen pen = painter.pen();
@@ -148,7 +149,7 @@ namespace cpprofiler { namespace tree {
         auto pos = QPoint{m_options.root_x, m_options.root_y};
 
         while(node != tree.getRoot()) {
-            pos += {m_layout.getOffset(node), Layout::dist_y};
+            pos += {m_layout.getOffset(node), layout::dist_y};
             node = tree.getParent(node);
         }
 
@@ -179,7 +180,7 @@ namespace cpprofiler { namespace tree {
 
     NodeID TreeScrollArea::findNodeClicked(int x, int y) {
 
-        using traditional::NODE_WIDTH;
+        using namespace traditional;
 
         /// TODO: disable while constructing
         /// calculate real x and y
@@ -201,9 +202,17 @@ namespace cpprofiler { namespace tree {
 
             auto node = queue.front(); queue.pop();
             auto node_pos = getNodeCoordinate(node);
-            auto node_pos_tl = node_pos - QPoint{NODE_WIDTH/2, 0};
 
-            auto node_area = QRect(node_pos_tl, QSize{NODE_WIDTH, NODE_WIDTH});
+            // if node hidden -> different area
+            
+            QRect node_area;
+            if (m_node_flags.get_hidden(node)) {
+                auto node_pos_tl = node_pos - QPoint{NODE_WIDTH, 0};
+                node_area = QRect(node_pos_tl, QSize{2 * NODE_WIDTH, HIDDEN_DEPTH});
+            } else {
+                auto node_pos_tl = node_pos - QPoint{NODE_WIDTH/2, 0};
+                node_area = QRect(node_pos_tl, QSize{NODE_WIDTH, NODE_WIDTH});
+            }
             if (node_area.contains(x,y)) {
                 return node;
             } else {
@@ -412,13 +421,24 @@ void TraditionalView::showLabelsUp() {
         cur_nid = m_node_tree.getParent(cur_nid);
     }
 
-    
     setLayoutOutdated();
     emit needsRedrawing();
 }
 
-void TraditionalView::toggleHideFailed() {
-    qDebug() << "TODO: hide failed";
+void TraditionalView::toggleHidden() {
+    auto cur_nid = m_user_data->getSelectedNode();
+    if (cur_nid == NodeID::NoNode) return;
+
+    // if leaf node -> do not hide
+    if (m_node_tree.isLeaf(cur_nid)) return;
+
+    auto val = !m_flags->get_hidden(cur_nid);
+    m_flags->set_hidden(cur_nid, val);
+
+    m_layout_computer->dirtyUp(cur_nid);
+
+    setLayoutOutdated();
+    emit needsRedrawing();
 }
 
 void TraditionalView::toggleHighlighted() {
@@ -494,9 +514,15 @@ void TraditionalView::setLayoutOutdated() {
     }
 }
 
+void TraditionalView::dirtyUp() {
+    auto cur_nid = m_user_data->getSelectedNode();
+    if (cur_nid == NodeID::NoNode) return;
+
+    m_layout_computer->dirtyUp(cur_nid);
+}
+
 void TraditionalView::printNodeInfo() {
     auto cur_nid = m_user_data->getSelectedNode();
-
     if (cur_nid == NodeID::NoNode) return;
 
     qDebug() << "---- Node Info:" << cur_nid << "----";
@@ -504,6 +530,7 @@ void TraditionalView::printNodeInfo() {
     auto bb = m_layout->getBoundingBox(cur_nid);
     qDebug() << "bb:[" << bb.left << "," << bb.right << "]";
     qDebug() << "dirty:" << m_layout->isDirty_unsafe(cur_nid);
+    qDebug() << "hidden:" << m_flags->get_hidden(cur_nid);
 }
 
 void TraditionalView::highlight_subtrees(const std::vector<NodeID>& nodes) {
@@ -549,13 +576,13 @@ namespace cpprofiler { namespace tree {
     }
 
     void NodeFlags::set_hidden(NodeID nid, bool val) {
-        // auto id = static_cast<int>(nid);
-        // if ()
-        /// TODO
+        ensure_id_exists(nid);
+        m_node_hidden[nid] = val;
     }
 
     bool NodeFlags::get_hidden(NodeID nid) const {
-        return false; // TODO
+        if (m_node_hidden.size() <= nid) return false;
+        return m_node_hidden.at(nid);
     }
 
     void NodeFlags::set_highlighted(NodeID nid, bool val) {

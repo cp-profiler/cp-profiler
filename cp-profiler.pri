@@ -29,6 +29,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/analyses/similar_subtree_window.cpp \
 
 HEADERS += \
+    $$PWD/src/cpprofiler/config.hh \
     $$PWD/src/cpprofiler/conductor.hh \
     $$PWD/src/cpprofiler/tcp_server.hh \
     $$PWD/src/cpprofiler/receiver_thread.hh \

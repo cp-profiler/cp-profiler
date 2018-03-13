@@ -1,4 +1,5 @@
 #include "shape.hh"
+#include "../config.hh"
 #include <QDebug>
 #include <ostream>
 
@@ -60,5 +61,10 @@ namespace cpprofiler { namespace tree {
         return m_bb;
     }
 
-    Shape Shape::leaf({{-10, 10}}, BoundingBox{-10, 10});
+    using namespace traditional;
+
+    Shape Shape::leaf({{-HALF_NODE_WIDTH, HALF_NODE_WIDTH}}, BoundingBox{-HALF_NODE_WIDTH, HALF_NODE_WIDTH});
+
+    Shape Shape::hidden({ {-HALF_NODE_WIDTH, HALF_NODE_WIDTH},{-NODE_WIDTH, NODE_WIDTH} },
+                        BoundingBox{-NODE_WIDTH, NODE_WIDTH});
 }}

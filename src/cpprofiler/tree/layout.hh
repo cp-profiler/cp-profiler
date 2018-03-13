@@ -34,9 +34,6 @@ Q_OBJECT
 
 public:
 
-    static constexpr int dist_y = 38;
-    static constexpr int min_dist_x = 16;
-
     utils::Mutex& getMutex() const;
 
     void setChildOffset_unsafe(NodeID nid, double offset);

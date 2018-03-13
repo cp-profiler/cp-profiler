@@ -100,6 +100,7 @@ class TraditionalView : public QObject {
     const Structure& m_tree;
     std::unique_ptr<UserData> m_user_data;
 
+    /// TODO: make sure node flags is thread-safe?
     std::unique_ptr<NodeFlags> m_flags;
     std::unique_ptr<Layout> m_layout;
 
@@ -138,7 +139,7 @@ public slots:
     void showLabelsDown();
     void showLabelsUp();
 
-    void toggleHideFailed();
+    void toggleHidden();
 
     void toggleHighlighted();
 
@@ -149,6 +150,8 @@ public slots:
     void setLayoutOutdated();
 
     void printNodeInfo();
+
+    void dirtyUp();
 
     void highlight_subtrees(const std::vector<NodeID>& nodes);
 

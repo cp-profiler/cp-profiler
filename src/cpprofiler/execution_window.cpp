@@ -112,10 +112,10 @@ namespace cpprofiler {
                 nodeMenu->addAction(toggleShowLabelsUp);
                 connect(toggleShowLabelsUp, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::showLabelsUp);
 
-                auto toggleHideFailed = new QAction{"Toggle hide failed", this};
-                toggleHideFailed->setShortcut(QKeySequence("F"));
-                nodeMenu->addAction(toggleHideFailed);
-                connect(toggleHideFailed, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::toggleHideFailed);
+                auto toggleHidden = new QAction{"Toggle hide failed", this};
+                toggleHidden->setShortcut(QKeySequence("F"));
+                nodeMenu->addAction(toggleHidden);
+                connect(toggleHidden, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::toggleHidden);
 
                 auto toggleHighlighted = new QAction{"Toggle hide failed", this};
                 toggleHighlighted->setShortcut(QKeySequence("H"));
@@ -131,6 +131,10 @@ namespace cpprofiler {
                 auto computeLayout = new QAction{"Compute layout", this};
                 debugMenu->addAction(computeLayout);
                 connect(computeLayout, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::forceComputeLayout);
+
+                auto dirtyNodesUp = new QAction{"Dirty Nodes Up", this};
+                debugMenu->addAction(dirtyNodesUp);
+                connect(dirtyNodesUp, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::dirtyUp);
 
                 auto getNodeInfo = new QAction{"Print node info", this};
                 getNodeInfo->setShortcut(QKeySequence("I"));

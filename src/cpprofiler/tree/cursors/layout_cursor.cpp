@@ -1,5 +1,6 @@
 
 #include "layout_cursor.hh"
+#include "../../config.hh"
 #include "../node_id.hh"
 #include <iostream>
 #include <QDebug>
@@ -25,6 +26,7 @@ namespace cpprofiler { namespace tree {
 
     bool LayoutCursor::mayMoveDownwards() {
         return UnsafeNodeCursor::mayMoveDownwards() &&
+            //    !m_node_flags.get_hidden(m_cur_node) &&
                m_layout.isDirty_unsafe(m_cur_node);
     }
 
@@ -34,7 +36,7 @@ namespace cpprofiler { namespace tree {
 
     /// Compute the distance between s1 and s2 (that is, how far apart should the
     /// corresponding root nodes be along X axis to avoid overlap, additionally
-    /// allowing for some margin -- Layout::min_dist_x)
+    /// allowing for some margin -- layout::min_dist_x)
     static int distance_between(const Shape& s1, const Shape& s2) {
         const auto common_depth = std::min(s1.depth(), s2.depth());
 
@@ -44,7 +46,7 @@ namespace cpprofiler { namespace tree {
             if (cur_dist > max) max = cur_dist; 
         }
 
-        return max + Layout::min_dist_x;
+        return max + layout::min_dist_x;
     }
 
     using ShapeUniqPtr = std::unique_ptr<Shape, ShapeDeleter>;
@@ -281,28 +283,33 @@ namespace cpprofiler { namespace tree {
     /// Computes layout for nid (shape, bounding box, offsets for its children)
     void LayoutCursor::computeForNode(NodeID nid) {
 
-        auto nkids = m_tree.getNumberOfChildren_unsafe(nid);
+        /// Check if the node is hidden:
+        if (m_node_flags.get_hidden(nid)) {
+            m_layout.setShape_unsafe(nid, ShapeUniqPtr(&Shape::hidden));
+        } else {
+            auto nkids = m_tree.getNumberOfChildren_unsafe(nid);
 
-        if (nkids == 0) {
+            if (nkids == 0) {
 
-            if (!m_node_flags.get_label_shown(nid)) {
-                m_layout.setShape_unsafe(nid, ShapeUniqPtr(&Shape::leaf));
-            } else {
-                /// TODO
-                auto shape = ShapeUniqPtr{new Shape{1}};
-                (*shape)[0] = calculateForSingleNode(nid, m_nt, m_node_flags);
+                if (!m_node_flags.get_label_shown(nid)) {
+                    m_layout.setShape_unsafe(nid, ShapeUniqPtr(&Shape::leaf));
+                } else {
+                    /// TODO
+                    auto shape = ShapeUniqPtr{new Shape{1}};
+                    (*shape)[0] = calculateForSingleNode(nid, m_nt, m_node_flags);
 
-                shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
-                m_layout.setShape_unsafe(nid, std::move(shape));
+                    shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
+                    m_layout.setShape_unsafe(nid, std::move(shape));
+                }
             }
-        }
 
-        if (nkids == 2) {
-            computeForNodeBinary(nid, m_layout, m_nt, m_node_flags);
-        }
+            if (nkids == 2) {
+                computeForNodeBinary(nid, m_layout, m_nt, m_node_flags);
+            }
 
-        if (nkids > 2) {
-            computeForNodeNary(nid, nkids, m_layout, m_tree);
+            if (nkids > 2) {
+                computeForNodeNary(nid, nkids, m_layout, m_tree);
+            }
         }
 
         m_layout.setLayoutDone_unsafe(nid, true);
@@ -314,7 +321,6 @@ namespace cpprofiler { namespace tree {
         auto dirty = m_layout.isDirty_unsafe(m_cur_node);
 
         if (dirty) {
-            // std::cerr << m_cur_node << " ";
             computeForNode(m_cur_node);
             m_layout.setDirty_unsafe(m_cur_node, false);
         }

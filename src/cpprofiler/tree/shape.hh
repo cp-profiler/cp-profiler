@@ -70,13 +70,14 @@ public:
     const BoundingBox& boundingBox() const;
 
     static Shape leaf;
+    static Shape hidden;
 
 };
 
 class ShapeDeleter {
 public:
     void operator() (Shape* s) {
-        if (s != &Shape::leaf) {
+        if (s != &Shape::leaf && s != &Shape::hidden) {
             delete s;
         }
     }

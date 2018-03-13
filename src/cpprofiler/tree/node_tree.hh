@@ -134,6 +134,8 @@ public:
 
     int getNumberOfChildren(NodeID nid) const;
 
+    bool isLeaf(NodeID) const;
+
     NodeID getParent(NodeID nid) const;
 
     NodeID getChild(NodeID nid, int alt) const;

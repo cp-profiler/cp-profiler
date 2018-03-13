@@ -13,6 +13,7 @@ public:
 
     void setSelectedNode(tree::NodeID nid);
 
+    /// returns currently selected node (possibly NodeID::NoNode)
     tree::NodeID getSelectedNode() const;
 
 };

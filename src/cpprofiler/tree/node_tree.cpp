@@ -142,6 +142,10 @@ bool NodeTree::isRightMostChild_unsafe(NodeID nid) const {
     if (alt == kids-1) { return true; } else { return false; }
 }
 
+bool NodeTree::isLeaf(NodeID nid) const {
+    return m_structure->getNumberOfChildren(nid) == 0;
+}
+
 int NodeTree::getNumberOfChildren(NodeID nid) const {
     return m_structure->getNumberOfChildren(nid);
 }
