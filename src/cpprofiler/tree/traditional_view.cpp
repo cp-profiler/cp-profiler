@@ -379,7 +379,7 @@ void TraditionalView::navRight() {
 
 void TraditionalView::set_label_shown(NodeID nid, bool val) {
     m_flags->set_label_shown(nid, val);
-    dirtyUp();
+    m_layout_computer->dirtyUp(nid);
 }
 
 void TraditionalView::toggleShowLabel() {
@@ -467,6 +467,8 @@ void TraditionalView::toggleHighlighted() {
 
     auto val = !m_flags->get_highlighted(nid);
     m_flags->set_highlighted(nid, val);
+
+    emit needsRedrawing();
 }
 
 QWidget* TraditionalView::widget() {

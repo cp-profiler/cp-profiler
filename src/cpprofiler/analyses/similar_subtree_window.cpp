@@ -5,6 +5,8 @@
 #include <QSplitter>
 #include <QGraphicsSimpleTextItem>
 #include <QDebug>
+#include <QLabel>
+#include <QComboBox>
 #include <QAction>
 
 
@@ -40,6 +42,27 @@ SimilarSubtreeWindow::SimilarSubtreeWindow(QWidget* parent, const tree::NodeTree
 
     hist_view->setScene(m_histogram->scene());
 
+    auto globalLayout = new QVBoxLayout{this};
+
+    {
+        auto settingsLayout = new QHBoxLayout{};
+        globalLayout->addLayout(settingsLayout);
+        settingsLayout->addWidget(new QLabel{"Similarity Criteria:"}, 0, Qt::AlignRight);
+
+        auto typeChoice = new QComboBox();
+        typeChoice->addItems({"contour", "subtree"});
+        settingsLayout->addWidget(typeChoice);
+
+        connect(typeChoice, &QComboBox::currentTextChanged, [this](const QString& str) {
+            if (str == "contour") {
+                m_sim_type = SimilarityType::SHAPE;
+            } else if (str == "subtree") {
+                m_sim_type = SimilarityType::SUBTREE;
+            }
+            analyse();
+        });
+    }
+
 
     auto splitter = new QSplitter{this};
 
@@ -47,7 +70,6 @@ SimilarSubtreeWindow::SimilarSubtreeWindow(QWidget* parent, const tree::NodeTree
     splitter->addWidget(m_subtree_view->widget());
     splitter->setSizes(QList<int>{1, 1});
 
-    auto globalLayout = new QVBoxLayout{this};
     globalLayout->addWidget(splitter, 1);
 
     analyse();
@@ -471,21 +493,28 @@ void SimilarSubtreeWindow::analyse() {
 
     /// TODO: make sure building is finished
 
-    auto shapes = runSimilarShapes(m_nt.tree_structure(), m_lo);
+    auto patterns = std::vector<SubtreePattern>{};
 
-    auto subtrees = runIdenticalSubtrees(m_nt);
+    switch (m_sim_type) {
+        case SimilarityType::SUBTREE: {
+            patterns = runIdenticalSubtrees(m_nt);
+        } break;
+        case SimilarityType::SHAPE: {
+            patterns = runSimilarShapes(m_nt.tree_structure(), m_lo);
+        }
+    }
 
     /// make sure there are only patterns of cardinality > 1
 
-    auto new_end = std::remove_if(subtrees.begin(), subtrees.end(), [](const SubtreePattern& pattern) {
+    auto new_end = std::remove_if(patterns.begin(), patterns.end(), [](const SubtreePattern& pattern) {
         return pattern.count() <= 1;
     });
 
-    subtrees.resize(std::distance(subtrees.begin(), new_end));
+    patterns.resize(std::distance(patterns.begin(), new_end));
 
-    subtrees = eliminateSubsumed(m_nt, subtrees);
+    patterns = eliminateSubsumed(m_nt, patterns);
 
-    m_histogram->drawPatterns(std::move(subtrees));
+    m_histogram->drawPatterns(std::move(patterns));
 
     connect(m_histogram.get(), &HistogramScene::should_be_highlighted,
         this, &SimilarSubtreeWindow::should_be_highlighted);
