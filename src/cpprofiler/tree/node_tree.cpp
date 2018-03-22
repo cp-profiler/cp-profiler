@@ -65,9 +65,9 @@ NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus s
         auto child_nid = m_structure->getChild(nid, i);
         addEntry(child_nid);
         m_node_info->setStatus(child_nid, NodeStatus::UNDETERMINED);
-
-        m_node_stats.add_undetermined(kids);
     }
+
+    m_node_stats.add_undetermined(kids);
 
     m_node_info->setStatus(nid, status);
 

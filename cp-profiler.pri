@@ -28,6 +28,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hpp \
     $$PWD/src/cpprofiler/analyses/similar_subtree_window.cpp \
     $$PWD/src/cpprofiler/analyses/histogram_scene.cpp \
+    $$PWD/src/cpprofiler/tree/node_drawing.cpp \
 
 HEADERS += \
     $$PWD/src/cpprofiler/config.hh \
@@ -55,7 +56,6 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/traditional_view.hh \
     $$PWD/src/cpprofiler/tree/subtree_view.hh \
     $$PWD/src/cpprofiler/tree/cursors/node_cursor.hh \
-    $$PWD/src/cpprofiler/tree/cursors/height_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/layout_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hh \
@@ -64,6 +64,8 @@ HEADERS += \
     $$PWD/src/cpprofiler/analyses/similar_subtree_window.hh \
     $$PWD/src/cpprofiler/analyses/subtree_pattern.hh \
     $$PWD/src/cpprofiler/analyses/histogram_scene.hh \
+    $$PWD/src/cpprofiler/tree/node_widget.hh \
+    $$PWD/src/cpprofiler/tree/node_drawing.hh \
 
 SOURCES += \
     $$PWD/src/cpprofiler/tests/tree_test.cpp \

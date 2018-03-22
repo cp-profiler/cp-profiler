@@ -207,11 +207,11 @@ namespace cpprofiler { namespace tree {
             
             QRect node_area;
             if (m_node_flags.get_hidden(node)) {
-                auto node_pos_tl = node_pos - QPoint{NODE_WIDTH, 0};
-                node_area = QRect(node_pos_tl, QSize{2 * NODE_WIDTH, HIDDEN_DEPTH});
+                auto node_pos_tl = node_pos - QPoint{HALF_COLLAPSED_WIDTH, 0};
+                node_area = QRect(node_pos_tl, QSize{COLLAPSED_WIDTH, COLLAPSED_DEPTH});
             } else {
-                auto node_pos_tl = node_pos - QPoint{NODE_WIDTH/2, 0};
-                node_area = QRect(node_pos_tl, QSize{NODE_WIDTH, NODE_WIDTH});
+                auto node_pos_tl = node_pos - QPoint{MAX_NODE_W/2, 0};
+                node_area = QRect(node_pos_tl, QSize{MAX_NODE_W, MAX_NODE_W});
             }
             if (node_area.contains(x,y)) {
                 return node;

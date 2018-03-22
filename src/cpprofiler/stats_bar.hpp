@@ -3,6 +3,7 @@
 
 
 #include "tree/node_tree.hh"
+#include "tree/node_widget.hh"
 
 namespace cpprofiler {
 
@@ -23,6 +24,9 @@ class NodeStatsBar : public QWidget {
 public:
 
   NodeStatsBar(QWidget* parent, const tree::NodeStats& ns) : QWidget(parent), stats(ns) {
+
+    using namespace tree;
+
     QHBoxLayout* hbl = new QHBoxLayout{this};
     hbl->setContentsMargins(0, 0, 0, 0);
 
@@ -30,20 +34,22 @@ public:
     depthLabel = new QLabel("0");
     hbl->addWidget(depthLabel);
 
-    // hbl->addWidget(new NodeWidget(SOLVED));
     solvedLabel = new QLabel("0");
+    hbl->addWidget(new NodeWidget(NodeStatus::SOLVED));
     hbl->addWidget(solvedLabel);
 
-    // hbl->addWidget(new NodeWidget(FAILED));
     failedLabel = new QLabel("0");
+    hbl->addWidget(new NodeWidget(NodeStatus::FAILED));
     hbl->addWidget(failedLabel);
 
-    // hbl->addWidget(new NodeWidget(BRANCH));
+
     choicesLabel = new QLabel("0");
+    hbl->addWidget(new NodeWidget(NodeStatus::BRANCH));
     hbl->addWidget(choicesLabel);
 
     // hbl->addWidget(new NodeWidget(UNDETERMINED));
     openLabel = new QLabel("0");
+    hbl->addWidget(new NodeWidget(NodeStatus::UNDETERMINED));
     hbl->addWidget(openLabel);
   }
 

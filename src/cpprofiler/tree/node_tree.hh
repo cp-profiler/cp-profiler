@@ -44,28 +44,28 @@ public:
     }
 
     void add_branch(int n) {
-        emit stats_changed();
         m_branch = m_branch + n;
+        emit stats_changed();
     }
 
     void subtract_undetermined(int n) {
-        emit stats_changed();
         m_undetermined = m_undetermined - n;
+        emit stats_changed();
     }
 
     void add_undetermined(int n) {
-        emit stats_changed();
         m_undetermined = m_undetermined + n;
+        emit stats_changed();
     }
 
     void add_failed(int n) {
-        emit stats_changed();
         m_failed = m_failed + n;
+        emit stats_changed();
     }
 
     void add_solved(int n) {
-        emit stats_changed();
         m_solved = m_solved + n;
+        emit stats_changed();
     }
 
     /// see if max depth needs to be updated to d

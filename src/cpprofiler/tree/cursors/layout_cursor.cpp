@@ -10,9 +10,7 @@
 #include "../node_tree.hh"
 #include "../structure.hh"
 #include "../shape.hh"
-
-/// this include only needed for NODE_WIDTH (move out?)
-#include "drawing_cursor.hh"
+#include "../../config.hh"
 
 /// needed for NodeFlags
 #include "../traditional_view.hh"
@@ -141,7 +139,7 @@ namespace cpprofiler { namespace tree {
 
     static Extent calculateForSingleNode(NodeID nid, const NodeTree& nt, const NodeFlags& nf) {
 
-        Extent result{-traditional::HALF_NODE_WIDTH, traditional::HALF_NODE_WIDTH};
+        Extent result{-traditional::HALF_MAX_NODE_W, traditional::HALF_MAX_NODE_W};
         /// see if the node dispays labels and needs its (top) extents extended
         if (nf.get_label_shown(nid)) {
 
@@ -256,7 +254,7 @@ namespace cpprofiler { namespace tree {
         }
 
         /// calculate extents
-        (*combined)[0] = {-traditional::HALF_NODE_WIDTH, traditional::HALF_NODE_WIDTH};
+        (*combined)[0] = {-traditional::HALF_MAX_NODE_W, traditional::HALF_MAX_NODE_W};
         for (auto depth = 1; depth < new_depth; ++depth) {
 
             auto leftmost_x = 0;
