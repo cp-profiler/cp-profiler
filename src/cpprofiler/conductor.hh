@@ -26,6 +26,8 @@ public:
 
     void showTraditionalView(Execution* e);
 
+    void mergeTrees(Execution* e1, Execution* e2);
+
     ExecutionWindow& getExecutionWindow(Execution* e);
 
 private:

@@ -12,7 +12,7 @@ namespace cpprofiler { namespace tree {
     }
 
     bool NodeCursor::mayMoveDownwards() const {
-        auto n = m_tree.getNumberOfChildren(m_cur_node);
+        auto n = m_tree.childrenCount(m_cur_node);
         return (n > 0);
     }
 
@@ -57,7 +57,7 @@ namespace cpprofiler { namespace tree {
     }
 
     bool UnsafeNodeCursor::mayMoveDownwards() const {
-        auto n = m_tree.getNumberOfChildren_unsafe(m_cur_node);
+        auto n = m_tree.childrenCount_unsafe(m_cur_node);
         return (n > 0);
     }
 

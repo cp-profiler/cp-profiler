@@ -33,7 +33,7 @@ public:
     /// Same as `getParent` without holding a mutex
     NodeID getParent_unsafe(NodeID nid) const;
 
-    int getNumberOfChildren_unsafe(NodeID pid) const;
+    int childrenCount_unsafe(NodeID pid) const;
 
     NodeID addChild_unsafe(NodeID pid, int alt, int kids);
 
@@ -49,15 +49,19 @@ public:
 
     NodeID createRoot(int kids);
 
+    NodeID createRoot_unsafe(int kids);
+
     NodeID addChild(NodeID pid, int alt, int kids);
 
     void resetNumberOfChildren(NodeID nid, int kids);
+
+    void resetNumberOfChildren_unsafe(NodeID nid, int kids);
 
     NodeID getChild(NodeID pid, int alt) const;
 
     NodeID getParent(NodeID nid) const;
 
-    int getNumberOfChildren(NodeID pid) const;
+    int childrenCount(NodeID pid) const;
 
     int getNumberOfSiblings(NodeID nid) const;
     int getNumberOfSiblings_unsafe(NodeID nid) const;

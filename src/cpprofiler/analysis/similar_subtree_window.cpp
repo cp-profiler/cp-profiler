@@ -312,7 +312,7 @@ static void partition_step(const NodeTree& nt, Partition& p, int h, std::vector<
 
         const auto max_kids = std::accumulate(group.begin(), group.end(), 0, [&nt](int cur, NodeID nid) {
             auto pid = nt.getParent(nid);
-            return std::max(cur, nt.getNumberOfChildren(pid));
+            return std::max(cur, nt.childrenCount(pid));
         });
 
         int alt = 0;
@@ -369,12 +369,12 @@ static int calculateHeightOf(NodeID nid, const NodeTree& nt, std::vector<int>& h
 
     int cur_max = 0;
 
-    auto kids = nt.getNumberOfChildren(nid);
+    auto kids = nt.childrenCount(nid);
 
     if (kids == 0) {
         cur_max = 1;
     } else {
-        for (auto alt = 0; alt < nt.getNumberOfChildren(nid); ++alt) {
+        for (auto alt = 0; alt < nt.childrenCount(nid); ++alt) {
             auto child = nt.getChild(nid, alt);
             cur_max = std::max(cur_max, calculateHeightOf(child, nt, height_info) + 1);
         }
@@ -453,7 +453,7 @@ static vector<SubtreePattern> eliminateSubsumed(const NodeTree& tree, const vect
     for (const auto& pattern : patterns) {
         for (auto nid : pattern.nodes()) {
 
-            const auto kids = tree.getNumberOfChildren(nid);
+            const auto kids = tree.childrenCount(nid);
             for (auto alt = 0; alt < kids; ++alt) {
                 auto kid = tree.getChild(nid, alt);
                 marked.insert(kid);

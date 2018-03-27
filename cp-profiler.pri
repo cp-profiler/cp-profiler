@@ -26,8 +26,10 @@ SOURCES += \
     $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/layout_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hpp \
-    $$PWD/src/cpprofiler/analyses/similar_subtree_window.cpp \
-    $$PWD/src/cpprofiler/analyses/histogram_scene.cpp \
+    $$PWD/src/cpprofiler/analysis/similar_subtree_window.cpp \
+    $$PWD/src/cpprofiler/analysis/merge_window.cpp \
+    $$PWD/src/cpprofiler/analysis/tree_merger.cpp \
+    $$PWD/src/cpprofiler/analysis/histogram_scene.cpp \
     $$PWD/src/cpprofiler/tree/node_drawing.cpp \
 
 HEADERS += \
@@ -61,9 +63,11 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hh \
     $$PWD/src/cpprofiler/core.hh \
     $$PWD/src/cpprofiler/utils/debug_mutex.hh \
-    $$PWD/src/cpprofiler/analyses/similar_subtree_window.hh \
-    $$PWD/src/cpprofiler/analyses/subtree_pattern.hh \
-    $$PWD/src/cpprofiler/analyses/histogram_scene.hh \
+    $$PWD/src/cpprofiler/analysis/similar_subtree_window.hh \
+    $$PWD/src/cpprofiler/analysis/merge_window.hh \
+    $$PWD/src/cpprofiler/analysis/tree_merger.hh \
+    $$PWD/src/cpprofiler/analysis/subtree_pattern.hh \
+    $$PWD/src/cpprofiler/analysis/histogram_scene.hh \
     $$PWD/src/cpprofiler/tree/node_widget.hh \
     $$PWD/src/cpprofiler/tree/node_drawing.hh \
 

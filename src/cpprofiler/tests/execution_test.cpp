@@ -248,14 +248,54 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     }
 
+    void build_for_comparison_a(tree::NodeTree& tree) {
+
+        auto root = tree.addNode(tree::NodeID::NoNode, -1, 2, tree::NodeStatus::BRANCH, "0");
+
+        auto n1 = tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
+        auto n2 = tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
+
+        auto n3 = tree.addNode(n1, 0, 0, tree::NodeStatus::FAILED, "3");
+        auto n4 = tree.addNode(n1, 1, 0, tree::NodeStatus::FAILED, "4");
+
+        auto n5 = tree.addNode(n2, 0, 0, tree::NodeStatus::FAILED, "5");
+        auto n6 = tree.addNode(n2, 1, 0, tree::NodeStatus::FAILED, "6");
+    }
+
+    void build_for_comparison_b(tree::NodeTree& tree) {
+
+        auto root = tree.addNode(tree::NodeID::NoNode, -1, 2, tree::NodeStatus::BRANCH, "0");
+
+        auto n1 = tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
+        auto n2 = tree.addNode(root, 1, 0, tree::NodeStatus::FAILED, "2");
+
+        auto n3 = tree.addNode(n1, 0, 0, tree::NodeStatus::FAILED, "3");
+        auto n4 = tree.addNode(n1, 1, 0, tree::NodeStatus::FAILED, "4");
+    }
+
+    void comparison(Conductor& c) {
+
+        auto ex1 = new Execution("Execution A");
+        c.addNewExecution(ex1);
+        build_for_comparison_a(ex1->tree());
+
+        auto ex2 = new Execution("Execution A");
+        c.addNewExecution(ex2);
+        build_for_comparison_b(ex2->tree());
+
+        c.mergeTrees(ex1, ex2);
+    }
+
     void run(Conductor& conductor) {
 
         // binary_test_1_for_identical_subtrees(conductor);
         // binary_test_2_for_identical_subtrees(conductor);
-        binary_tree_execution(conductor);
+        // binary_tree_execution(conductor);
         // simple_nary_execution(conductor);
         // nary_execution(conductor);
         // larger_nary_execution(conductor);
+
+        comparison(conductor);
 
     }
 

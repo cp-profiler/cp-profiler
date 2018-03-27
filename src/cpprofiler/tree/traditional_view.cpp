@@ -217,7 +217,7 @@ namespace cpprofiler { namespace tree {
                 return node;
             } else {
 
-                auto kids = tree.getNumberOfChildren(node);
+                auto kids = tree.childrenCount(node);
 
                 for (auto i = 0; i < kids; ++i) {
                     auto kid = tree.getChild(node, i);
@@ -315,7 +315,7 @@ void TraditionalView::navDown() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto kids = m_tree.getNumberOfChildren(cur_nid);
+    auto kids = m_tree.childrenCount(cur_nid);
 
     if (kids > 0) {
         auto first_kid = m_tree.getChild(cur_nid, 0);
@@ -348,7 +348,7 @@ void TraditionalView::navLeft() {
 
     auto cur_alt = m_tree.getAlternative(cur_nid);
 
-    auto kids = m_tree.getNumberOfChildren(pid);
+    auto kids = m_tree.childrenCount(pid);
 
     if (cur_alt > 0) {
         m_user_data->setSelectedNode(m_tree.getChild(pid, cur_alt - 1));
@@ -367,7 +367,7 @@ void TraditionalView::navRight() {
 
     auto cur_alt = m_tree.getAlternative(cur_nid);
 
-    auto kids = m_tree.getNumberOfChildren(pid);
+    auto kids = m_tree.childrenCount(pid);
 
     if (cur_alt + 1 < kids) {
         m_user_data->setSelectedNode(m_tree.getChild(pid, cur_alt + 1));

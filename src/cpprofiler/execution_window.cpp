@@ -14,7 +14,7 @@
 
 #include "tree/node_tree.hh"
 
-#include "analyses/similar_subtree_window.hh"
+#include "analysis/similar_subtree_window.hh"
 
 #include "stats_bar.hpp"
 
@@ -29,7 +29,6 @@ namespace cpprofiler {
         auto layout = new QGridLayout();
 
         statusBar()->showMessage("Ready");
-
 
         auto stats_bar = new NodeStatsBar(this, node_tree.node_stats());
         statusBar()->addPermanentWidget(stats_bar);

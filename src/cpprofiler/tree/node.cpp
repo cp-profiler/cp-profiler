@@ -24,7 +24,7 @@ namespace cpprofiler { namespace tree {
         m_parent = pid;
     }
 
-    int Node::getNumberOfChildren() const {
+    int Node::childrenCount() const {
 
         auto tag = getTag();
 
@@ -55,7 +55,7 @@ namespace cpprofiler { namespace tree {
 
     void Node::resetNumberOfChildren(int n) {
         // can only change from 0 to 2 for now
-        if (getNumberOfChildren() != 0) throw std::exception();
+        if (childrenCount() != 0) throw std::exception();
 
         if (n == 2) {
             setTag(Tag::TWO_CHILDREN);
@@ -75,7 +75,7 @@ namespace cpprofiler { namespace tree {
 
     void Node::setChild(NodeID nid, int alt) {
 
-        auto kids = getNumberOfChildren();
+        auto kids = childrenCount();
 
         if (kids <= 0) {
             throw no_child();
@@ -92,7 +92,7 @@ namespace cpprofiler { namespace tree {
             m_children[alt] = nid;
         }
 
-        auto kids2 = getNumberOfChildren();
+        auto kids2 = childrenCount();
 
         if (kids != kids2) throw;
 
@@ -100,7 +100,7 @@ namespace cpprofiler { namespace tree {
     }
 
     NodeID Node::getChild(int alt) {
-        auto kids = getNumberOfChildren();
+        auto kids = childrenCount();
 
         if (kids <= 0) {
             throw std::exception();

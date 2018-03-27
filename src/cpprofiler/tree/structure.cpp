@@ -20,6 +20,10 @@ namespace cpprofiler { namespace tree {
 
     NodeID Structure::createRoot(int kids) {
         utils::MutexLocker locker(&m_structure_mutex);
+        return createRoot_unsafe(kids);
+    }
+
+    NodeID Structure::createRoot_unsafe(int kids) {
         if (m_nodes.size() > 0) {
             throw invalid_tree();
         }
@@ -54,6 +58,10 @@ namespace cpprofiler { namespace tree {
 
     void Structure::resetNumberOfChildren(NodeID nid, int kids) {
         utils::MutexLocker locker(&m_structure_mutex);
+       resetNumberOfChildren_unsafe(nid, kids);
+    }
+
+    void Structure::resetNumberOfChildren_unsafe(NodeID nid, int kids) {
         m_nodes[nid]->resetNumberOfChildren(kids);
 
         for (auto i = 0; i < kids; ++i) {
@@ -79,13 +87,13 @@ namespace cpprofiler { namespace tree {
         return getParent_unsafe(nid);
     }
 
-    int Structure::getNumberOfChildren_unsafe(NodeID pid) const {
-        return m_nodes[pid]->getNumberOfChildren();
+    int Structure::childrenCount_unsafe(NodeID pid) const {
+        return m_nodes[pid]->childrenCount();
     }
 
-    int Structure::getNumberOfChildren(NodeID pid) const {
+    int Structure::childrenCount(NodeID pid) const {
         utils::MutexLocker locker(&m_structure_mutex);
-        return getNumberOfChildren_unsafe(pid);
+        return childrenCount_unsafe(pid);
     }
 
 
@@ -96,7 +104,7 @@ namespace cpprofiler { namespace tree {
 
     int Structure::getNumberOfSiblings_unsafe(NodeID nid) const {
         auto pid = getParent_unsafe(nid);
-        return getNumberOfChildren_unsafe(pid);
+        return childrenCount_unsafe(pid);
     }
 
     NodeID Structure::getRoot_unsafe() const {
@@ -118,7 +126,7 @@ namespace cpprofiler { namespace tree {
 
         if (parent_nid == NodeID::NoNode) return -1;
 
-        for (auto i = 0; i < getNumberOfChildren_unsafe(parent_nid); ++i) {
+        for (auto i = 0; i < childrenCount_unsafe(parent_nid); ++i) {
             if (getChild_unsafe(parent_nid, i) == nid) {
                 return i;
             }
@@ -168,7 +176,7 @@ std::vector<NodeID> preOrder(const Structure& tree) {
         auto nid = stk.top(); stk.pop();
         result.push_back(nid);
 
-        for (auto i = tree.getNumberOfChildren(nid) - 1; i >= 0 ; --i) {
+        for (auto i = tree.childrenCount(nid) - 1; i >= 0 ; --i) {
             auto child = tree.getChild(nid, i);
             stk.push(child);
         }
@@ -213,7 +221,7 @@ std::vector<NodeID> postOrder_unsafe(const Structure& tree) {
 
         result.push_back(nid);
 
-        for (auto i = 0; i < tree.getNumberOfChildren_unsafe(nid); ++i) {
+        for (auto i = 0; i < tree.childrenCount_unsafe(nid); ++i) {
             auto child = tree.getChild_unsafe(nid, i);
             stk_1.push(child);
         }

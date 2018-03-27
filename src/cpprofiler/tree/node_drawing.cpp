@@ -1,0 +1,106 @@
+#include "node_drawing.hh"
+#include "../config.hh"
+
+#include <QPainter>
+
+namespace cpprofiler { namespace tree { namespace draw {
+
+namespace colors {
+    /// The color for selected nodes
+    static QColor gold(252, 209, 22);
+    /// Red color for failed nodes
+    static QColor red(218, 37, 29);
+    /// Green color for solved nodes
+    static QColor green(11, 118, 70);
+    /// Blue color for choice nodes
+    static QColor blue(0, 92, 161);
+    /// Grey color for skipped nodes
+    static QColor grey(150, 150, 150);
+    /// Orange color for best solutions
+    static QColor orange(235, 137, 27);
+    /// White color
+    static QColor white(255,255,255);
+
+    /// Red color for expanded failed nodes
+    static QColor lightRed(218, 37, 29, 120);
+    /// Green color for expanded solved nodes
+    static QColor lightGreen(11, 118, 70, 120);
+    /// Blue color for expanded choice nodes
+    static QColor lightBlue(0, 92, 161, 120);
+}
+
+
+static void drawDiamond(QPainter& painter, int myx, int myy, bool shadow) {
+    using namespace traditional;
+    QPointF points[4] = { QPointF(myx, myy),
+        QPointF(myx + HALF_SOL_W, myy + HALF_SOL_W),
+        QPointF(myx, myy + SOL_WIDTH),
+        QPointF(myx - HALF_SOL_W, myy + HALF_SOL_W)
+    };
+
+    if (shadow) {
+        for (auto&& p : points) { p += QPointF(SHADOW_OFFSET, SHADOW_OFFSET);}
+    }
+
+    painter.drawConvexPolygon(points, 4);
+}
+
+void solution(QPainter& painter, int x, int y, bool selected) {
+    using namespace traditional;
+    if (selected) {
+        painter.setBrush(colors::gold);
+    } else {
+        painter.setBrush(colors::green);
+    }
+
+    drawDiamond(painter, x, y, false);
+}
+
+void failure(QPainter& painter, int x, int y, bool selected) {
+    using namespace traditional;
+    if (selected) {
+        painter.setBrush(colors::gold);
+    } else {
+        painter.setBrush(colors::red);
+    }
+
+    painter.drawRect(x - HALF_FAILED_WIDTH, y, FAILED_WIDTH, FAILED_WIDTH);
+}
+
+void branch(QPainter& painter, int x, int y, bool selected) {
+
+    using namespace traditional;
+    if (selected) {
+        painter.setBrush(colors::gold);
+    } else {
+        painter.setBrush(colors::blue);
+    }
+
+    painter.drawEllipse(x - HALF_BRANCH_W, y, BRANCH_WIDTH, BRANCH_WIDTH);
+
+}
+
+void unexplored(QPainter& painter, int x, int y, bool selected) {
+    using namespace traditional;
+    if (selected) {
+        painter.setBrush(colors::gold);
+    } else {
+        painter.setBrush(colors::white);
+    }
+
+    painter.drawEllipse(x - HALF_UNDET_WIDTH, y, UNDET_WIDTH, UNDET_WIDTH);
+}
+
+void skipped(QPainter& painter, int x, int y, bool selected) {
+    using namespace traditional;
+    if (selected) {
+        painter.setBrush(colors::gold);
+    } else {
+        painter.setBrush(colors::grey);
+    }
+
+    painter.drawRect(x - HALF_SKIPPED_WIDTH, y, SKIPPED_WIDTH, SKIPPED_WIDTH);
+}
+
+
+}}}

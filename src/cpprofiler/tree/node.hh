@@ -51,7 +51,7 @@ public:
 
     Node(NodeID parent_nid, int kids = 0);
 
-    int getNumberOfChildren() const;
+    int childrenCount() const;
     void setNumberOfChildren(int n);
 
     /// similar to setNumberOfChildren, but handles existing children

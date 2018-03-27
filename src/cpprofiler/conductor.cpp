@@ -14,7 +14,13 @@
 #include "execution_list.hh"
 #include "execution_window.hh"
 
+#include "analysis/merge_window.hh"
+#include "analysis/tree_merger.hh"
+
 #include "utils/std_ext.hh"
+
+
+#include <QProgressDialog>
 
 namespace cpprofiler {
 
@@ -121,6 +127,24 @@ namespace cpprofiler {
         }
 
         return *m_execution_windows.at(e);
+    }
+
+    void Conductor::mergeTrees(Execution* e1, Execution* e2) {
+
+        /// create new tree
+
+        // QProgressDialog dialog;
+
+        auto window = new analysis::MergeWindow();
+
+        auto& new_tree = window->getTree();
+
+        /// Note: TreeMerger will delete itself when finished
+        auto merger = new analysis::TreeMerger(*e1, *e2, new_tree);
+        merger->start();
+
+        window->show();
+
     }
 
 }

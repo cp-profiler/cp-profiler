@@ -285,7 +285,7 @@ namespace cpprofiler { namespace tree {
         if (m_node_flags.get_hidden(nid)) {
             m_layout.setShape_unsafe(nid, ShapeUniqPtr(&Shape::hidden));
         } else {
-            auto nkids = m_tree.getNumberOfChildren_unsafe(nid);
+            auto nkids = m_tree.childrenCount_unsafe(nid);
 
             if (nkids == 0) {
 

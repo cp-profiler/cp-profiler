@@ -117,6 +117,8 @@ public:
 
     NodeStatus status(NodeID nid) const;
 
+    NodeID createRoot_unsafe(int kids);
+
     NodeID addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus status, Label = emptyLabel);
 
     /// Total number of nodes (including undetermined)
@@ -132,13 +134,21 @@ public:
     /// whether the node is the right-most child
     bool isRightMostChild_unsafe(NodeID nid) const;
 
-    int getNumberOfChildren(NodeID nid) const;
+    int childrenCount(NodeID nid) const;
+
+    int childrenCount_unsafe(NodeID nid) const;
+
+    void resetNumberOfChildren_unsafe(NodeID nid, int kids);
 
     bool isLeaf(NodeID) const;
+
+    NodeID getRoot_unsafe() const;
 
     NodeID getParent(NodeID nid) const;
 
     NodeID getChild(NodeID nid, int alt) const;
+
+    NodeID getChild_unsafe(NodeID nid, int alt) const;
 
     /// return the depth of the node
     int calculateDepth(NodeID nid) const;
@@ -175,7 +185,7 @@ void NodeTree::preOrderApply(NodeID start, Callback cb) const {
 
         cb(nid);
 
-        for (auto i = getNumberOfChildren(nid) - 1; i >= 0; --i) {
+        for (auto i = childrenCount(nid) - 1; i >= 0; --i) {
             auto child = getChild(nid, i);
             stk.push(child);
         }

@@ -36,6 +36,10 @@ NodeInfo& NodeTree::node_info() {
     return *m_node_info;
 }
 
+NodeID NodeTree::createRoot_unsafe(int kids) {
+    return m_structure->createRoot_unsafe(kids);
+}
+
 NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus status, Label label) {
 
     auto nodes_created = 0;
@@ -47,6 +51,8 @@ NodeID NodeTree::addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus s
         addEntry(nid);
         setLabel(nid, label);
         nodes_created += (1 + kids);
+
+        m_node_stats.add_undetermined(1);
 
     } else {
         nid = m_structure->getChild(parent_id, alt);
@@ -106,8 +112,16 @@ NodeID NodeTree::getParent(NodeID nid) const {
     return m_structure->getParent(nid);
 }
 
+NodeID NodeTree::getRoot_unsafe() const {
+    return m_structure->getRoot_unsafe();
+}
+
 NodeID NodeTree::getChild(NodeID nid, int alt) const {
     return m_structure->getChild(nid, alt);
+}
+
+NodeID NodeTree::getChild_unsafe(NodeID nid, int alt) const {
+    return m_structure->getChild_unsafe(nid, alt);
 }
 
 const NodeStats& NodeTree::node_stats() const {
@@ -137,17 +151,25 @@ bool NodeTree::isRightMostChild_unsafe(NodeID nid) const {
     /// root is treated as the left-most child
     if (pid == NodeID::NoNode) return false;
 
-    auto kids = m_structure->getNumberOfChildren_unsafe(pid);
+    auto kids = m_structure->childrenCount_unsafe(pid);
     auto alt = m_structure->getAlternative_unsafe(nid);
     if (alt == kids-1) { return true; } else { return false; }
 }
 
 bool NodeTree::isLeaf(NodeID nid) const {
-    return m_structure->getNumberOfChildren(nid) == 0;
+    return m_structure->childrenCount(nid) == 0;
 }
 
-int NodeTree::getNumberOfChildren(NodeID nid) const {
-    return m_structure->getNumberOfChildren(nid);
+int NodeTree::childrenCount(NodeID nid) const {
+    return m_structure->childrenCount(nid);
+}
+
+int NodeTree::childrenCount_unsafe(NodeID nid) const {
+    return m_structure->childrenCount_unsafe(nid);
+}
+
+void NodeTree::resetNumberOfChildren_unsafe(NodeID nid, int kids) {
+    m_structure->resetNumberOfChildren_unsafe(nid, kids);
 }
 
 const Label& NodeTree::getLabel(NodeID nid) const {
