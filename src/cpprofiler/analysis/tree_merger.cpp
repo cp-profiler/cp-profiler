@@ -69,7 +69,7 @@ static bool compareNodes(NodeID n1, const NodeTree& nt1,
 
   if (n1 == NodeID::NoNode || n2 == NodeID::NoNode) return false;
 
-  if (nt1.childrenCount_unsafe(n1) != nt2.childrenCount_unsafe(n2)) return false;
+  if (nt1.childrenCount(n1) != nt2.childrenCount(n2)) return false;
 
   if (nt1.status(n1) != nt2.status(n2)) return false;
 
@@ -93,8 +93,8 @@ void TreeMerger::run() {
     qDebug() << "Merging: running...";
 
     /// Must hold mutexes of both node trees
-    auto& mutex_l = tree_l.tree_structure().getMutex();
-    auto& mutex_r = tree_r.tree_structure().getMutex();
+    auto& mutex_l = tree_l.treeMutex();
+    auto& mutex_r = tree_r.treeMutex();
 
     /// Can this dead-lock?
     utils::MutexLocker locker_l(&mutex_l);
@@ -102,12 +102,12 @@ void TreeMerger::run() {
 
     QStack<NodeID> stack_l, stack_r, stack;
 
-    auto root_l = tree_l.getRoot_unsafe();
-    auto root_r = tree_r.getRoot_unsafe();
+    auto root_l = tree_l.getRoot();
+    auto root_r = tree_r.getRoot();
 
     stack_l.push(root_l); stack_r.push(root_r);
 
-    auto root = res_tree.createRoot_unsafe(0);
+    auto root = res_tree.createRoot(0);
     stack.push(root);
 
     while(stack_l.size() > 0) {
@@ -120,16 +120,16 @@ void TreeMerger::run() {
 
         if (equal) {
 
-            auto kids = tree_l.childrenCount_unsafe(node_l);
+            auto kids = tree_l.childrenCount(node_l);
 
             // dupNode(node_l, tree_l, target, res_tree);
 
-            res_tree.resetNumberOfChildren_unsafe(target, kids);
+            res_tree.resetNumberOfChildren(target, kids);
 
             for (auto i = kids - 1; i >= 0; --i) {
-                stack_l.push( tree_l.getChild_unsafe(node_l, i) );
-                stack_r.push( tree_r.getChild_unsafe(node_r, i) );
-                stack.push( res_tree.getChild_unsafe(target, i) );
+                stack_l.push( tree_l.getChild(node_l, i) );
+                stack_r.push( tree_r.getChild(node_r, i) );
+                stack.push( res_tree.getChild(target, i) );
             }
 
 

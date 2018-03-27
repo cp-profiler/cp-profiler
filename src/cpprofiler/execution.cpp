@@ -29,14 +29,6 @@ namespace cpprofiler {
         return m_solver_data;
     }
 
-    const tree::Structure& Execution::tree_structure() const {
-        return m_tree->tree_structure();
-    }
-
-    tree::Structure& Execution::tree_structure() {
-        return m_tree->tree_structure();
-    }
-
     const tree::NodeInfo& Execution::node_info() const {
         return m_tree->node_info();
     }

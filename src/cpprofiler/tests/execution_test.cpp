@@ -36,8 +36,6 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         auto& tree = ex->tree();
 
-
-
         auto root = tree.addNode(tree::NodeID::NoNode, -1, 2, tree::NodeStatus::BRANCH, "0");
         auto n1 =  tree.addNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
         auto n2 =  tree.addNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
@@ -279,7 +277,7 @@ namespace cpprofiler { namespace tests { namespace execution {
         c.addNewExecution(ex1);
         build_for_comparison_a(ex1->tree());
 
-        auto ex2 = new Execution("Execution A");
+        auto ex2 = new Execution("Execution B");
         c.addNewExecution(ex2);
         build_for_comparison_b(ex2->tree());
 

@@ -65,7 +65,7 @@ namespace cpprofiler { namespace tree {
 
         painter.scale(m_options.scale,m_options.scale);
 
-        auto root_nid = m_tree.tree_structure().getRoot();
+        auto root_nid = m_tree.getRoot_safe();
 
         if (!m_layout.getLayoutDone(root_nid)) { return; }
 
@@ -132,7 +132,7 @@ namespace cpprofiler { namespace tree {
 
 
         /// TODO: see if I can remove mutexes
-        auto& tree_mutex = m_tree.tree_structure().getMutex();
+        auto& tree_mutex = m_tree.treeMutex();
         auto& layout_mutex = m_layout.getMutex();
         utils::MutexLocker t_lock(&tree_mutex);
         utils::MutexLocker l_lock(&layout_mutex);
@@ -144,27 +144,26 @@ namespace cpprofiler { namespace tree {
     }
 
     QPoint TreeScrollArea::getNodeCoordinate(NodeID nid) {
-        auto& tree = m_tree.tree_structure();
         auto node = nid;
         auto pos = QPoint{m_options.root_x, m_options.root_y};
 
-        while(node != tree.getRoot()) {
+        while(node != m_tree.getRoot_safe()) {
             pos += {m_layout.getOffset(node), layout::dist_y};
-            node = tree.getParent(node);
+            node = m_tree.getParent_safe(node);
         }
 
         return pos;
     }
 
-    static std::pair<int,int> getRealBB(NodeID nid, const Structure& tree, const Layout& layout, const DisplayState& ds) {
+    static std::pair<int,int> getRealBB(NodeID nid, const NodeTree& tree, const Layout& layout, const DisplayState& ds) {
 
         auto bb = layout.getBoundingBox(nid);
 
         auto node = nid;
-        while (node != tree.getRoot()) {
+        while (node != tree.getRoot_safe()) {
             bb.left += layout.getOffset(node);
             bb.right += layout.getOffset(node);
-            node = tree.getParent(node);
+            node = tree.getParent_safe(node);
         }
 
         bb.left += ds.root_x;
@@ -190,13 +189,8 @@ namespace cpprofiler { namespace tree {
         x = x / m_options.scale + x_off;
         y = y / m_options.scale + y_off;
 
-        // qDebug() << "root x:" << m_options.root_x << "y:" << m_options.root_y;
-        // qDebug() << "clicked:" << x << y;
-
-        auto& tree = m_tree.tree_structure();
-
         std::queue<NodeID> queue;
-        queue.push(tree.getRoot());
+        queue.push(m_tree.getRoot_safe());
 
         while(!queue.empty()) {
 
@@ -217,12 +211,12 @@ namespace cpprofiler { namespace tree {
                 return node;
             } else {
 
-                auto kids = tree.childrenCount(node);
+                auto kids = m_tree.childrenCount_safe(node);
 
                 for (auto i = 0; i < kids; ++i) {
-                    auto kid = tree.getChild(node, i);
+                    auto kid = m_tree.getChild_safe(node, i);
 
-                    auto pair = getRealBB(kid, tree, m_layout, m_options);
+                    auto pair = getRealBB(kid, m_tree, m_layout, m_options);
                     if (pair.first <= x && pair.second >= x) {
                         queue.push(kid);
                     }
@@ -266,16 +260,15 @@ namespace cpprofiler { namespace tree {
 namespace cpprofiler { namespace tree {
 
 TraditionalView::TraditionalView(const NodeTree& tree)
-: m_node_tree(tree),
-  m_tree(tree.tree_structure()),
+: m_tree(tree),
   m_user_data(utils::make_unique<UserData>()),
   m_layout(utils::make_unique<Layout>()),
   m_flags(utils::make_unique<NodeFlags>()),
   m_layout_computer(utils::make_unique<LayoutComputer>(tree, *m_layout, *m_flags))
 {
 
-    auto root_node = m_tree.getRoot();
-    m_scroll_area.reset(new TreeScrollArea(root_node, tree, *m_user_data, *m_layout, *m_flags));
+    auto root_node = m_tree.getRoot_safe();
+    m_scroll_area.reset(new TreeScrollArea(root_node, m_tree, *m_user_data, *m_layout, *m_flags));
 
 
     // auto painter = m_scroll_area.getLabelPainter();
@@ -298,7 +291,7 @@ TraditionalView::TraditionalView(const NodeTree& tree)
     });
 
     /// NOTE: for now, compute layout here
-    if (tree.nodeCount() > 0) {
+    if (tree.nodeCount_safe() > 0) {
         m_layout_computer->compute();
     }
 
@@ -315,10 +308,10 @@ void TraditionalView::navDown() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto kids = m_tree.childrenCount(cur_nid);
+    auto kids = m_tree.childrenCount_safe(cur_nid);
 
     if (kids > 0) {
-        auto first_kid = m_tree.getChild(cur_nid, 0);
+        auto first_kid = m_tree.getChild_safe(cur_nid, 0);
         m_user_data->setSelectedNode(first_kid);
         centerCurrentNode();
     }
@@ -330,7 +323,7 @@ void TraditionalView::navUp() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto pid = m_tree.getParent(cur_nid);
+    auto pid = m_tree.getParent_safe(cur_nid);
 
     if (pid != NodeID::NoNode) {
         m_user_data->setSelectedNode(pid);
@@ -343,15 +336,15 @@ void TraditionalView::navLeft() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto pid = m_tree.getParent(cur_nid);
+    auto pid = m_tree.getParent_safe(cur_nid);
     if (pid == NodeID::NoNode) return;
 
-    auto cur_alt = m_tree.getAlternative(cur_nid);
+    auto cur_alt = m_tree.getAlternative_safe(cur_nid);
 
-    auto kids = m_tree.childrenCount(pid);
+    auto kids = m_tree.childrenCount_safe(pid);
 
     if (cur_alt > 0) {
-        m_user_data->setSelectedNode(m_tree.getChild(pid, cur_alt - 1));
+        m_user_data->setSelectedNode(m_tree.getChild_safe(pid, cur_alt - 1));
         centerCurrentNode();
     }
 
@@ -361,16 +354,16 @@ void TraditionalView::navLeft() {
 void TraditionalView::navRight() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
-    auto pid = m_tree.getParent(cur_nid);
+    auto pid = m_tree.getParent_safe(cur_nid);
 
     if (pid == NodeID::NoNode) return;
 
-    auto cur_alt = m_tree.getAlternative(cur_nid);
+    auto cur_alt = m_tree.getAlternative_safe(cur_nid);
 
-    auto kids = m_tree.childrenCount(pid);
+    auto kids = m_tree.childrenCount_safe(pid);
 
     if (cur_alt + 1 < kids) {
-        m_user_data->setSelectedNode(m_tree.getChild(pid, cur_alt + 1));
+        m_user_data->setSelectedNode(m_tree.getChild_safe(pid, cur_alt + 1));
         centerCurrentNode();
     }
 
@@ -399,7 +392,7 @@ void TraditionalView::showLabelsDown() {
 
     auto val = !m_flags->get_label_shown(cur_nid);
 
-    m_node_tree.preOrderApply(cur_nid, [val, this](NodeID nid) {
+    m_tree.preOrderApply(cur_nid, [val, this](NodeID nid) {
         set_label_shown(nid, val);
     });
 
@@ -412,7 +405,7 @@ void TraditionalView::showLabelsUp() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto pid = m_node_tree.getParent(cur_nid);
+    auto pid = m_tree.getParent_safe(cur_nid);
 
     /// if it is root, toggle for the root only
     if (pid == NodeID::NoNode) {
@@ -424,7 +417,7 @@ void TraditionalView::showLabelsUp() {
 
     while (cur_nid != NodeID::NoNode) {
         set_label_shown(cur_nid, val);
-        cur_nid = m_node_tree.getParent(cur_nid);
+        cur_nid = m_tree.getParent_safe(cur_nid);
     }
 
     setLayoutOutdated();
@@ -436,7 +429,7 @@ void TraditionalView::toggleHidden() {
     if (cur_nid == NodeID::NoNode) return;
 
     // if leaf node -> do not hide
-    if (m_node_tree.isLeaf(cur_nid)) return;
+    if (m_tree.isLeaf_safe(cur_nid)) return;
 
     auto val = !m_flags->get_hidden(cur_nid);
     m_flags->set_hidden(cur_nid, val);
@@ -484,12 +477,12 @@ void TraditionalView::setScale(int val) {
 }
 
 /// relative to the root
-static int global_node_x_offset(const Structure& tree, const Layout& layout, NodeID nid) {
+static int global_node_x_offset(const NodeTree& tree, const Layout& layout, NodeID nid) {
     auto x_off = 0;
 
     while (nid != NodeID::NoNode) {
         x_off += layout.getOffset(nid);
-        nid = tree.getParent(nid);
+        nid = tree.getParent_safe(nid);
     }
 
     return x_off;
@@ -500,7 +493,7 @@ void TraditionalView::centerNode(NodeID nid) {
 
     auto x_offset = global_node_x_offset(m_tree, *m_layout, nid);
 
-    auto root_nid = m_tree.getRoot();
+    auto root_nid = m_tree.getRoot_safe();
     auto bb = m_layout->getBoundingBox(root_nid);
 
     auto value = x_offset - bb.left;

@@ -62,9 +62,6 @@ namespace cpprofiler {
         std::unique_ptr<Message> node_msg{node};
         // std::cerr << *node << std::endl;
 
-        // auto& tree = m_execution->tree_structure();
-        // auto& node_info = m_execution->node_info();
-
         auto n_uid = node->nodeUID();
         auto p_uid = node->parentUID();
 
@@ -79,7 +76,6 @@ namespace cpprofiler {
         const auto nid = tree.addNode(pid, node->alt(), node->kids(),
             static_cast<tree::NodeStatus>(node->status()));
 
-        // const auto pid = tree.getChild(pid, alt);
         m_execution->solver_data().setNodeId({n_uid.nid, n_uid.rid, n_uid.tid}, nid);
 
     }

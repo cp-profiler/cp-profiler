@@ -125,7 +125,7 @@ namespace cpprofiler { namespace tree {
         /// NOTE: this should be consisten with the layout
         if (m_flags.get_label_shown(m_cur_node)) {
 
-            auto draw_left = !m_node_tree.isRightMostChild_unsafe(m_cur_node);
+            auto draw_left = !m_node_tree.isRightMostChild(m_cur_node);
             // m_painter.setPen(QPen{Qt::black, 2});
             const auto& label = m_node_tree.getLabel(m_cur_node);
 

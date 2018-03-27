@@ -30,53 +30,47 @@ class Structure {
 
 public:
 
-    /// Same as `getParent` without holding a mutex
-    NodeID getParent_unsafe(NodeID nid) const;
-
-    int childrenCount_unsafe(NodeID pid) const;
-
-    NodeID addChild_unsafe(NodeID pid, int alt, int kids);
-
-    NodeID getChild_unsafe(NodeID pid, int alt) const;
-
-    NodeID getRoot_unsafe() const;
-
-    int nodeCount_unsafe() const;
+    Structure();
 
     utils::Mutex& getMutex() const;
 
-    Structure();
-
-    NodeID createRoot(int kids);
-
-    NodeID createRoot_unsafe(int kids);
-
-    NodeID addChild(NodeID pid, int alt, int kids);
-
-    void resetNumberOfChildren(NodeID nid, int kids);
-
-    void resetNumberOfChildren_unsafe(NodeID nid, int kids);
+    NodeID getParent(NodeID nid) const;
+    NodeID getParent_safe(NodeID nid) const;
 
     NodeID getChild(NodeID pid, int alt) const;
-
-    NodeID getParent(NodeID nid) const;
-
-    int childrenCount(NodeID pid) const;
-
-    int getNumberOfSiblings(NodeID nid) const;
-    int getNumberOfSiblings_unsafe(NodeID nid) const;
-
-    NodeID getRoot() const;
+    NodeID getChild_safe(NodeID pid, int alt) const;
 
     /// which alternative the current node is relative to its parent
     int getAlternative(NodeID nid) const;
-    int getAlternative_unsafe(NodeID nid) const;
+    int getAlternative_safe(NodeID nid) const;
 
-    int calculateDepth(NodeID nid) const;
-    int calculateDepth_unsafe(NodeID nid) const;
+    int getNumberOfSiblings(NodeID nid) const;
+    int getNumberOfSiblings_safe(NodeID nid) const;
+
+    int childrenCount(NodeID pid) const;
+
+    NodeID createRoot(int kids);
+    NodeID createRoot_safe(int kids);
+
+    NodeID addChild(NodeID pid, int alt, int kids);
+
+    NodeID getRoot() const;
 
     int nodeCount() const;
 
+    NodeID addChild_safe(NodeID pid, int alt, int kids);
+
+    void resetNumberOfChildren(NodeID nid, int kids);
+    void resetNumberOfChildren_safe(NodeID nid, int kids);
+
+    int childrenCount_safe(NodeID pid) const;
+
+    NodeID getRoot_safe() const;
+
+    int calculateDepth(NodeID nid) const;
+    int calculateDepth_safe(NodeID nid) const;
+
+    int nodeCount_safe() const;
 };
 
 }}

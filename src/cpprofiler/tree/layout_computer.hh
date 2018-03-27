@@ -13,7 +13,7 @@ namespace cpprofiler { namespace tree {
 
     class LayoutComputer {
 
-        const NodeTree& m_node_tree;
+        const NodeTree& m_tree;
         const NodeFlags& m_flags;
         Layout& m_layout;
 

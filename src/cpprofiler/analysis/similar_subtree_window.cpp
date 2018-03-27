@@ -125,11 +125,11 @@ struct CompareShapes {
 
 
 
-static std::vector<SubtreePattern> runSimilarShapes(const Structure& tree, const Layout& lo) {
+static std::vector<SubtreePattern> runSimilarShapes(const NodeTree& tree, const Layout& lo) {
 
     std::multiset<ShapeInfo, CompareShapes> shape_set;
 
-    auto node_order = helper::postOrder_unsafe(tree);
+    auto node_order = helper::postOrder_unsafe(tree.tree_structure());
 
     for (auto nid : node_order) {
         shape_set.insert({nid, lo.getShape_unsafe(nid)});
@@ -311,8 +311,8 @@ static void partition_step(const NodeTree& nt, Partition& p, int h, std::vector<
         }
 
         const auto max_kids = std::accumulate(group.begin(), group.end(), 0, [&nt](int cur, NodeID nid) {
-            auto pid = nt.getParent(nid);
-            return std::max(cur, nt.childrenCount(pid));
+            auto pid = nt.getParent_safe(nid);
+            return std::max(cur, nt.childrenCount_safe(pid));
         });
 
         int alt = 0;
@@ -321,9 +321,9 @@ static void partition_step(const NodeTree& nt, Partition& p, int h, std::vector<
             vector<NodeID> marked;
 
             for (auto nid : group) {
-                if (nt.getAlternative(nid) == alt) {
+                if (nt.getAlternative_safe(nid) == alt) {
                     /// Mark the parent of nid to separate
-                    auto pid = nt.getParent(nid);
+                    auto pid = nt.getParent_safe(nid);
                     marked.push_back(pid);
 
                     qDebug() << "mark" << pid;
@@ -369,13 +369,13 @@ static int calculateHeightOf(NodeID nid, const NodeTree& nt, std::vector<int>& h
 
     int cur_max = 0;
 
-    auto kids = nt.childrenCount(nid);
+    auto kids = nt.childrenCount_safe(nid);
 
     if (kids == 0) {
         cur_max = 1;
     } else {
-        for (auto alt = 0; alt < nt.childrenCount(nid); ++alt) {
-            auto child = nt.getChild(nid, alt);
+        for (auto alt = 0; alt < nt.childrenCount_safe(nid); ++alt) {
+            auto child = nt.getChild_safe(nid, alt);
             cur_max = std::max(cur_max, calculateHeightOf(child, nt, height_info) + 1);
         }
     }
@@ -389,17 +389,11 @@ static int calculateHeightOf(NodeID nid, const NodeTree& nt, std::vector<int>& h
 /// TODO: this does not work correctly for n-ary trees yet
 static std::vector<SubtreePattern> runIdenticalSubtrees(const NodeTree& nt) {
 
-    auto& tree = nt.tree_structure();
-
     auto label_opt = LabelOption::IGNORE_LABEL;
 
-    std::vector<int> height_info(nt.nodeCount());
-    // {
-    //     HeightCursor hc(tree.getRoot(), nt, height_info);
-    //     PostorderNodeVisitor<HeightCursor>(hc).run();
-    // }
+    std::vector<int> height_info(nt.nodeCount_safe());
 
-    auto max_height = calculateHeightOf(tree.getRoot(), nt, height_info);
+    auto max_height = calculateHeightOf(nt.getRoot_safe(), nt, height_info);
 
     auto max_depth = nt.depth();
 
@@ -453,9 +447,9 @@ static vector<SubtreePattern> eliminateSubsumed(const NodeTree& tree, const vect
     for (const auto& pattern : patterns) {
         for (auto nid : pattern.nodes()) {
 
-            const auto kids = tree.childrenCount(nid);
+            const auto kids = tree.childrenCount_safe(nid);
             for (auto alt = 0; alt < kids; ++alt) {
-                auto kid = tree.getChild(nid, alt);
+                auto kid = tree.getChild_safe(nid, alt);
                 marked.insert(kid);
             }
 
@@ -500,7 +494,7 @@ void SimilarSubtreeWindow::analyse() {
             patterns = runIdenticalSubtrees(m_nt);
         } break;
         case SimilarityType::SHAPE: {
-            patterns = runSimilarShapes(m_nt.tree_structure(), m_lo);
+            patterns = runSimilarShapes(m_nt, m_lo);
         }
     }
 

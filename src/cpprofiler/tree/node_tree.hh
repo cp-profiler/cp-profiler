@@ -115,47 +115,60 @@ public:
     const NodeInfo& node_info() const;
     NodeInfo& node_info();
 
-    NodeStatus status(NodeID nid) const;
+    const NodeStats& node_stats() const;
 
-    NodeID createRoot_unsafe(int kids);
+    utils::Mutex& treeMutex() const;
+
+    /// *************************** Tree Modifiers ***************************
+
+    NodeID createRoot_safe(int kids);
+    NodeID createRoot(int kids);
+
+    NodeID addChild_safe(NodeID pid, int alt, int kids);
 
     NodeID addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus status, Label = emptyLabel);
 
-    /// Total number of nodes (including undetermined)
-    int nodeCount() const;
+    void setLabel(NodeID nid, const Label& label);
 
-    const NodeStats& node_stats() const;
+    void resetNumberOfChildren(NodeID nid, int kids);
+
+    /// ********************************************************************
+    /// *************************** Tree Queries ***************************
 
     /// return the depth of the tree
     int depth() const;
 
-    int getAlternative(NodeID nid) const;
+    NodeID getRoot_safe() const;
+    NodeID getRoot() const;
 
-    /// whether the node is the right-most child
-    bool isRightMostChild_unsafe(NodeID nid) const;
+    /// Total number of nodes (including undetermined)
+    int nodeCount_safe() const;
 
+    NodeStatus status(NodeID nid) const;
+
+    int getNumberOfSiblings_safe(NodeID nid) const;
+
+    int getAlternative_safe(NodeID nid) const;
+
+    int childrenCount_safe(NodeID nid) const;
     int childrenCount(NodeID nid) const;
 
-    int childrenCount_unsafe(NodeID nid) const;
-
-    void resetNumberOfChildren_unsafe(NodeID nid, int kids);
-
-    bool isLeaf(NodeID) const;
-
-    NodeID getRoot_unsafe() const;
-
-    NodeID getParent(NodeID nid) const;
-
+    NodeID getChild_safe(NodeID nid, int alt) const;
     NodeID getChild(NodeID nid, int alt) const;
 
-    NodeID getChild_unsafe(NodeID nid, int alt) const;
+    NodeID getParent_safe(NodeID nid) const;
+
+    /// whether the node is the right-most child
+    bool isRightMostChild(NodeID nid) const;
+
+    bool isLeaf_safe(NodeID) const;
 
     /// return the depth of the node
-    int calculateDepth(NodeID nid) const;
+    int calculateDepth_safe(NodeID nid) const;
 
     const Label& getLabel(NodeID nid) const;
 
-    void setLabel(NodeID nid, const Label& label);
+    /// ********************************************************************
 
     template<typename Callback>
     void preOrderApply(NodeID start, Callback cb) const;
@@ -185,8 +198,8 @@ void NodeTree::preOrderApply(NodeID start, Callback cb) const {
 
         cb(nid);
 
-        for (auto i = childrenCount(nid) - 1; i >= 0; --i) {
-            auto child = getChild(nid, i);
+        for (auto i = childrenCount_safe(nid) - 1; i >= 0; --i) {
+            auto child = getChild_safe(nid, i);
             stk.push(child);
         }
     }

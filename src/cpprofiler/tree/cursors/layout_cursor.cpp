@@ -143,9 +143,6 @@ namespace cpprofiler { namespace tree {
         /// see if the node dispays labels and needs its (top) extents extended
         if (nf.get_label_shown(nid)) {
 
-
-            auto& tree = nt.tree_structure();
-
             /// TODO: use font metrics?
             const auto& label = nt.getLabel(nid);
             auto label_width = label.size() * 9;
@@ -157,7 +154,7 @@ namespace cpprofiler { namespace tree {
 
             /// Note that labels are shown on the left for all alt
             /// except the last one (right-most)
-            bool draw_left = nt.isRightMostChild_unsafe(nid) ? false : true;
+            bool draw_left = nt.isRightMostChild(nid) ? false : true;
 
             if (draw_left) {
                 result.l -= label_width;
@@ -170,9 +167,8 @@ namespace cpprofiler { namespace tree {
 
     static inline void computeForNodeBinary(NodeID nid, Layout& layout, const NodeTree& nt, const NodeFlags& nf) {
 
-        auto& tree = nt.tree_structure();
-        auto kid_l = tree.getChild_unsafe(nid, 0);
-        auto kid_r = tree.getChild_unsafe(nid, 1);
+        auto kid_l = nt.getChild(nid, 0);
+        auto kid_r = nt.getChild(nid, 1);
 
         const auto& s1 = layout.getShape_unsafe(kid_l);
         const auto& s2 = layout.getShape_unsafe(kid_r);
@@ -202,8 +198,8 @@ namespace cpprofiler { namespace tree {
         std::vector<int> distances(nkids - 1);
 
         for (auto i = 0; i < nkids - 1; ++i) {
-            auto kid_l = tree.getChild_unsafe(nid, i);
-            auto kid_r = tree.getChild_unsafe(nid, i+1);
+            auto kid_l = tree.getChild(nid, i);
+            auto kid_r = tree.getChild(nid, i+1);
             const auto& s1 = layout.getShape_unsafe(kid_l);
             const auto& s2 = layout.getShape_unsafe(kid_r);
             distances[i] = distance_between(s1, s2);
@@ -211,10 +207,10 @@ namespace cpprofiler { namespace tree {
 
         /// calculate total width (the sum of all distances + )
         int total_width = 0;
-        const auto leftmost_kid = tree.getChild_unsafe(nid, 0);
+        const auto leftmost_kid = tree.getChild(nid, 0);
         const auto& leftmost_shape = layout.getShape_unsafe(leftmost_kid);
         {
-            const auto rightmost_kid = tree.getChild_unsafe(nid, nkids - 1);
+            const auto rightmost_kid = tree.getChild(nid, nkids - 1);
             const auto& rightmost_shape = layout.getShape_unsafe(rightmost_kid);
 
             total_width -= leftmost_shape.boundingBox().left;
@@ -230,7 +226,7 @@ namespace cpprofiler { namespace tree {
         int max_depth = 0;
         {
             for (auto i = 0; i < nkids; ++i) {
-                auto kid_l = tree.getChild_unsafe(nid, i);
+                auto kid_l = tree.getChild(nid, i);
                 const auto& s1 = layout.getShape_unsafe(kid_l);
                 max_depth = std::max(max_depth, s1.depth());
             }
@@ -247,7 +243,7 @@ namespace cpprofiler { namespace tree {
         /// calculate offsets
         auto cur_x = -half_w - leftmost_shape.boundingBox().left;
         for (auto i = 0; i < nkids; ++i) {
-            const auto kid = tree.getChild_unsafe(nid, i);
+            const auto kid = tree.getChild(nid, i);
             layout.setChildOffset_unsafe(kid, cur_x);
             x_offsets[i] = cur_x;
             cur_x += distances[i];
@@ -260,7 +256,7 @@ namespace cpprofiler { namespace tree {
             auto leftmost_x = 0;
             auto rightmost_x = 0;
             for (auto kid = 0; kid < nkids; ++kid) {
-                const auto kid_id = tree.getChild_unsafe(nid, kid);
+                const auto kid_id = tree.getChild(nid, kid);
                 const auto& shape = layout.getShape_unsafe(kid_id);
                 if (shape.depth() > depth - 1) {
                     leftmost_x = std::min(leftmost_x, shape[depth-1].l + x_offsets[kid]);
@@ -285,7 +281,7 @@ namespace cpprofiler { namespace tree {
         if (m_node_flags.get_hidden(nid)) {
             m_layout.setShape_unsafe(nid, ShapeUniqPtr(&Shape::hidden));
         } else {
-            auto nkids = m_tree.childrenCount_unsafe(nid);
+            auto nkids = m_tree.childrenCount(nid);
 
             if (nkids == 0) {
 

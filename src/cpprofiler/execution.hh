@@ -91,9 +91,6 @@ public:
     SolverData& solver_data();
     const SolverData& solver_data() const;
 
-    tree::Structure& tree_structure();
-    const tree::Structure& tree_structure() const;
-
     tree::NodeInfo& node_info();
     const tree::NodeInfo& node_info() const;
 

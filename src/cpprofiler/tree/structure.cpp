@@ -18,28 +18,28 @@ namespace cpprofiler { namespace tree {
         return m_structure_mutex;
     }
 
-    NodeID Structure::createRoot(int kids) {
+    NodeID Structure::createRoot_safe(int kids) {
         utils::MutexLocker locker(&m_structure_mutex);
-        return createRoot_unsafe(kids);
+        return createRoot(kids);
     }
 
-    NodeID Structure::createRoot_unsafe(int kids) {
+    NodeID Structure::createRoot(int kids) {
         if (m_nodes.size() > 0) {
             throw invalid_tree();
         }
 
         m_nodes.push_back(std::unique_ptr<Node>{new Node(NodeID::NoNode, kids)});
 
-        auto root_nid = getRoot_unsafe();
+        auto root_nid = getRoot();
         /// create `kids` white nodes
         for (auto i = 0; i < kids; ++i) {
-            addChild_unsafe(root_nid, i, 0);
+            addChild(root_nid, i, 0);
         }
 
         return root_nid;
     }
 
-    NodeID Structure::addChild_unsafe(NodeID pid, int alt, int kids) {
+    NodeID Structure::addChild(NodeID pid, int alt, int kids) {
         auto nid = NodeID{m_nodes.size()};
         m_nodes.push_back(std::unique_ptr<Node>{new Node(pid, kids)});
 
@@ -51,83 +51,83 @@ namespace cpprofiler { namespace tree {
         return nid;
     }
 
-    NodeID Structure::addChild(NodeID pid, int alt, int kids) {
+    NodeID Structure::addChild_safe(NodeID pid, int alt, int kids) {
         utils::MutexLocker locker(&m_structure_mutex);
-        return addChild_unsafe(pid, alt, kids);
+        return addChild(pid, alt, kids);
+    }
+
+    void Structure::resetNumberOfChildren_safe(NodeID nid, int kids) {
+        utils::MutexLocker locker(&m_structure_mutex);
+       resetNumberOfChildren(nid, kids);
     }
 
     void Structure::resetNumberOfChildren(NodeID nid, int kids) {
-        utils::MutexLocker locker(&m_structure_mutex);
-       resetNumberOfChildren_unsafe(nid, kids);
-    }
-
-    void Structure::resetNumberOfChildren_unsafe(NodeID nid, int kids) {
         m_nodes[nid]->resetNumberOfChildren(kids);
 
         for (auto i = 0; i < kids; ++i) {
-            addChild_unsafe(nid, i, 0);
+            addChild(nid, i, 0);
         }
     }
 
-    NodeID Structure::getChild_unsafe(NodeID pid, int alt) const {
+    NodeID Structure::getChild(NodeID pid, int alt) const {
         return m_nodes[pid]->getChild(alt);
     }
 
-    NodeID Structure::getChild(NodeID pid, int alt) const {
+    NodeID Structure::getChild_safe(NodeID pid, int alt) const {
         utils::MutexLocker locker(&m_structure_mutex);
-        return getChild_unsafe(pid, alt);;
-    }
-
-    NodeID Structure::getParent_unsafe(NodeID nid) const {
-        return m_nodes[nid]->getParent();
+        return getChild(pid, alt);;
     }
 
     NodeID Structure::getParent(NodeID nid) const {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return getParent_unsafe(nid);
+        return m_nodes[nid]->getParent();
     }
 
-    int Structure::childrenCount_unsafe(NodeID pid) const {
-        return m_nodes[pid]->childrenCount();
+    NodeID Structure::getParent_safe(NodeID nid) const {
+        utils::MutexLocker locker(&m_structure_mutex);
+        return getParent(nid);
     }
 
     int Structure::childrenCount(NodeID pid) const {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return childrenCount_unsafe(pid);
+        return m_nodes[pid]->childrenCount();
     }
 
+    int Structure::childrenCount_safe(NodeID pid) const {
+        utils::MutexLocker locker(&m_structure_mutex);
+        return childrenCount(pid);
+    }
+
+
+    int Structure::getNumberOfSiblings_safe(NodeID nid) const {
+        utils::MutexLocker locker(&m_structure_mutex);
+        return getNumberOfSiblings(nid);
+    }
 
     int Structure::getNumberOfSiblings(NodeID nid) const {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return getNumberOfSiblings_unsafe(nid);
-    }
-
-    int Structure::getNumberOfSiblings_unsafe(NodeID nid) const {
-        auto pid = getParent_unsafe(nid);
-        return childrenCount_unsafe(pid);
-    }
-
-    NodeID Structure::getRoot_unsafe() const {
-        return NodeID{0};
+        auto pid = getParent(nid);
+        return childrenCount(pid);
     }
 
     NodeID Structure::getRoot() const {
+        return NodeID{0};
+    }
+
+    NodeID Structure::getRoot_safe() const {
         utils::MutexLocker locker(&m_structure_mutex);
-        return getRoot_unsafe();
+        return getRoot();
+    }
+
+    int Structure::getAlternative_safe(NodeID nid) const {
+        utils::MutexLocker locker(&m_structure_mutex);
+        return getAlternative(nid);
     }
 
     int Structure::getAlternative(NodeID nid) const {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return getAlternative_unsafe(nid);
-    }
-
-    int Structure::getAlternative_unsafe(NodeID nid) const {
-        auto parent_nid = getParent_unsafe(nid);
+        auto parent_nid = getParent(nid);
 
         if (parent_nid == NodeID::NoNode) return -1;
 
-        for (auto i = 0; i < childrenCount_unsafe(parent_nid); ++i) {
-            if (getChild_unsafe(parent_nid, i) == nid) {
+        for (auto i = 0; i < childrenCount(parent_nid); ++i) {
+            if (getChild(parent_nid, i) == nid) {
                 return i;
             }
         }
@@ -135,24 +135,24 @@ namespace cpprofiler { namespace tree {
         return -1;
     }
 
-    int Structure::nodeCount() const {
+    int Structure::nodeCount_safe() const {
         utils::MutexLocker locker(&m_structure_mutex);
-        return nodeCount_unsafe();
+        return nodeCount();
     }
 
-    int Structure::nodeCount_unsafe() const {
+    int Structure::nodeCount() const {
         return m_nodes.size();
     }
 
-    int Structure::calculateDepth(NodeID nid) const {
+    int Structure::calculateDepth_safe(NodeID nid) const {
         utils::MutexLocker locker(&m_structure_mutex);
-        return calculateDepth_unsafe(nid);
+        return calculateDepth(nid);
     }
 
-    int Structure::calculateDepth_unsafe(NodeID nid) const {
+    int Structure::calculateDepth(NodeID nid) const {
         int depth = 0;
         while (nid != NodeID::NoNode) {
-            nid = getParent_unsafe(nid);
+            nid = getParent(nid);
             ++depth;
         }
         return depth;
@@ -176,8 +176,8 @@ std::vector<NodeID> preOrder(const Structure& tree) {
         auto nid = stk.top(); stk.pop();
         result.push_back(nid);
 
-        for (auto i = tree.childrenCount(nid) - 1; i >= 0 ; --i) {
-            auto child = tree.getChild(nid, i);
+        for (auto i = tree.childrenCount_safe(nid) - 1; i >= 0 ; --i) {
+            auto child = tree.getChild_safe(nid, i);
             stk.push(child);
         }
     }
@@ -194,7 +194,7 @@ std::vector<NodeID> postOrder(const Structure& tree) {
 std::vector<NodeID> anyOrder(const Structure& tree) {
     utils::MutexLocker lock(&tree.getMutex());
 
-    auto count = tree.nodeCount_unsafe();
+    auto count = tree.nodeCount();
     std::vector<NodeID> result;
     result.reserve(count);
 
@@ -210,7 +210,7 @@ std::vector<NodeID> postOrder_unsafe(const Structure& tree) {
     std::stack<NodeID> stk_1;
     std::vector<NodeID> result;
 
-    result.reserve(tree.nodeCount_unsafe());
+    result.reserve(tree.nodeCount());
 
     NodeID root = NodeID{0};
 
@@ -221,8 +221,8 @@ std::vector<NodeID> postOrder_unsafe(const Structure& tree) {
 
         result.push_back(nid);
 
-        for (auto i = 0; i < tree.childrenCount_unsafe(nid); ++i) {
-            auto child = tree.getChild_unsafe(nid, i);
+        for (auto i = 0; i < tree.childrenCount(nid); ++i) {
+            auto child = tree.getChild(nid, i);
             stk_1.push(child);
         }
     }

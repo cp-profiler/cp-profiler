@@ -98,8 +98,7 @@ public:
 class TraditionalView : public QObject {
     Q_OBJECT
 
-    const NodeTree& m_node_tree;
-    const Structure& m_tree;
+    const NodeTree& m_tree;
     std::unique_ptr<UserData> m_user_data;
 
     /// TODO: make sure node flags is thread-safe?
