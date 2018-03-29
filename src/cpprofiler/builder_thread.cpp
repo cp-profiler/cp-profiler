@@ -73,8 +73,15 @@ namespace cpprofiler {
             pid = m_execution->solver_data().getNodeId({p_uid.nid, p_uid.rid, p_uid.tid});
         }
 
-        const auto nid = tree.addNode(pid, node->alt(), node->kids(),
-            static_cast<tree::NodeStatus>(node->status()));
+
+        NodeID nid;
+
+        if (pid == NodeID::NoNode) {
+            nid = tree.createRootNew(node->kids());
+        } else {
+            nid = tree.addNodeNew(pid, node->alt(), node->kids(),
+                static_cast<tree::NodeStatus>(node->status()));
+        }
 
         m_execution->solver_data().setNodeId({n_uid.nid, n_uid.rid, n_uid.tid}, nid);
 

@@ -126,6 +126,8 @@ signals:
     void needsRedrawing();
 
 public slots:
+    void handleDoubleClick();
+
     void setScale(int scale);
 
     void centerNode(NodeID nid);
@@ -141,7 +143,7 @@ public slots:
     void showLabelsUp();
 
     void toggleHidden();
-    void unhideNode();
+    void unhideNode(NodeID nid);
 
     void toggleHighlighted();
 

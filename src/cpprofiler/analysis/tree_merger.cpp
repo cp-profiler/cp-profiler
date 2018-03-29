@@ -3,6 +3,8 @@
 #include "../tree/structure.hh"
 #include "../core.hh"
 
+#include "../utils/utils.hh"
+
 #include <QStack>
 
 namespace cpprofiler { namespace analysis {
@@ -71,7 +73,7 @@ static bool compareNodes(NodeID n1, const NodeTree& nt1,
 
   if (nt1.childrenCount(n1) != nt2.childrenCount(n2)) return false;
 
-  if (nt1.status(n1) != nt2.status(n2)) return false;
+  if (nt1.getStatus(n1) != nt2.getStatus(n2)) return false;
 
   if (with_labels) {
       const auto& label1 = nt1.getLabel(n1);
@@ -82,11 +84,53 @@ static bool compareNodes(NodeID n1, const NodeTree& nt1,
   return true;
 }
 
-static void dupNode(NodeID s_nid, const NodeTree& s_nt, NodeID t_nid, const NodeTree& t_nt) {
-    /// copy status only for now
 
-    // addNode?
+/// Copy the subtree rooted at nid_s of nt_s as a subtree rooted at nid in nt
+static void copy_tree_into(NodeTree& nt, NodeID nid, const NodeTree& nt_s, NodeID nid_s) {
+
+    QStack<NodeID> stack; QStack<NodeID> stack_s;
+    stack.push(nid); stack_s.push(nid_s);
+
+    while(stack_s.size() > 0) {
+        auto node_s = stack_s.pop();
+        auto node = stack.pop();
+
+        auto kids = nt_s.childrenCount(node_s);
+        auto status = nt_s.getStatus(node_s);
+
+        /// TODO: make sure only the reference to a label is stored
+        auto label = nt_s.getLabel(node_s);
+
+        nt.transformNode(node, kids, status, label);
+
+        for (auto alt = 0; alt < kids; ++alt) {
+            stack.push( nt.getChild(node, alt) );
+            stack_s.push( nt_s.getChild(node_s, alt) );
+        }
+    }
+
+
 }
+
+static void create_pentagon(NodeTree& nt, NodeID nid,
+                const NodeTree& nt_l, NodeID nid_l,
+                const NodeTree& nt_r, NodeID nid_r) {
+
+    nt.transformNode(nid, 2, NodeStatus::MERGED);
+
+    /// copy the subtree of nt_l into target_l
+    auto target_l = nt.getChild(nid, 0);
+
+    copy_tree_into(nt, target_l, nt_l, nid_l);
+
+    /// copy the subtree of nt_r into target_r
+    auto target_r = nt.getChild(nid, 1);
+
+    copy_tree_into(nt, target_r, nt_r, nid_r);
+
+}
+
+
 
 void TreeMerger::run() {
 
@@ -107,10 +151,13 @@ void TreeMerger::run() {
 
     stack_l.push(root_l); stack_r.push(root_r);
 
-    auto root = res_tree.createRoot(0);
+    auto root = res_tree.createRootNew(0);
+
     stack.push(root);
 
     while(stack_l.size() > 0) {
+
+        // utils::sleep_for_ms(300);
 
         auto node_l = stack_l.pop();
         auto node_r = stack_r.pop();
@@ -124,7 +171,11 @@ void TreeMerger::run() {
 
             // dupNode(node_l, tree_l, target, res_tree);
 
-            res_tree.resetNumberOfChildren(target, kids);
+            // res_tree.resetNumberOfChildren(target, kids);
+
+            auto status = tree_l.getStatus(node_l);
+            auto label = tree_l.getLabel(node_l);
+            res_tree.transformNode(target, kids, status, label);
 
             for (auto i = kids - 1; i >= 0; --i) {
                 stack_l.push( tree_l.getChild(node_l, i) );
@@ -132,8 +183,16 @@ void TreeMerger::run() {
                 stack.push( res_tree.getChild(target, i) );
             }
 
+            qDebug() << "nodes equal";
+
 
         } else {
+            qDebug() << "nodes not equal";
+
+
+            create_pentagon(res_tree, target, tree_l, node_l, tree_r, node_r);
+
+
 
         }
 

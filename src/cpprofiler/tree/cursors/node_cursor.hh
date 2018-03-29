@@ -13,7 +13,8 @@ class NodeCursor {
 
 protected:
 
-    const Structure& m_tree;
+    const NodeTree& m_tree;
+
     const NodeInfo& m_node_info;
     const NodeID m_start_node;
     NodeID m_cur_node;

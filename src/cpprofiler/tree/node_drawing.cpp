@@ -27,6 +27,8 @@ namespace colors {
     static QColor lightGreen(11, 118, 70, 120);
     /// Blue color for expanded choice nodes
     static QColor lightBlue(0, 92, 161, 120);
+    /// Color for pentagons (orange)
+    static QColor pentagonColor(235, 137, 27);
 }
 
 
@@ -100,6 +102,25 @@ void skipped(QPainter& painter, int x, int y, bool selected) {
     }
 
     painter.drawRect(x - HALF_SKIPPED_WIDTH, y, SKIPPED_WIDTH, SKIPPED_WIDTH);
+}
+
+void pentagon(QPainter& painter, int x, int y, bool selected) {
+    using namespace traditional;
+    if (selected) {
+        painter.setBrush(colors::gold);
+    } else {
+        painter.setBrush(colors::pentagonColor);
+    }
+
+    QPointF points[5] = { QPointF(x, y),
+        QPointF(x + PENTAGON_HALF_W, y + PENTAGON_THIRD_W),
+        QPointF(x + PENTAGON_THIRD_W, y + PENTAGON_WIDTH),
+        QPointF(x - PENTAGON_THIRD_W, y + PENTAGON_WIDTH),
+        QPointF(x - PENTAGON_HALF_W, y + PENTAGON_THIRD_W)
+    };
+
+    painter.drawConvexPolygon(points, 5);
+
 }
 
 

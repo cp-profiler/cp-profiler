@@ -226,7 +226,7 @@ static Partition initialPartition(const NodeTree& nt) {
         auto nodes = helper::anyOrder(nt.tree_structure());
 
         for (auto nid : nodes) {
-            auto status = nt.status(nid);
+            auto status = nt.getStatus(nid);
             switch (status) {
                 case NodeStatus::FAILED: {
                     failed_nodes.push_back(nid);

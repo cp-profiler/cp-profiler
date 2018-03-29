@@ -192,6 +192,9 @@ namespace cpprofiler { namespace tree {
             case NodeStatus::SKIPPED: {
                 draw::skipped(m_painter, cur_x, cur_y, selected);
             } break;
+            case NodeStatus::MERGED: {
+                draw::pentagon(m_painter, cur_x, cur_y, selected);
+            } break;
             default: {
                 draw::unexplored(m_painter, cur_x, cur_y, selected);
             } break;

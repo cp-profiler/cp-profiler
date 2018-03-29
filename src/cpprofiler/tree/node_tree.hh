@@ -95,14 +95,25 @@ class NodeTree : public QObject {
 Q_OBJECT
     std::unique_ptr<Structure> m_structure;
 
+
+    /// How do I make sure that this is syncronised with the number of nodes?
+    /// (using NodeTree::addEntry method)
+
+    /// NodeTree::addNode calls addEntry for every node (including white nodes)
+
+    /// NodeTree::resetNumberOfChildren creates new nodes,
+    /// but doesn't update the data structures
     std::unique_ptr<NodeInfo> m_node_info;
 
     std::vector<Label> m_labels;
 
     NodeStats m_node_stats;
 
-    /// update data structures to contain this node
+    /// Ensure all relevant data structures contain this node
     void addEntry(NodeID nid);
+
+    /// Not sure if I need to keep this
+    void resetNumberOfChildren(NodeID nid, int kids);
 
 public:
 
@@ -121,16 +132,26 @@ public:
 
     /// *************************** Tree Modifiers ***************************
 
+    NodeID createRootNew(int kids, Label label = emptyLabel);
+
     NodeID createRoot_safe(int kids);
     NodeID createRoot(int kids);
 
-    NodeID addChild_safe(NodeID pid, int alt, int kids);
+    NodeID createDummyRoot();
 
-    NodeID addNode(NodeID parent_id, int alt, int kids, tree::NodeStatus status, Label = emptyLabel);
+    NodeID addChild(NodeID pid, int alt, int kids);
+
+    /// turn a white node into some other node
+    void transformNode(NodeID nid, int kids, NodeStatus status, Label = emptyLabel);
+
+    // NodeID addNode(NodeID parent_id, int alt, int kids, NodeStatus status, Label = emptyLabel);
+
+    /// Turn undet node into a real one, updating stats and emitting signals
+    NodeID addNodeNew(NodeID parent_id, int alt, int kids, NodeStatus status, Label = emptyLabel);
 
     void setLabel(NodeID nid, const Label& label);
 
-    void resetNumberOfChildren(NodeID nid, int kids);
+    void setStatus(NodeID nid, NodeStatus status);
 
     /// ********************************************************************
     /// *************************** Tree Queries ***************************
@@ -144,11 +165,13 @@ public:
     /// Total number of nodes (including undetermined)
     int nodeCount_safe() const;
 
-    NodeStatus status(NodeID nid) const;
+    NodeStatus getStatus(NodeID nid) const;
 
+    int getNumberOfSiblings(NodeID nid) const;
     int getNumberOfSiblings_safe(NodeID nid) const;
 
     int getAlternative_safe(NodeID nid) const;
+    int getAlternative(NodeID nid) const;
 
     int childrenCount_safe(NodeID nid) const;
     int childrenCount(NodeID nid) const;
@@ -156,6 +179,7 @@ public:
     NodeID getChild_safe(NodeID nid, int alt) const;
     NodeID getChild(NodeID nid, int alt) const;
 
+    NodeID getParent(NodeID nid) const;
     NodeID getParent_safe(NodeID nid) const;
 
     /// whether the node is the right-most child

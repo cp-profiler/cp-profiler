@@ -116,7 +116,7 @@ namespace cpprofiler {
                 nodeMenu->addAction(toggleHidden);
                 connect(toggleHidden, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::toggleHidden);
 
-                auto toggleHighlighted = new QAction{"Toggle hide failed", this};
+                auto toggleHighlighted = new QAction{"Toggle highlight subtree", this};
                 toggleHighlighted->setShortcut(QKeySequence("H"));
                 nodeMenu->addAction(toggleHighlighted);
                 connect(toggleHighlighted, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::toggleHighlighted);

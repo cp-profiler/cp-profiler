@@ -177,6 +177,8 @@ namespace cpprofiler { namespace tree {
         viewport()->update();
     }
 
+
+    /// Make sure the layout for nodes is done
     NodeID TreeScrollArea::findNodeClicked(int x, int y) {
 
         using namespace traditional;
@@ -190,7 +192,13 @@ namespace cpprofiler { namespace tree {
         y = y / m_options.scale + y_off;
 
         std::queue<NodeID> queue;
-        queue.push(m_tree.getRoot_safe());
+
+
+        auto root = m_tree.getRoot_safe();
+
+        if (root == NodeID::NoNode) { return NodeID::NoNode; }
+
+        queue.push(root);
 
         while(!queue.empty()) {
 
@@ -229,12 +237,12 @@ namespace cpprofiler { namespace tree {
 
     void TreeScrollArea::mousePressEvent(QMouseEvent* me) {
         auto n = findNodeClicked(me->x(), me->y());
-        emit nodeClicked(n);
+        if (n != NodeID::NoNode) { emit nodeClicked(n); }
     }
 
     void TreeScrollArea::mouseDoubleClickEvent(QMouseEvent* me) {
         auto n = findNodeClicked(me->x(), me->y());
-        emit nodeDoubleClicked(n);
+        if (n != NodeID::NoNode) { emit nodeDoubleClicked(n); }
     }
 
     TreeScrollArea::TreeScrollArea(NodeID start, const NodeTree& tree, const UserData& user_data, const Layout& layout, const NodeFlags& nf)
@@ -279,7 +287,7 @@ TraditionalView::TraditionalView(const NodeTree& tree)
     // m_scroll_area
 
     connect(m_scroll_area.get(), &TreeScrollArea::nodeClicked, this, &TraditionalView::selectNode);
-    connect(m_scroll_area.get(), &TreeScrollArea::nodeDoubleClicked, this, &TraditionalView::unhideNode);
+    connect(m_scroll_area.get(), &TreeScrollArea::nodeDoubleClicked, this, &TraditionalView::handleDoubleClick);
 
     connect(this, &TraditionalView::needsRedrawing, [this]() {
         m_scroll_area->viewport()->update();
@@ -287,6 +295,15 @@ TraditionalView::TraditionalView(const NodeTree& tree)
 
     connect(&tree, &NodeTree::childrenStructureChanged, [this](NodeID nid) {
         // std::cerr << "dirty up thread:" << std::this_thread::get_id() << std::endl;
+
+        if (nid == NodeID::NoNode) { return; }
+
+        auto nkids = m_tree.childrenCount(nid);
+
+        for (auto i = 0; i < nkids; ++i) {
+            auto kid = m_tree.getChild(nid, i);
+            m_layout_computer->setDirty(kid);
+        }
         m_layout_computer->dirtyUp(nid);
     });
 
@@ -440,14 +457,25 @@ void TraditionalView::toggleHidden() {
     emit needsRedrawing();
 }
 
-void TraditionalView::unhideNode() {
+void TraditionalView::handleDoubleClick() {
 
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto hidden = m_flags->get_hidden(cur_nid);
+    auto status = m_tree.getStatus(cur_nid);
+
+    if (status == NodeStatus::BRANCH) {
+        unhideNode(cur_nid);
+    } else if (status == NodeStatus::MERGED) {
+        qDebug() << "TODO: double clicked merged";
+    }
+}
+
+void TraditionalView::unhideNode(NodeID nid) {
+
+    auto hidden = m_flags->get_hidden(nid);
     if (hidden) {
-        m_flags->set_hidden(cur_nid, false);
+        m_flags->set_hidden(nid, false);
         dirtyUp();
         setLayoutOutdated();
         emit needsRedrawing();

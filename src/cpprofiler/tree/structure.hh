@@ -50,8 +50,8 @@ public:
     int childrenCount(NodeID pid) const;
 
     NodeID createRoot(int kids);
-    NodeID createRoot_safe(int kids);
 
+    /// Create a new node with `kids` kids and add set is as a `alt`th kid of `pid`
     NodeID addChild(NodeID pid, int alt, int kids);
 
     NodeID getRoot() const;
@@ -60,12 +60,11 @@ public:
 
     NodeID addChild_safe(NodeID pid, int alt, int kids);
 
+    /// Reset node count and create undet nodes for children
     void resetNumberOfChildren(NodeID nid, int kids);
     void resetNumberOfChildren_safe(NodeID nid, int kids);
 
     int childrenCount_safe(NodeID pid) const;
-
-    NodeID getRoot_safe() const;
 
     int calculateDepth(NodeID nid) const;
     int calculateDepth_safe(NodeID nid) const;

@@ -18,11 +18,6 @@ namespace cpprofiler { namespace tree {
         return m_structure_mutex;
     }
 
-    NodeID Structure::createRoot_safe(int kids) {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return createRoot(kids);
-    }
-
     NodeID Structure::createRoot(int kids) {
         if (m_nodes.size() > 0) {
             throw invalid_tree();
@@ -109,11 +104,6 @@ namespace cpprofiler { namespace tree {
 
     NodeID Structure::getRoot() const {
         return NodeID{0};
-    }
-
-    NodeID Structure::getRoot_safe() const {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return getRoot();
     }
 
     int Structure::getAlternative_safe(NodeID nid) const {

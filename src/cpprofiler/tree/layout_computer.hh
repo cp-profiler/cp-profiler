@@ -27,6 +27,8 @@ public:
         void markAsOutdated();
 
         void dirtyUp(NodeID nid);
+
+        void setDirty(NodeID nid);
     };
 
 
