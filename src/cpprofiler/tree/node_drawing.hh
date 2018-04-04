@@ -17,6 +17,7 @@ void unexplored(QPainter& painter, int x, int y, bool selected);
 void skipped(QPainter& painter, int x, int y, bool selected);
 
 void pentagon(QPainter& painter, int x, int y, bool selected);
+void big_pentagon(QPainter& painter, int x, int y, bool selected);
 
 
 

@@ -4,6 +4,7 @@
 #include "../core.hh"
 
 #include "../utils/utils.hh"
+#include "../utils/tree_utils.hh"
 
 #include <QStack>
 
@@ -11,11 +12,13 @@ namespace cpprofiler { namespace analysis {
 
     using namespace tree;
 
-TreeMerger::TreeMerger(const Execution& ex_l_, const Execution& ex_r_, tree::NodeTree& nt)
+TreeMerger::TreeMerger(const Execution& ex_l_, const Execution& ex_r_,
+                       tree::NodeTree& nt, MergeResult& res)
     : ex_l(ex_l_), ex_r(ex_r_),
       tree_l(ex_l.tree()),
       tree_r(ex_r.tree()),
-      res_tree(nt) {
+      res_tree(nt),
+      merge_result(res) {
 
 
     connect(this, &QThread::finished, this, &QObject::deleteLater);
@@ -112,7 +115,7 @@ static void copy_tree_into(NodeTree& nt, NodeID nid, const NodeTree& nt_s, NodeI
 
 }
 
-static void create_pentagon(NodeTree& nt, NodeID nid,
+void create_pentagon(NodeTree& nt, NodeID nid,
                 const NodeTree& nt_l, NodeID nid_l,
                 const NodeTree& nt_r, NodeID nid_r) {
 
@@ -127,7 +130,6 @@ static void create_pentagon(NodeTree& nt, NodeID nid,
     auto target_r = nt.getChild(nid, 1);
 
     copy_tree_into(nt, target_r, nt_r, nid_r);
-
 }
 
 
@@ -183,16 +185,14 @@ void TreeMerger::run() {
                 stack.push( res_tree.getChild(target, i) );
             }
 
-            qDebug() << "nodes equal";
-
-
         } else {
-            qDebug() << "nodes not equal";
-
-
             create_pentagon(res_tree, target, tree_l, node_l, tree_r, node_r);
 
+            auto count_left = utils::count_descendants(tree_l, node_l);
+            auto count_right = utils::count_descendants(tree_r, node_r);
+            auto pen_item = PentagonItem{target, count_left, count_right};
 
+            merge_result.push_back(pen_item);
 
         }
 

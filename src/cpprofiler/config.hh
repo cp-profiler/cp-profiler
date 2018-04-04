@@ -10,7 +10,7 @@ namespace layout {
 }
 
 namespace traditional {
-    constexpr int MAX_NODE_W = 18;
+    constexpr int MAX_NODE_W = 22;
     constexpr int HALF_MAX_NODE_W = MAX_NODE_W / 2;
 
     constexpr int BRANCH_WIDTH = 18;
@@ -35,6 +35,10 @@ namespace traditional {
     constexpr int PENTAGON_WIDTH = BRANCH_WIDTH;
     constexpr int PENTAGON_HALF_W = PENTAGON_WIDTH / 2;
     constexpr int PENTAGON_THIRD_W = PENTAGON_WIDTH / 3;
+
+    constexpr int BIG_PENTAGON_WIDTH = MAX_NODE_W;
+    constexpr int BIG_PENTAGON_HALF_W = BIG_PENTAGON_WIDTH / 2;
+    constexpr int BIG_PENTAGON_THIRD_W = BIG_PENTAGON_WIDTH / 3;
 
 
     /// there is no constexpr std::max until C++14

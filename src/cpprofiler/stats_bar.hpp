@@ -28,7 +28,7 @@ public:
     using namespace tree;
 
     QHBoxLayout* hbl = new QHBoxLayout{this};
-    hbl->setContentsMargins(0, 0, 0, 0);
+    hbl->setContentsMargins(2, 1, 2, 1);
 
     hbl->addWidget(new QLabel("Depth:"));
     depthLabel = new QLabel("0");

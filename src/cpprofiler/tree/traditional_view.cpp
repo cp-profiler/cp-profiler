@@ -467,8 +467,18 @@ void TraditionalView::handleDoubleClick() {
     if (status == NodeStatus::BRANCH) {
         unhideNode(cur_nid);
     } else if (status == NodeStatus::MERGED) {
-        qDebug() << "TODO: double clicked merged";
+        toggleCollapsePentagon(cur_nid);
     }
+}
+
+void TraditionalView::toggleCollapsePentagon(NodeID nid) {
+    /// Use the same 'hideden' flag for now
+    auto val = !m_flags->get_hidden(nid);
+    m_flags->set_hidden(nid, val);
+    dirtyUp();
+    setLayoutOutdated();
+    emit needsRedrawing();
+    
 }
 
 void TraditionalView::unhideNode(NodeID nid) {

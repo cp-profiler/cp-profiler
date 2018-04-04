@@ -170,6 +170,11 @@ namespace cpprofiler { namespace tree {
 
         if (hidden) {
 
+            if (status == NodeStatus::MERGED) {
+                draw::big_pentagon(m_painter, cur_x, cur_y, selected);
+                return;
+            }
+
             /// completely failed
             drawTriangle(m_painter, cur_x, cur_y, selected);
 

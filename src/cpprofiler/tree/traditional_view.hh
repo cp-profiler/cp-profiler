@@ -120,6 +120,8 @@ public:
     void set_label_shown(NodeID nid, bool val);
     const Layout& layout() const;
 
+    void toggleCollapsePentagon(NodeID nid);
+
 signals:
     // void nodeClicked(NodeID nid);
 

@@ -4,6 +4,9 @@
 #include <QGridLayout>
 #include <QWidget>
 #include <QMenuBar>
+#include <QStatusBar>
+
+#include "pentagon_counter.hpp"
 
 namespace cpprofiler { namespace analysis {
 
@@ -17,7 +20,9 @@ namespace cpprofiler { namespace analysis {
 
         resize(500, 700);
 
-        // setWindowOpacity(0.9);
+        pentagon_bar = new PentagonCounter(this);
+        statusBar()->addPermanentWidget(pentagon_bar);
+
 
         {
             auto widget = new QWidget();
@@ -100,6 +105,14 @@ namespace cpprofiler { namespace analysis {
 
     tree::NodeTree& MergeWindow::getTree() {
         return m_nt;
+    }
+
+    MergeResult& MergeWindow::mergeResult() {
+        return m_merge_result;
+    }
+
+    void MergeWindow::finalize() {
+        pentagon_bar->update(m_merge_result.size());
     }
 
 

@@ -123,5 +123,24 @@ void pentagon(QPainter& painter, int x, int y, bool selected) {
 
 }
 
+void big_pentagon(QPainter& painter, int x, int y, bool selected) {
+    using namespace traditional;
+    if (selected) {
+        painter.setBrush(colors::gold);
+    } else {
+        painter.setBrush(colors::pentagonColor);
+    }
+
+    QPointF points[5] = { QPointF(x, y),
+        QPointF(x + BIG_PENTAGON_HALF_W, y + BIG_PENTAGON_THIRD_W),
+        QPointF(x + BIG_PENTAGON_THIRD_W, y + BIG_PENTAGON_WIDTH),
+        QPointF(x - BIG_PENTAGON_THIRD_W, y + BIG_PENTAGON_WIDTH),
+        QPointF(x - BIG_PENTAGON_HALF_W, y + BIG_PENTAGON_THIRD_W)
+    };
+
+    painter.drawConvexPolygon(points, 5);
+
+}
+
 
 }}}

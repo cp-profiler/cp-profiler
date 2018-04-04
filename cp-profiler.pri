@@ -10,6 +10,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/execution_list.cpp \
     $$PWD/src/cpprofiler/execution_window.cpp \
     $$PWD/src/cpprofiler/utils/utils.cpp \
+    $$PWD/src/cpprofiler/utils/tree_utils.cpp \
     $$PWD/src/cpprofiler/utils/perf_helper.cpp \
     $$PWD/src/cpprofiler/utils/array.cpp \
     $$PWD/src/cpprofiler/utils/std_ext.cpp \
@@ -44,6 +45,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/execution_list.hh \
     $$PWD/src/cpprofiler/execution_window.hh \
     $$PWD/src/cpprofiler/utils/utils.hh \
+    $$PWD/src/cpprofiler/utils/tree_utils.hh \
     $$PWD/src/cpprofiler/utils/perf_helper.hh \
     $$PWD/src/cpprofiler/utils/array.hh \
     $$PWD/src/cpprofiler/utils/std_ext.hh \
@@ -65,9 +67,11 @@ HEADERS += \
     $$PWD/src/cpprofiler/utils/debug_mutex.hh \
     $$PWD/src/cpprofiler/analysis/similar_subtree_window.hh \
     $$PWD/src/cpprofiler/analysis/merge_window.hh \
+    $$PWD/src/cpprofiler/analysis/pentagon_counter.hpp \
     $$PWD/src/cpprofiler/analysis/tree_merger.hh \
     $$PWD/src/cpprofiler/analysis/subtree_pattern.hh \
     $$PWD/src/cpprofiler/analysis/histogram_scene.hh \
+    $$PWD/src/cpprofiler/analysis/merging/merge_result.hh \
     $$PWD/src/cpprofiler/tree/node_widget.hh \
     $$PWD/src/cpprofiler/tree/node_drawing.hh \
 

@@ -45,7 +45,12 @@ protected:
                 auto cy = (WIDTH - UNDET_WIDTH)/2;
                 auto cx = cy + HALF_UNDET_WIDTH;
                 draw::unexplored(painter, cx, cy, false);
-            }
+            } break;
+            case NodeStatus::MERGED: {
+                auto cy = (WIDTH - PENTAGON_WIDTH)/2;
+                auto cx = cy + PENTAGON_HALF_W;
+                draw::pentagon(painter, cx, cy, false);
+            } break;
             default:
                 break;
         }

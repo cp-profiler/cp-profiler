@@ -138,9 +138,13 @@ namespace cpprofiler {
         auto window = new analysis::MergeWindow();
 
         auto& new_tree = window->getTree();
+        auto& res = window->mergeResult();
 
         /// Note: TreeMerger will delete itself when finished
-        auto merger = new analysis::TreeMerger(*e1, *e2, new_tree);
+        auto merger = new analysis::TreeMerger(*e1, *e2, new_tree, res);
+
+        connect(merger, &analysis::TreeMerger::finished,
+                window, &analysis::MergeWindow::finalize);
         merger->start();
 
         window->show();
