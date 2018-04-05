@@ -192,6 +192,9 @@ void TreeMerger::run() {
             auto count_right = utils::count_descendants(tree_r, node_r);
             auto pen_item = PentagonItem{target, count_left, count_right};
 
+            qDebug() << "left: " << count_left;
+            qDebug() << "right: " << count_right;
+
             merge_result.push_back(pen_item);
 
         }

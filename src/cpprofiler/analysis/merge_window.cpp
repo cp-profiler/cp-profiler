@@ -1,12 +1,15 @@
 #include "merge_window.hh"
+
 #include "../tree/traditional_view.hh"
+#include "merging/pentagon_list_widget.hh"
+#include "pentagon_counter.hpp"
 
 #include <QGridLayout>
 #include <QWidget>
 #include <QMenuBar>
 #include <QStatusBar>
+#include <QCheckBox>
 
-#include "pentagon_counter.hpp"
 
 namespace cpprofiler { namespace analysis {
 
@@ -18,17 +21,37 @@ namespace cpprofiler { namespace analysis {
 
         auto layout = new QGridLayout();
 
-        resize(500, 700);
+        resize(500 + pent_config::VIEW_WIDTH, 700);
 
         pentagon_bar = new PentagonCounter(this);
         statusBar()->addPermanentWidget(pentagon_bar);
 
+        auto dummy_result = new MergeResult{
+            {NodeID{0}, 10, 20}
+           ,{NodeID{1}, 20, 30}
+           ,{NodeID{2}, 30, 40}
+           ,{NodeID{4}, 160, 270}
+           ,{NodeID{4}, 1160, 2270}
+           ,{NodeID{3}, 40, 50}
+           ,{NodeID{4}, 60, 70}
+        };
+
+        pent_list = new PentagonListWidget(this, *dummy_result);
+        // pent_list = new PentagonListWidget(this, m_merge_result);
+
+        connect(pent_list, &PentagonListWidget::pentagonClicked, m_view.get(), &tree::TraditionalView::selectNode);
+
+        auto sort_cb = new QCheckBox("sorted", this);
+        connect(sort_cb, &QCheckBox::stateChanged, pent_list, &PentagonListWidget::handleSortCB);
+
+        layout->addWidget(pent_list, 1, 0, 1, 1, Qt::AlignLeft);
+        layout->addWidget(sort_cb, 0, 0, 1, 1, Qt::AlignLeft);
 
         {
             auto widget = new QWidget();
             setCentralWidget(widget);
             widget->setLayout(layout);
-            layout->addWidget(m_view->widget(), 0, 0, 2, 1);
+            layout->addWidget(m_view->widget(), 0, 1, 2, 1);
         }
 
         auto menuBar = new QMenuBar(0);
@@ -113,6 +136,7 @@ namespace cpprofiler { namespace analysis {
 
     void MergeWindow::finalize() {
         pentagon_bar->update(m_merge_result.size());
+        pent_list->updateScene();
     }
 
 

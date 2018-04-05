@@ -12,6 +12,7 @@ namespace cpprofiler { namespace tree {
 namespace cpprofiler { namespace analysis {
 
 class PentagonCounter;
+class PentagonListWidget;
 
 class MergeWindow : public QMainWindow {
 Q_OBJECT
@@ -23,6 +24,8 @@ Q_OBJECT
     MergeResult m_merge_result;
 
     PentagonCounter* pentagon_bar;
+
+    PentagonListWidget* pent_list;
 
 public:
     MergeWindow();

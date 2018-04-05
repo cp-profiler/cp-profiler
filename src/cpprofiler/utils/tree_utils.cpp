@@ -27,6 +27,8 @@ int count_descendants(const NodeTree& nt, NodeID nid) {
         }
     }
 
+    return count;
+
 }
 
 

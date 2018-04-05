@@ -1,5 +1,6 @@
 #include <QWidget>
 #include <QLabel>
+#include <QHBoxLayout>
 #include "../tree/node_widget.hh"
 
 namespace cpprofiler { namespace analysis {
