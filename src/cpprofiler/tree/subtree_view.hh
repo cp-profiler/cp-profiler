@@ -19,7 +19,7 @@ Q_OBJECT
     std::unique_ptr<TreeScrollArea> m_scroll_area;
 
     /// Not really used in this view?
-    NodeFlags node_flags;
+    VisualFlags node_flags;
 
     NodeID m_cur_node = NodeID::NoNode;
 

@@ -12,19 +12,19 @@
 #include "../shape.hh"
 #include "../../config.hh"
 
-/// needed for NodeFlags
+/// needed for VisualFlags
 #include "../traditional_view.hh"
 
 #include <numeric>
 
 namespace cpprofiler { namespace tree {
 
-    LayoutCursor::LayoutCursor(NodeID start, const NodeTree& tree, const NodeFlags& nf, Layout& lo)
-        : UnsafeNodeCursor(start, tree), m_layout(lo), m_nt(tree), m_tree(tree.tree_structure()), m_node_flags(nf) {}
+    LayoutCursor::LayoutCursor(NodeID start, const NodeTree& tree, const VisualFlags& nf, Layout& lo)
+        : UnsafeNodeCursor(start, tree), m_layout(lo), m_nt(tree), m_tree(tree.tree_structure()), m_vis_flags(nf) {}
 
     bool LayoutCursor::mayMoveDownwards() {
         return UnsafeNodeCursor::mayMoveDownwards() &&
-            //    !m_node_flags.get_hidden(m_cur_node) &&
+            //    !m_vis_flags.get_hidden(m_cur_node) &&
                m_layout.isDirty_unsafe(m_cur_node);
     }
 
@@ -137,7 +137,7 @@ namespace cpprofiler { namespace tree {
         return result;
     }
 
-    static Extent calculateForSingleNode(NodeID nid, const NodeTree& nt, const NodeFlags& nf) {
+    static Extent calculateForSingleNode(NodeID nid, const NodeTree& nt, const VisualFlags& nf) {
 
         Extent result{-traditional::HALF_MAX_NODE_W, traditional::HALF_MAX_NODE_W};
         /// see if the node dispays labels and needs its (top) extents extended
@@ -165,7 +165,7 @@ namespace cpprofiler { namespace tree {
         return result;
     }
 
-    static inline void computeForNodeBinary(NodeID nid, Layout& layout, const NodeTree& nt, const NodeFlags& nf) {
+    static inline void computeForNodeBinary(NodeID nid, Layout& layout, const NodeTree& nt, const VisualFlags& nf) {
 
         auto kid_l = nt.getChild(nid, 0);
         auto kid_r = nt.getChild(nid, 1);
@@ -278,19 +278,19 @@ namespace cpprofiler { namespace tree {
     void LayoutCursor::computeForNode(NodeID nid) {
 
         /// Check if the node is hidden:
-        if (m_node_flags.get_hidden(nid)) {
+        if (m_vis_flags.get_hidden(nid)) {
             m_layout.setShape_unsafe(nid, ShapeUniqPtr(&Shape::hidden));
         } else {
             auto nkids = m_tree.childrenCount(nid);
 
             if (nkids == 0) {
 
-                if (!m_node_flags.get_label_shown(nid)) {
+                if (!m_vis_flags.get_label_shown(nid)) {
                     m_layout.setShape_unsafe(nid, ShapeUniqPtr(&Shape::leaf));
                 } else {
                     /// TODO
                     auto shape = ShapeUniqPtr{new Shape{1}};
-                    (*shape)[0] = calculateForSingleNode(nid, m_nt, m_node_flags);
+                    (*shape)[0] = calculateForSingleNode(nid, m_nt, m_vis_flags);
 
                     shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
                     m_layout.setShape_unsafe(nid, std::move(shape));
@@ -298,7 +298,7 @@ namespace cpprofiler { namespace tree {
             }
 
             if (nkids == 2) {
-                computeForNodeBinary(nid, m_layout, m_nt, m_node_flags);
+                computeForNodeBinary(nid, m_layout, m_nt, m_vis_flags);
             }
 
             if (nkids > 2) {

@@ -15,6 +15,7 @@
 
 #include "cursors/nodevisitor.hh"
 #include "cursors/drawing_cursor.hh"
+#include "cursors/hide_failed_cursor.hh"
 #include "../utils/std_ext.hh"
 #include "node_id.hh"
 #include "shape.hh"
@@ -137,7 +138,7 @@ namespace cpprofiler { namespace tree {
         utils::MutexLocker t_lock(&tree_mutex);
         utils::MutexLocker l_lock(&layout_mutex);
 
-        DrawingCursor dc(m_start_node, m_tree, m_layout, m_user_data, m_node_flags, painter, start_pos, clip);
+        DrawingCursor dc(m_start_node, m_tree, m_layout, m_user_data, m_vis_flags, painter, start_pos, clip);
         PreorderNodeVisitor<DrawingCursor>(dc).run();
         // perfHelper.end();
 
@@ -208,7 +209,7 @@ namespace cpprofiler { namespace tree {
             // if node hidden -> different area
             
             QRect node_area;
-            if (m_node_flags.get_hidden(node)) {
+            if (m_vis_flags.get_hidden(node)) {
                 auto node_pos_tl = node_pos - QPoint{HALF_COLLAPSED_WIDTH, 0};
                 node_area = QRect(node_pos_tl, QSize{COLLAPSED_WIDTH, COLLAPSED_DEPTH});
             } else {
@@ -245,8 +246,8 @@ namespace cpprofiler { namespace tree {
         if (n != NodeID::NoNode) { emit nodeDoubleClicked(n); }
     }
 
-    TreeScrollArea::TreeScrollArea(NodeID start, const NodeTree& tree, const UserData& user_data, const Layout& layout, const NodeFlags& nf)
-        : m_start_node(start), m_tree(tree), m_user_data(user_data), m_layout(layout), m_node_flags(nf) {
+    TreeScrollArea::TreeScrollArea(NodeID start, const NodeTree& tree, const UserData& user_data, const Layout& layout, const VisualFlags& nf)
+        : m_start_node(start), m_tree(tree), m_user_data(user_data), m_layout(layout), m_vis_flags(nf) {
             setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
             setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     }
@@ -271,12 +272,12 @@ TraditionalView::TraditionalView(const NodeTree& tree)
 : m_tree(tree),
   m_user_data(utils::make_unique<UserData>()),
   m_layout(utils::make_unique<Layout>()),
-  m_flags(utils::make_unique<NodeFlags>()),
-  m_layout_computer(utils::make_unique<LayoutComputer>(tree, *m_layout, *m_flags))
+  m_vis_flags(utils::make_unique<VisualFlags>()),
+  m_layout_computer(utils::make_unique<LayoutComputer>(tree, *m_layout, *m_vis_flags))
 {
 
     auto root_node = m_tree.getRoot_safe();
-    m_scroll_area.reset(new TreeScrollArea(root_node, m_tree, *m_user_data, *m_layout, *m_flags));
+    m_scroll_area.reset(new TreeScrollArea(root_node, m_tree, *m_user_data, *m_layout, *m_vis_flags));
 
 
     // auto painter = m_scroll_area.getLabelPainter();
@@ -320,6 +321,12 @@ NodeID TraditionalView::node() const {
     return m_user_data->getSelectedNode();
 }
 
+void TraditionalView::navRoot() {
+    auto root = m_tree.getRoot();
+    m_user_data->setSelectedNode(root);
+    centerCurrentNode();
+    emit needsRedrawing();
+}
 
 void TraditionalView::navDown() {
     auto cur_nid = m_user_data->getSelectedNode();
@@ -388,7 +395,7 @@ void TraditionalView::navRight() {
 }
 
 void TraditionalView::set_label_shown(NodeID nid, bool val) {
-    m_flags->set_label_shown(nid, val);
+    m_vis_flags->set_label_shown(nid, val);
     m_layout_computer->dirtyUp(nid);
 }
 
@@ -396,7 +403,7 @@ void TraditionalView::toggleShowLabel() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto val = !m_flags->get_label_shown(cur_nid);
+    auto val = !m_vis_flags->get_label_shown(cur_nid);
     set_label_shown(cur_nid, val);
     emit needsRedrawing();
 
@@ -407,7 +414,7 @@ void TraditionalView::showLabelsDown() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto val = !m_flags->get_label_shown(cur_nid);
+    auto val = !m_vis_flags->get_label_shown(cur_nid);
 
     m_tree.preOrderApply(cur_nid, [val, this](NodeID nid) {
         set_label_shown(nid, val);
@@ -430,7 +437,7 @@ void TraditionalView::showLabelsUp() {
         return;
     }
 
-    auto val = !m_flags->get_label_shown(pid);
+    auto val = !m_vis_flags->get_label_shown(pid);
 
     while (cur_nid != NodeID::NoNode) {
         set_label_shown(cur_nid, val);
@@ -448,10 +455,21 @@ void TraditionalView::toggleHidden() {
     // if leaf node -> do not hide
     if (m_tree.isLeaf_safe(cur_nid)) return;
 
-    auto val = !m_flags->get_hidden(cur_nid);
-    m_flags->set_hidden(cur_nid, val);
+    auto val = !m_vis_flags->get_hidden(cur_nid);
+    m_vis_flags->set_hidden(cur_nid, val);
 
-    dirtyUp();
+    dirtyUp(cur_nid);
+
+    setLayoutOutdated();
+    emit needsRedrawing();
+}
+
+void TraditionalView::hideFailed() {
+    auto cur_nid = m_user_data->getSelectedNode();
+    if (cur_nid == NodeID::NoNode) return;
+
+    HideFailedCursor hfc(cur_nid, m_tree, *m_vis_flags, *m_layout_computer);
+    PostorderNodeVisitor<HideFailedCursor>(hfc).run();
 
     setLayoutOutdated();
     emit needsRedrawing();
@@ -473,9 +491,9 @@ void TraditionalView::handleDoubleClick() {
 
 void TraditionalView::toggleCollapsePentagon(NodeID nid) {
     /// Use the same 'hideden' flag for now
-    auto val = !m_flags->get_hidden(nid);
-    m_flags->set_hidden(nid, val);
-    dirtyUp();
+    auto val = !m_vis_flags->get_hidden(nid);
+    m_vis_flags->set_hidden(nid, val);
+    dirtyUp(nid);
     setLayoutOutdated();
     emit needsRedrawing();
     
@@ -483,10 +501,10 @@ void TraditionalView::toggleCollapsePentagon(NodeID nid) {
 
 void TraditionalView::unhideNode(NodeID nid) {
 
-    auto hidden = m_flags->get_hidden(nid);
+    auto hidden = m_vis_flags->get_hidden(nid);
     if (hidden) {
-        m_flags->set_hidden(nid, false);
-        dirtyUp();
+        m_vis_flags->set_hidden(nid, false);
+        dirtyUp(nid);
         setLayoutOutdated();
         emit needsRedrawing();
     }
@@ -496,8 +514,8 @@ void TraditionalView::toggleHighlighted() {
     auto nid = m_user_data->getSelectedNode();
     if (nid == NodeID::NoNode) return;
 
-    auto val = !m_flags->get_highlighted(nid);
-    m_flags->set_highlighted(nid, val);
+    auto val = !m_vis_flags->get_highlighted(nid);
+    m_vis_flags->set_highlighted(nid, val);
 
     emit needsRedrawing();
 }
@@ -567,11 +585,15 @@ void TraditionalView::setLayoutOutdated() {
     }
 }
 
-void TraditionalView::dirtyUp() {
+void TraditionalView::dirtyUp(NodeID nid) {
+    m_layout_computer->dirtyUp(nid);
+}
+
+void TraditionalView::dirtyCurrentNodeUp() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    m_layout_computer->dirtyUp(cur_nid);
+    dirtyUp(cur_nid);
 }
 
 void TraditionalView::printNodeInfo() {
@@ -583,88 +605,21 @@ void TraditionalView::printNodeInfo() {
     auto bb = m_layout->getBoundingBox(cur_nid);
     qDebug() << "bb:[" << bb.left << "," << bb.right << "]";
     qDebug() << "dirty:" << m_layout->isDirty_unsafe(cur_nid);
-    qDebug() << "hidden:" << m_flags->get_hidden(cur_nid);
+    qDebug() << "hidden:" << m_vis_flags->get_hidden(cur_nid);
+    qDebug() << "has solved kids:" << m_tree.hasSolvedChildren(cur_nid);
+    qDebug() << "has open kids:" << m_tree.hasOpenChildren(cur_nid);
 }
 
 void TraditionalView::highlight_subtrees(const std::vector<NodeID>& nodes) {
 
-    m_flags->unhighlight_all();
+    m_vis_flags->unhighlight_all();
 
     for (auto nid : nodes) {
-        m_flags->set_highlighted(nid, true);
+        m_vis_flags->set_highlighted(nid, true);
     }
 
     emit needsRedrawing();
 }
-
-
-}}
-
-
-namespace cpprofiler { namespace tree {
-
-    void NodeFlags::ensure_id_exists(NodeID nid) {
-        auto id = static_cast<int>(nid);
-        if (m_label_shown.size() < id + 1) {
-            m_label_shown.resize(id + 1);
-            m_node_hidden.resize(id + 1);
-            m_shape_highlighted.resize(id + 1);
-        }
-    }
-
-
-    void NodeFlags::set_label_shown(NodeID nid, bool val) {
-        ensure_id_exists(nid);
-        m_label_shown[nid] = val;
-    }
-
-    bool NodeFlags::get_label_shown(NodeID nid) const {
-
-        // return false; // TODO
-        // ensure_id_exists(nid);
-
-        if (m_label_shown.size() <= nid) return false;
-
-        return m_label_shown.at(nid);
-    }
-
-    void NodeFlags::set_hidden(NodeID nid, bool val) {
-        ensure_id_exists(nid);
-        m_node_hidden[nid] = val;
-    }
-
-    bool NodeFlags::get_hidden(NodeID nid) const {
-        if (m_node_hidden.size() <= nid) return false;
-        return m_node_hidden.at(nid);
-    }
-
-    void NodeFlags::set_highlighted(NodeID nid, bool val) {
-        ensure_id_exists(nid);
-
-        if (val) {
-            m_highlighted_shapes.insert(nid);
-        } else {
-            m_highlighted_shapes.erase(nid);
-        }
-        m_shape_highlighted[nid] = val;
-    }
-
-    bool NodeFlags::get_highlighted(NodeID nid) const {
-
-        if (m_shape_highlighted.size() <= nid) {
-            return false;
-        }
-        return m_shape_highlighted[nid];
-    }
-
-    void NodeFlags::unhighlight_all() {
-        for (auto nid : m_highlighted_shapes) {
-            m_shape_highlighted[nid] = false;
-        }
-
-        m_highlighted_shapes.clear();
-    }
-
 
 
 }}

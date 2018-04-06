@@ -8,20 +8,20 @@
 namespace cpprofiler { namespace tree {
 
     class Layout;
-    class NodeFlags;
+    class VisualFlags;
 
 class LayoutCursor : public UnsafeNodeCursor {
 
     Layout& m_layout;
     const NodeTree& m_nt;
     const Structure& m_tree;
-    const NodeFlags& m_node_flags;
+    const VisualFlags& m_vis_flags;
     /// painter used for dispaying text (labels)
     const QPainter* m_painter = nullptr;
 
 public:
     // Constructor
-    LayoutCursor(NodeID start, const NodeTree& tree, const NodeFlags& nf, Layout& lo);
+    LayoutCursor(NodeID start, const NodeTree& tree, const VisualFlags& nf, Layout& lo);
 
     void setLabelPainter(QPainter* painter);
 

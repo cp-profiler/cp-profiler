@@ -22,10 +22,12 @@ SOURCES += \
     $$PWD/src/cpprofiler/tree/node_tree.cpp \
     $$PWD/src/cpprofiler/tree/node_id.cpp \
     $$PWD/src/cpprofiler/tree/node_info.cpp \
+    $$PWD/src/cpprofiler/tree/visual_flags.cpp \
     $$PWD/src/cpprofiler/tree/traditional_view.cpp \
     $$PWD/src/cpprofiler/tree/cursors/node_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/layout_cursor.cpp \
+    $$PWD/src/cpprofiler/tree/cursors/hide_failed_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hpp \
     $$PWD/src/cpprofiler/analysis/similar_subtree_window.cpp \
     $$PWD/src/cpprofiler/analysis/merge_window.cpp \
@@ -58,11 +60,13 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/node_tree.hh \
     $$PWD/src/cpprofiler/tree/node_id.hh \
     $$PWD/src/cpprofiler/tree/node_info.hh \
+    $$PWD/src/cpprofiler/tree/visual_flags.hh \
     $$PWD/src/cpprofiler/tree/traditional_view.hh \
     $$PWD/src/cpprofiler/tree/subtree_view.hh \
     $$PWD/src/cpprofiler/tree/cursors/node_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/layout_cursor.hh \
+    $$PWD/src/cpprofiler/tree/cursors/hide_failed_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hh \
     $$PWD/src/cpprofiler/core.hh \
     $$PWD/src/cpprofiler/utils/debug_mutex.hh \

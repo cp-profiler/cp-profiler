@@ -259,7 +259,7 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto n7 = tree.addNodeNew(n4, 0, 0, tree::NodeStatus::FAILED, "7");
         auto n8 = tree.addNodeNew(n4, 1, 0, tree::NodeStatus::FAILED, "8");
 
-        auto n5 = tree.addNodeNew(n2, 0, 0, tree::NodeStatus::FAILED, "5");
+        auto n5 = tree.addNodeNew(n2, 0, 0, tree::NodeStatus::SOLVED, "5");
         auto n6 = tree.addNodeNew(n2, 1, 0, tree::NodeStatus::FAILED, "6");
     }
 

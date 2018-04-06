@@ -81,6 +81,11 @@ namespace cpprofiler {
             {
                 auto nodeMenu = menuBar->addMenu("&Node");
 
+                auto navRoot = new QAction{"Go to the root", this};
+                navRoot->setShortcut(QKeySequence("R"));
+                nodeMenu->addAction(navRoot);
+                connect(navRoot, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navRoot);
+
                 auto navDown = new QAction{"Go down the tree", this};
                 navDown->setShortcut(QKeySequence("Down"));
                 nodeMenu->addAction(navDown);
@@ -111,10 +116,10 @@ namespace cpprofiler {
                 nodeMenu->addAction(toggleShowLabelsUp);
                 connect(toggleShowLabelsUp, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::showLabelsUp);
 
-                auto toggleHidden = new QAction{"Toggle hide failed", this};
-                toggleHidden->setShortcut(QKeySequence("F"));
-                nodeMenu->addAction(toggleHidden);
-                connect(toggleHidden, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::toggleHidden);
+                auto hideFailed = new QAction{"Hide failed", this};
+                hideFailed->setShortcut(QKeySequence("F"));
+                nodeMenu->addAction(hideFailed);
+                connect(hideFailed, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::hideFailed);
 
                 auto toggleHighlighted = new QAction{"Toggle highlight subtree", this};
                 toggleHighlighted->setShortcut(QKeySequence("H"));
@@ -133,7 +138,7 @@ namespace cpprofiler {
 
                 auto dirtyNodesUp = new QAction{"Dirty Nodes Up", this};
                 debugMenu->addAction(dirtyNodesUp);
-                connect(dirtyNodesUp, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::dirtyUp);
+                connect(dirtyNodesUp, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::dirtyCurrentNodeUp);
 
                 auto getNodeInfo = new QAction{"Print node info", this};
                 getNodeInfo->setShortcut(QKeySequence("I"));

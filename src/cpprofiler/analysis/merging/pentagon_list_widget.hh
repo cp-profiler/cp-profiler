@@ -19,7 +19,7 @@ Q_OBJECT
 
     const MergeResult& m_merge_res;
 
-    bool needs_sorting = false;
+    bool needs_sorting = true;
 
     /// Which pentagon from the list is selected
     NodeID m_selected = NodeID::NoNode;
@@ -63,8 +63,6 @@ public:
 
         m_scene->clear();
 
-        auto ypos = 2;
-
         /// This is used to scale the horizontal bars
         int max_value = 0;
         for (const auto& pen : m_merge_res) {
@@ -73,17 +71,29 @@ public:
 
         auto displayed_items = m_merge_res; /// make copy
 
+        const auto sort_function = [](const PentagonItem& p1, const PentagonItem& p2) {
+            const auto diff1 = std::abs(p1.size_r-p1.size_l);
+            const auto diff2 = std::abs(p2.size_r-p2.size_l);
+
+            if (diff1 < diff2) {
+                return false;
+            } else if (diff2 > diff1) {
+                return true;
+            } else {
+                const auto sum1 = p1.size_r + p1.size_l;
+                const auto sum2 = p2.size_r + p2.size_l;
+                return sum2 < sum1;
+            }
+        };
+
         if (needs_sorting) {
-            std::sort(displayed_items.begin(), displayed_items.end(),
-                [](const PentagonItem& p1, const PentagonItem& p2) {
-                    return std::abs(p1.size_r-p1.size_l) > std::abs(p2.size_r-p2.size_l);
-                });
+            std::sort(displayed_items.begin(), displayed_items.end(), sort_function);
         }
 
         for (auto i = 0; i < displayed_items.size(); ++i) {
-            auto ypos = i * (HEIGHT + PADDING) + PADDING;
+            const auto ypos = i * (HEIGHT + PADDING) + PADDING;
 
-            bool sel = (displayed_items[i].pen_nid == m_selected);
+            const bool sel = (displayed_items[i].pen_nid == m_selected);
             new PentagonRect(m_scene, *this, displayed_items[i], ypos, max_value, sel);
         }
     }

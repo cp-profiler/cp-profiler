@@ -9,18 +9,18 @@ namespace cpprofiler { namespace tree {
 
     class Layout;
     class NodeTree;
-    class NodeFlags;
+    class VisualFlags;
 
     class LayoutComputer {
 
         const NodeTree& m_tree;
-        const NodeFlags& m_flags;
+        const VisualFlags& m_vis_flags;
         Layout& m_layout;
 
         bool m_needs_update = true;
 public:
 
-        LayoutComputer(const NodeTree& tree, Layout& layout, const NodeFlags& nf);
+        LayoutComputer(const NodeTree& tree, Layout& layout, const VisualFlags& nf);
 
         bool compute();
 

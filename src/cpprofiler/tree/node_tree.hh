@@ -115,6 +115,9 @@ Q_OBJECT
     /// Not sure if I need to keep this
     void resetNumberOfChildren(NodeID nid, int kids);
 
+    /// notify ancestor nodes of a solution
+    void notifyAncestors(NodeID nid);
+
 public:
 
     NodeTree();
@@ -191,6 +194,10 @@ public:
     int calculateDepth_safe(NodeID nid) const;
 
     const Label& getLabel(NodeID nid) const;
+
+    bool hasSolvedChildren(NodeID nid) const;
+
+    bool hasOpenChildren(NodeID nid) const;
 
     /// ********************************************************************
 

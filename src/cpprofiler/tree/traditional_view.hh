@@ -7,6 +7,7 @@
 #include <memory>
 #include <set>
 #include "node_id.hh"
+#include "visual_flags.hh"
 
 namespace cpprofiler {
     class UserData;
@@ -28,33 +29,6 @@ struct DisplayState {
     int root_y = 0;
 };
 
-class NodeFlags {
-
-    std::vector<bool> m_label_shown;
-
-    std::vector<bool> m_node_hidden;
-
-    std::vector<bool> m_shape_highlighted;
-
-    /// This is somewhat redundant given m_shape_highlighted, but
-    /// it is more suitable for unhighlighting previously highlighted
-    std::set<NodeID> m_highlighted_shapes;
-
-    void ensure_id_exists(NodeID id);
-
-public:
-    void set_label_shown(NodeID nid, bool val);
-    bool get_label_shown(NodeID nid) const;
-
-    void set_hidden(NodeID nid, bool val);
-    bool get_hidden(NodeID nid) const;
-
-    void set_highlighted(NodeID nid, bool val);
-    bool get_highlighted(NodeID nid) const;
-
-    void unhighlight_all();
-};
-
 class TreeScrollArea : public QAbstractScrollArea {
 Q_OBJECT
     const NodeTree& m_tree;
@@ -62,7 +36,7 @@ Q_OBJECT
     const Layout& m_layout;
 
     DisplayState m_options;
-    const NodeFlags& m_node_flags;
+    const VisualFlags& m_vis_flags;
 
     NodeID m_start_node;
 
@@ -83,7 +57,7 @@ public:
                    const NodeTree&,
                    const UserData&,
                    const Layout&,
-                   const NodeFlags&);
+                   const VisualFlags&);
 
     /// center the x coordinate
     void centerX(int x);
@@ -102,7 +76,7 @@ class TraditionalView : public QObject {
     std::unique_ptr<UserData> m_user_data;
 
     /// TODO: make sure node flags is thread-safe?
-    std::unique_ptr<NodeFlags> m_flags;
+    std::unique_ptr<VisualFlags> m_vis_flags;
     std::unique_ptr<Layout> m_layout;
 
     std::unique_ptr<LayoutComputer> m_layout_computer;
@@ -122,6 +96,8 @@ public:
 
     void toggleCollapsePentagon(NodeID nid);
 
+    void dirtyUp(NodeID nid);
+
 signals:
     // void nodeClicked(NodeID nid);
 
@@ -135,6 +111,8 @@ public slots:
     void centerNode(NodeID nid);
     void centerCurrentNode();
 
+    void navRoot();
+
     void navUp();
     void navDown();
     void navLeft();
@@ -147,6 +125,8 @@ public slots:
     void toggleHidden();
     void unhideNode(NodeID nid);
 
+    void hideFailed();
+
     void toggleHighlighted();
 
     void selectNode(NodeID nid);
@@ -157,7 +137,7 @@ public slots:
 
     void printNodeInfo();
 
-    void dirtyUp();
+    void dirtyCurrentNodeUp();
 
     void highlight_subtrees(const std::vector<NodeID>& nodes);
 

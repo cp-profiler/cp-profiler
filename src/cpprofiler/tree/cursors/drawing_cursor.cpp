@@ -42,8 +42,8 @@ namespace cpprofiler { namespace tree {
     }
 
     DrawingCursor::DrawingCursor(NodeID start, const NodeTree& tree,
-        const Layout& layout, const UserData& user_data, const NodeFlags& flags, QPainter& painter, QPoint start_pos, const QRect& clip)
-    : UnsafeNodeCursor(start, tree), m_node_tree(tree), m_layout(layout), m_user_data(user_data), m_flags(flags), m_painter(painter), clippingRect(clip) {
+        const Layout& layout, const UserData& user_data, const VisualFlags& flags, QPainter& painter, QPoint start_pos, const QRect& clip)
+    : UnsafeNodeCursor(start, tree), m_node_tree(tree), m_layout(layout), m_user_data(user_data), m_vis_flags(flags), m_painter(painter), clippingRect(clip) {
         cur_x = start_pos.x(); cur_y = start_pos.y();
     }
 
@@ -123,7 +123,7 @@ namespace cpprofiler { namespace tree {
         auto selected = (m_user_data.getSelectedNode() == m_cur_node) ? true : false;
 
         /// NOTE: this should be consisten with the layout
-        if (m_flags.get_label_shown(m_cur_node)) {
+        if (m_vis_flags.get_label_shown(m_cur_node)) {
 
             auto draw_left = !m_node_tree.isRightMostChild(m_cur_node);
             // m_painter.setPen(QPen{Qt::black, 2});
@@ -149,7 +149,7 @@ namespace cpprofiler { namespace tree {
             m_painter.drawText(QPoint{label_x, cur_y}, label.c_str());
         }
 
-        if (m_flags.get_highlighted(m_cur_node)) {
+        if (m_vis_flags.get_highlighted(m_cur_node)) {
             drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
         }
 
@@ -166,7 +166,7 @@ namespace cpprofiler { namespace tree {
 
         /// see if the node is hidden
 
-        auto hidden = m_flags.get_hidden(m_cur_node);
+        auto hidden = m_vis_flags.get_hidden(m_cur_node);
 
         if (hidden) {
 
@@ -231,7 +231,7 @@ namespace cpprofiler { namespace tree {
     bool DrawingCursor::mayMoveDownwards() {
         /// TODO: this should be about children?
         return UnsafeNodeCursor::mayMoveDownwards() &&
-               !m_flags.get_hidden(m_cur_node) &&
+               !m_vis_flags.get_hidden(m_cur_node) &&
                m_layout.getLayoutDone_unsafe(m_cur_node) &&
                !isClipped();
     }

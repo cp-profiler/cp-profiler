@@ -13,7 +13,7 @@ namespace cpprofiler {
     class UserData;
 
     namespace tree {
-        class NodeFlags;
+        class VisualFlags;
     }
 }
 
@@ -30,7 +30,7 @@ class DrawingCursor : public UnsafeNodeCursor {
 
     const UserData& m_user_data;
 
-    const NodeFlags& m_flags;
+    const VisualFlags& m_vis_flags;
 
     QPainter& m_painter;
     QRect clippingRect;
@@ -45,7 +45,7 @@ public:
                  const NodeTree& tree,
                  const Layout& layout,
                  const UserData& user_data,
-                 const NodeFlags& flags,
+                 const VisualFlags& flags,
                  QPainter& painter,
                  QPoint start_pos,
                  const QRect& clippingRect0);

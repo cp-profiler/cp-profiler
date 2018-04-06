@@ -145,6 +145,7 @@ NodeID NodeTree::addNodeNew(NodeID parent_id, int alt, int kids, tree::NodeStatu
         case NodeStatus::SOLVED: {
             m_node_stats.subtract_undetermined(1);
             m_node_stats.add_solved(1);
+            notifyAncestors(nid);
         } break;
         case NodeStatus::UNDETERMINED: {
             // do nothing
@@ -248,8 +249,23 @@ void NodeTree::resetNumberOfChildren(NodeID nid, int kids) {
     m_structure->resetNumberOfChildren(nid, kids);
 }
 
+void NodeTree::notifyAncestors(NodeID nid) {
+    while(nid != NodeID::NoNode) {
+        m_node_info->setHasSolvedChildren(nid, true);
+        nid = getParent(nid);
+    }
+}
+
 const Label& NodeTree::getLabel(NodeID nid) const {
     return m_labels.at(nid);
+}
+
+bool NodeTree::hasSolvedChildren(NodeID nid) const {
+    return m_node_info->hasSolvedChildren(nid);
+}
+
+bool NodeTree::hasOpenChildren(NodeID nid) const {
+    return m_node_info->hasOpenChildren(nid);
 }
 
 void NodeTree::setLabel(NodeID nid, const Label& label) {

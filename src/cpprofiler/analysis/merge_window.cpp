@@ -26,22 +26,23 @@ namespace cpprofiler { namespace analysis {
         pentagon_bar = new PentagonCounter(this);
         statusBar()->addPermanentWidget(pentagon_bar);
 
-        auto dummy_result = new MergeResult{
-            {NodeID{0}, 10, 20}
-           ,{NodeID{1}, 20, 30}
-           ,{NodeID{2}, 30, 40}
-           ,{NodeID{4}, 160, 270}
-           ,{NodeID{4}, 1160, 2270}
-           ,{NodeID{3}, 40, 50}
-           ,{NodeID{4}, 60, 70}
-        };
+        // auto dummy_result = new MergeResult{
+        //     {NodeID{0}, 10, 20}
+        //    ,{NodeID{1}, 20, 30}
+        //    ,{NodeID{2}, 30, 40}
+        //    ,{NodeID{4}, 160, 270}
+        //    ,{NodeID{4}, 1160, 2270}
+        //    ,{NodeID{3}, 40, 50}
+        //    ,{NodeID{4}, 60, 70}
+        // };
 
-        pent_list = new PentagonListWidget(this, *dummy_result);
-        // pent_list = new PentagonListWidget(this, m_merge_result);
+        // pent_list = new PentagonListWidget(this, *dummy_result);
+        pent_list = new PentagonListWidget(this, m_merge_result);
 
         connect(pent_list, &PentagonListWidget::pentagonClicked, m_view.get(), &tree::TraditionalView::selectNode);
 
         auto sort_cb = new QCheckBox("sorted", this);
+        sort_cb->setChecked(true);
         connect(sort_cb, &QCheckBox::stateChanged, pent_list, &PentagonListWidget::handleSortCB);
 
         layout->addWidget(pent_list, 1, 0, 1, 1, Qt::AlignLeft);

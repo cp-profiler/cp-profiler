@@ -15,8 +15,8 @@
 
 namespace cpprofiler { namespace tree {
 
-LayoutComputer::LayoutComputer(const NodeTree& tree, Layout& layout, const NodeFlags& nf)
-: m_tree(tree), m_layout(layout), m_flags(nf)
+LayoutComputer::LayoutComputer(const NodeTree& tree, Layout& layout, const VisualFlags& nf)
+: m_tree(tree), m_layout(layout), m_vis_flags(nf)
 {
 
 }
@@ -55,7 +55,7 @@ bool LayoutComputer::compute() {
     // auto layout_locked = layout_mutex.tryLock();
 
     // perfHelper.begin("layout");
-    LayoutCursor lc(m_tree.getRoot(), m_tree, m_flags, m_layout);
+    LayoutCursor lc(m_tree.getRoot(), m_tree, m_vis_flags, m_layout);
     PostorderNodeVisitor<LayoutCursor>(lc).run();
     // perfHelper.end();
 

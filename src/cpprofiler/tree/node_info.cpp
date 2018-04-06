@@ -46,6 +46,24 @@ void NodeInfo::addEntry(NodeID nid) {
     utils::MutexLocker lock(&m_mutex);
     if (nid != m_flags.size()) throw;
     m_flags.push_back({});
+    m_has_solved_children.push_back(false);
+    m_has_open_children.push_back(false);
+}
+
+void NodeInfo::setHasSolvedChildren(NodeID nid, bool val) {
+    m_has_solved_children[nid] = val;
+}
+
+bool NodeInfo::hasSolvedChildren(NodeID nid) const {
+    return m_has_solved_children[nid];
+}
+
+void NodeInfo::setHasOpenChildren(NodeID nid, bool val) {
+    m_has_open_children[nid] = val;
+}
+
+bool NodeInfo::hasOpenChildren(NodeID nid) const {
+    return m_has_open_children[nid];
 }
 
 }}
