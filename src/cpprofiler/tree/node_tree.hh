@@ -118,6 +118,12 @@ Q_OBJECT
     /// notify ancestor nodes of a solution
     void notifyAncestors(NodeID nid);
 
+    /// notify ancestor nodes that of whether they contain open nodes
+    void onChildClosed(NodeID nid);
+
+    /// set closed and notify ancestors
+    void closeNode(NodeID nid);
+
 public:
 
     NodeTree();
@@ -151,6 +157,9 @@ public:
 
     /// Turn undet node into a real one, updating stats and emitting signals
     NodeID addNodeNew(NodeID parent_id, int alt, int kids, NodeStatus status, Label = emptyLabel);
+
+    /// Set the flage for open children
+    void setHasOpenChildren(NodeID nid, bool val);
 
     void setLabel(NodeID nid, const Label& label);
 
@@ -198,6 +207,9 @@ public:
     bool hasSolvedChildren(NodeID nid) const;
 
     bool hasOpenChildren(NodeID nid) const;
+
+    /// return whether the node is open or has open children
+    bool isOpen(NodeID nid) const;
 
     /// ********************************************************************
 

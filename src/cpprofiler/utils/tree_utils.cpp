@@ -21,14 +21,37 @@ int count_descendants(const NodeTree& nt, NodeID nid) {
 
     while (!stk.empty()) {
         ++count;
-        auto n = stk.top(); stk.pop();
-        for (auto alt = 0; alt < nt.childrenCount(n); ++alt) {
+        const auto n = stk.top(); stk.pop();
+        const auto kids = nt.childrenCount(n);
+        for (auto alt = 0; alt < kids; ++alt) {
             stk.push(nt.getChild(n, alt));
         }
     }
 
     return count;
 
+}
+
+void apply_for_all_descendants(const NodeTree& nt, NodeID nid, const NodeAction& action) {
+
+    if (nid == NodeID::NoNode) {
+        throw std::exception();
+    }
+
+    std::stack<NodeID> stk;
+
+    stk.push(nid);
+
+    while(!stk.empty()) {
+
+        const auto n = stk.top(); stk.pop();
+        action(n);
+
+        const auto kids = nt.childrenCount(n);
+        for (auto alt = 0; alt < kids; ++alt) {
+            stk.push(nt.getChild(n, alt));
+        }
+    }
 }
 
 

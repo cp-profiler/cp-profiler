@@ -7,6 +7,9 @@
 #include <QGridLayout>
 #include <QPushButton>
 #include <QDebug>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include "cpp-integration/message.hpp"
 
 #include "execution.hh"
@@ -28,7 +31,7 @@ namespace cpprofiler {
 
         setWindowTitle("CP-Profiler");
 
-        std::cerr << "conductor thread:" << std::this_thread::get_id() << std::endl;
+        readSettings();
 
         auto layout = new QGridLayout();
 
@@ -148,6 +151,35 @@ namespace cpprofiler {
         merger->start();
 
         window->show();
+
+    }
+
+    void Conductor::readSettings() {
+
+        QFile file("settings.json");
+
+        if (!file.exists()) {
+            qDebug() << "settings.json not found";
+            return;
+        }
+
+        file.open(QIODevice::ReadWrite | QIODevice::Text);
+
+        auto data = file.readAll();
+
+        auto json_doc = QJsonDocument::fromJson(data);
+
+        if (json_doc.isEmpty()) {
+            qDebug() << "settings.json is empty";
+            return;
+        }
+
+        if (json_doc.isObject()) {
+
+            auto json_obj = json_doc.object();
+
+            // qDebug() << json_obj["name"].toString();
+        }
 
     }
 

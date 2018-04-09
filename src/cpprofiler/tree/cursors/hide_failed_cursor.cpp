@@ -13,14 +13,17 @@ HideFailedCursor::HideFailedCursor(NodeID start, const NodeTree& nt, VisualFlags
 
 bool HideFailedCursor::mayMoveDownwards() const {
     /// TODO:optimise this
-    return NodeCursor::mayMoveDownwards() && m_tree.hasSolvedChildren(m_cur_node);
+    return NodeCursor::mayMoveDownwards() &&
+           (m_tree.hasSolvedChildren(m_cur_node) || m_tree.hasOpenChildren(m_cur_node));
 }
 
 void HideFailedCursor::processCurrentNode() {
 
     /// TODO: check if has open children
-    if (!m_tree.hasSolvedChildren(m_cur_node) && m_tree.childrenCount(m_cur_node) > 0) {
-        qDebug() << "hide node: " << m_cur_node;
+    if (!m_tree.hasSolvedChildren(m_cur_node) &&
+        !m_tree.hasOpenChildren(m_cur_node) &&
+        m_tree.childrenCount(m_cur_node) > 0)
+    {
         m_vf.set_hidden(m_cur_node, true);
 
         m_lc.dirtyUp(m_cur_node);

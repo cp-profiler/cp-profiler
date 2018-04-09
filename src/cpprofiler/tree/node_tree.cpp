@@ -141,12 +141,17 @@ NodeID NodeTree::addNodeNew(NodeID parent_id, int alt, int kids, tree::NodeStatu
         case NodeStatus::FAILED: {
             m_node_stats.subtract_undetermined(1);
             m_node_stats.add_failed(1);
+            closeNode(nid);
         } break;
         case NodeStatus::SOLVED: {
             m_node_stats.subtract_undetermined(1);
             m_node_stats.add_solved(1);
             notifyAncestors(nid);
+            closeNode(nid);
         } break;
+        case NodeStatus::SKIPPED: {
+            closeNode(nid);
+        }
         case NodeStatus::UNDETERMINED: {
             // do nothing
         } break;
@@ -256,6 +261,10 @@ void NodeTree::notifyAncestors(NodeID nid) {
     }
 }
 
+void NodeTree::setHasOpenChildren(NodeID nid, bool val) {
+    m_node_info->setHasOpenChildren(nid, val);
+}
+
 const Label& NodeTree::getLabel(NodeID nid) const {
     return m_labels.at(nid);
 }
@@ -266,6 +275,35 @@ bool NodeTree::hasSolvedChildren(NodeID nid) const {
 
 bool NodeTree::hasOpenChildren(NodeID nid) const {
     return m_node_info->hasOpenChildren(nid);
+}
+
+bool NodeTree::isOpen(NodeID nid) const {
+    return ((getStatus(nid) == NodeStatus::UNDETERMINED) ||
+            hasOpenChildren(nid));
+}
+
+void NodeTree::onChildClosed(NodeID nid) {
+
+    bool allClosed = true;
+
+    for (auto i = childrenCount(nid); i--;) {
+        auto kid = getChild(nid, i);
+        if (isOpen(kid)) {
+            allClosed = false;
+            break;
+        }
+    }
+
+    if (allClosed) { closeNode(nid); }
+
+}
+
+void NodeTree::closeNode(NodeID nid) {
+    setHasOpenChildren(nid, false);
+    auto pid = getParent(nid);
+    if (pid != NodeID::NoNode) {
+        onChildClosed(pid);
+    }
 }
 
 void NodeTree::setLabel(NodeID nid, const Label& label) {

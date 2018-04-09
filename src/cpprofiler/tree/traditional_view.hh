@@ -127,6 +127,9 @@ public slots:
 
     void hideFailed();
 
+    /// unhide all descendants of the current node
+    void unhideAll();
+
     void toggleHighlighted();
 
     void selectNode(NodeID nid);

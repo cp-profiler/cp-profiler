@@ -32,6 +32,8 @@ public:
 
 private:
 
+    void readSettings();
+
     // void getSelectedExecutions
 
     static constexpr quint16 DEFAULT_PORT = 6565;

@@ -121,6 +121,11 @@ namespace cpprofiler {
                 nodeMenu->addAction(hideFailed);
                 connect(hideFailed, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::hideFailed);
 
+                auto unhideAll = new QAction{"Unhide all", this};
+                unhideAll->setShortcut(QKeySequence("U"));
+                nodeMenu->addAction(unhideAll);
+                connect(unhideAll, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::unhideAll);
+
                 auto toggleHighlighted = new QAction{"Toggle highlight subtree", this};
                 toggleHighlighted->setShortcut(QKeySequence("H"));
                 nodeMenu->addAction(toggleHighlighted);

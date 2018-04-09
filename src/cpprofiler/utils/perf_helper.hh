@@ -45,7 +45,6 @@ public:
     auto dur = maps[msg].current;
     std::cout << "Duration(" << msg << "): " << dur/1000000 << "ms"
               << " (" << dur << "ns)\n";
-    /// TODO(maxim): remove this entry
   }
 
   void end() {

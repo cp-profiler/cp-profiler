@@ -79,7 +79,7 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto n22 =  tree.addNodeNew(n19, 1, 0, tree::NodeStatus::FAILED);
 
         auto n23 =  tree.addNodeNew(n21, 0, 2, tree::NodeStatus::BRANCH);
-        auto n24 =  tree.addNodeNew(n21, 1, 0, tree::NodeStatus::FAILED);
+        auto n24 =  tree.addNodeNew(n21, 1, 0, tree::NodeStatus::UNDETERMINED);
 
         auto n25 =  tree.addNodeNew(n23, 0, 2, tree::NodeStatus::BRANCH);
         auto n26 =  tree.addNodeNew(n23, 1, 0, tree::NodeStatus::FAILED);
@@ -318,12 +318,12 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         // binary_test_1_for_identical_subtrees(conductor);
         // binary_test_2_for_identical_subtrees(conductor);
-        // binary_tree_execution(conductor);
+        binary_tree_execution(conductor);
         // simple_nary_execution(conductor);
         // nary_execution(conductor);
         // larger_nary_execution(conductor);
 
-        comparison(conductor);
+        // comparison(conductor);
 
 
         // tree_building(conductor);

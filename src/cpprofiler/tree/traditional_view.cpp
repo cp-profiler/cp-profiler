@@ -25,6 +25,7 @@
 
 
 #include "../utils/perf_helper.hh"
+#include "../utils/tree_utils.hh"
 
 
 
@@ -505,6 +506,34 @@ void TraditionalView::unhideNode(NodeID nid) {
     if (hidden) {
         m_vis_flags->set_hidden(nid, false);
         dirtyUp(nid);
+        setLayoutOutdated();
+        emit needsRedrawing();
+    }
+}
+
+void TraditionalView::unhideAll() {
+
+    auto nid = m_user_data->getSelectedNode();
+    if (nid == NodeID::NoNode) return;
+
+    /// indicates if any change was made
+    bool modified = false;
+
+    const auto action = [&](NodeID n) {
+
+        qDebug() << "apply for:" << n;
+
+        if (m_vis_flags->get_hidden(n)) {
+            m_vis_flags->set_hidden(n, false);
+            dirtyUp(n);
+            modified = true;
+        }
+
+    };
+
+    utils::apply_for_all_descendants(m_tree, nid, action);
+
+    if (modified) {
         setLayoutOutdated();
         emit needsRedrawing();
     }

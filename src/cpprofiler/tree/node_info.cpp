@@ -47,7 +47,7 @@ void NodeInfo::addEntry(NodeID nid) {
     if (nid != m_flags.size()) throw;
     m_flags.push_back({});
     m_has_solved_children.push_back(false);
-    m_has_open_children.push_back(false);
+    m_has_open_children.push_back(true);
 }
 
 void NodeInfo::setHasSolvedChildren(NodeID nid, bool val) {
