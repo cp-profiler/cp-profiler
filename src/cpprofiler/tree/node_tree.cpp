@@ -8,10 +8,8 @@
 namespace cpprofiler { namespace tree {
 
 
-NodeTree::NodeTree() : m_structure{new Structure()} {
-    m_node_info.reset(new NodeInfo);
-
-    connect(&m_node_stats, &NodeStats::stats_changed, this, &NodeTree::node_stats_changed);
+NodeTree::NodeTree() : m_structure{new Structure()}, m_node_info(new NodeInfo) {
+    // connect(&m_node_stats, &NodeStats::stats_changed, this, &NodeTree::node_stats_changed);
 }
 
 NodeTree::~NodeTree() = default;
@@ -42,11 +40,7 @@ NodeInfo& NodeTree::node_info() {
 }
 
 NodeID NodeTree::createRoot_safe(int kids) {
-    utils::MutexLocker locker(&treeMutex());
-    return m_structure->createRoot(kids);
-}
-
-NodeID NodeTree::createRoot(int kids) {
+    utils::MutexLocker locker(&treeMutex(), "create root");
     return m_structure->createRoot(kids);
 }
 
@@ -70,11 +64,10 @@ NodeID NodeTree::createDummyRoot() {
     m_node_info->setStatus(nid, NodeStatus::UNDETERMINED);
 
     emit structureUpdated();
-    emit nodesCreated(1);
 }
 
 
-NodeID NodeTree::createRootNew(int kids, Label label) {
+NodeID NodeTree::createRoot(int kids, Label label) {
     auto nid = m_structure->createRoot(kids);
     addEntry(nid);
     setLabel(nid, label);
@@ -95,7 +88,6 @@ NodeID NodeTree::createRootNew(int kids, Label label) {
     m_node_stats.add_undetermined(kids);
 
     emit structureUpdated();
-    emit nodesCreated(kids + 1);
 
     return nid;
 }
@@ -117,9 +109,7 @@ NodeID NodeTree::addNodeNew(NodeID parent_id, int alt, int kids, tree::NodeStatu
 
     if (kids > 0) {
         m_structure->resetNumberOfChildren(nid, kids);
-        emit childrenStructureChanged(parent_id);
-        emit nodesCreated(kids);
-        emit structureUpdated(); /// need this still?
+        emit childrenStructureChanged(parent_id); /// updates dirty status for nodes
 
         for (auto i = 0; i < kids; ++i) {
             auto child_nid = m_structure->getChild(nid, i);
@@ -157,11 +147,17 @@ NodeID NodeTree::addNodeNew(NodeID parent_id, int alt, int kids, tree::NodeStatu
         } break;
     }
 
+    emit structureUpdated(); /// causes layout update
+
     return nid;
 }
 
 int NodeTree::nodeCount_safe() const {
     return m_structure->nodeCount_safe();
+}
+
+int NodeTree::nodeCount() const {
+    return m_structure->nodeCount();
 }
 
 NodeID NodeTree::getParent_safe(NodeID nid) const {
@@ -173,7 +169,7 @@ NodeID NodeTree::getParent(NodeID nid) const {
 }
 
 NodeID NodeTree::getRoot_safe() const {
-    utils::MutexLocker locker(&treeMutex());
+    utils::MutexLocker locker(&treeMutex(), "get root");
     return m_structure->getRoot();
 }
 
@@ -205,11 +201,6 @@ int NodeTree::getNumberOfSiblings(NodeID nid) const {
     return m_structure->getNumberOfSiblings(nid);
 }
 
-int NodeTree::getNumberOfSiblings_safe(NodeID nid) const {
-    utils::MutexLocker locker(&treeMutex());
-    return m_structure->getNumberOfSiblings(nid);
-}
-
 int NodeTree::depth() const {
     m_node_stats.max_depth();
 }
@@ -227,7 +218,6 @@ int NodeTree::getAlternative(NodeID nid) const {
 }
 
 bool NodeTree::isRightMostChild(NodeID nid) const {
-    // QMutexLocker lock(&m_structure->getMutex());
     auto pid = m_structure->getParent(nid);
 
     /// root is treated as the left-most child
@@ -238,12 +228,8 @@ bool NodeTree::isRightMostChild(NodeID nid) const {
     if (alt == kids-1) { return true; } else { return false; }
 }
 
-bool NodeTree::isLeaf_safe(NodeID nid) const {
-    return m_structure->childrenCount_safe(nid) == 0;
-}
-
-int NodeTree::childrenCount_safe(NodeID nid) const {
-    return m_structure->childrenCount_safe(nid);
+bool NodeTree::isLeaf(NodeID nid) const {
+    return m_structure->childrenCount(nid) == 0;
 }
 
 int NodeTree::childrenCount(NodeID nid) const {

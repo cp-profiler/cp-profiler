@@ -64,7 +64,6 @@ namespace cpprofiler { namespace tree {
     Layout::~Layout() = default;
 
     double Layout::getOffset(NodeID nid) const {
-        utils::MutexLocker locker(&m_layout_mutex);
         return getOffset_unsafe(nid);
     }
 
@@ -77,7 +76,7 @@ namespace cpprofiler { namespace tree {
     }
 
     int Layout::getDepth(NodeID nid) const {
-        utils::MutexLocker locker(&m_layout_mutex);
+        // utils::MutexLocker locker(&m_layout_mutex);
         return getDepth_unsafe(nid);
     }
 
@@ -86,7 +85,7 @@ namespace cpprofiler { namespace tree {
     }
 
     const BoundingBox& Layout::getBoundingBox(NodeID nid) const {
-        utils::MutexLocker locker(&m_layout_mutex);
+        // utils::MutexLocker locker(&m_layout_mutex);
         return getBoundingBox_unsafe(nid);
     }
 
@@ -95,12 +94,11 @@ namespace cpprofiler { namespace tree {
     }
 
     bool Layout::getLayoutDone(NodeID nid) const {
-        utils::MutexLocker locker(&m_layout_mutex);
         return getLayoutDone_unsafe(nid);
     }
 
     void Layout::growDataStructures(int n_nodes) {
-        utils::MutexLocker locker(&m_layout_mutex);
+        // utils::MutexLocker locker(&m_layout_mutex);
         auto old_size = m_child_offsets.size();
         m_child_offsets.resize(old_size + n_nodes);
     }

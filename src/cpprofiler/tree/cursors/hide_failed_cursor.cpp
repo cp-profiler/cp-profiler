@@ -13,8 +13,11 @@ HideFailedCursor::HideFailedCursor(NodeID start, const NodeTree& nt, VisualFlags
 
 bool HideFailedCursor::mayMoveDownwards() const {
     /// TODO:optimise this
-    return NodeCursor::mayMoveDownwards() &&
+
+    bool ok = NodeCursor::mayMoveDownwards() &&
            (m_tree.hasSolvedChildren(m_cur_node) || m_tree.hasOpenChildren(m_cur_node));
+
+    return ok;
 }
 
 void HideFailedCursor::processCurrentNode() {
@@ -25,7 +28,6 @@ void HideFailedCursor::processCurrentNode() {
         m_tree.childrenCount(m_cur_node) > 0)
     {
         m_vf.set_hidden(m_cur_node, true);
-
         m_lc.dirtyUp(m_cur_node);
 
     }

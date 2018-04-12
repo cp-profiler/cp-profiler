@@ -13,6 +13,7 @@ namespace cpprofiler {
 class Conductor;
 class Execution;
 class Message;
+class Settings;
 
 class ReceiverWorker : public QObject {
 Q_OBJECT
@@ -46,6 +47,8 @@ Q_OBJECT
 
     void handleMessage(const cpprofiler::Message& msg);
 
+    const Settings& m_settings;
+
 signals:
 
     void newExecution(Execution* e);
@@ -54,7 +57,7 @@ signals:
 
 public:
 
-    ReceiverWorker(QTcpSocket& socket);
+    ReceiverWorker(QTcpSocket& socket, const Settings& s);
 public slots:
     void doRead();
 

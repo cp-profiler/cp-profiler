@@ -2,8 +2,7 @@
 #include "../tree/structure.hh"
 
 #include "../utils/array.hh"
-
-#include <QDebug>
+#include "../utils/debug.hh"
 
 namespace cpprofiler { namespace tests { namespace tree_test {
 
@@ -17,32 +16,32 @@ namespace cpprofiler { namespace tests { namespace tree_test {
             auto n2 = nt.addChild(nid, 1, 2);
             auto n11 = nt.addChild(nid, 2, 2);
 
-            qDebug() << "n1: " << n1;
-            qDebug() << "n2: " << n2;
-            qDebug() << "n11: " << n11;
+            debug() << "n1: " << n1;
+            debug() << "n2: " << n2;
+            debug() << "n11: " << n11;
 
-            qDebug() << "n1 control: " << nt.getChild(nid, 0);
-            qDebug() << "n2 control: " << nt.getChild(nid, 1);
+            debug() << "n1 control: " << nt.getChild(nid, 0);
+            debug() << "n2 control: " << nt.getChild(nid, 1);
 
             auto n3 = nt.addChild(n1, 0, 0);
             auto n4 = nt.addChild(n1, 1, 0);
 
-            qDebug() << "n3: " << n3;
-            qDebug() << "n4: " << n4;
+            debug() << "n3: " << n3;
+            debug() << "n4: " << n4;
 
             try {
                 auto n5 = nt.addChild(n2, 0, 0);
                 auto n6 = nt.addChild(n2, 0, 0);
-                qDebug() << "warning: adding a node in place of an existing one";
+                debug() << "warning: adding a node in place of an existing one";
             } catch (std::exception& e) {}
 
             try {
                 nt.addChild(n2, 2, 0);
-                qDebug() << "bug: must not have room for this child";
+                debug() << "bug: must not have room for this child";
             } catch (std::exception& e) {}
 
-            qDebug() << "siblings: " << nt.getNumberOfSiblings(n1);
-            qDebug() << "siblings: " << nt.getNumberOfSiblings(n4);
+            debug() << "siblings: " << nt.getNumberOfSiblings(n1);
+            debug() << "siblings: " << nt.getNumberOfSiblings(n4);
         }
 
 
@@ -54,27 +53,27 @@ namespace cpprofiler { namespace tests { namespace tree_test {
             TestClass() {
                 counter++;
                 m_id = counter;
-                qDebug() << "TestClass:" << m_id;
+                debug("memory") << "TestClass:" << m_id;
             }
 
             ~TestClass() {
-                qDebug() << "~TestClass" << m_id;
+                debug("memory") << "~TestClass" << m_id;
             }
 
             TestClass(const TestClass& other) {
                 counter++;
                 m_id = counter;
-                qDebug() << "copy TestClass";
+                debug("memory") << "copy TestClass";
             }
 
             TestClass(TestClass&& other) {
                 m_id = other.m_id;
-                qDebug() << "move constructred TestClass";
+                debug("memory") << "move constructred TestClass";
             }
 
             TestClass& operator=(const TestClass& other)  {
                 m_id = other.m_id;
-                qDebug() << "copy assigning TestClass";
+                debug("memory") << "copy assigning TestClass";
             }
             
         };

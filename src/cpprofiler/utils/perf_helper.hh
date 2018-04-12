@@ -6,6 +6,8 @@
 
 #include <unordered_map>
 
+#include "debug.hh"
+
 namespace detail {
   using namespace std::chrono;
 
@@ -52,7 +54,7 @@ public:
         duration_cast<milliseconds>(m_hrClock.now() - m_begin).count();
     auto duration_ns =
         duration_cast<nanoseconds>(m_hrClock.now() - m_begin).count();
-    std::cout << "Duration(" << m_message << "): " << duration_ms << "ms"
+    ::cpprofiler::debug("perf") << "Duration(" << m_message << "): " << duration_ms << "ms"
               << " (" << duration_ns << "ns)\n";
   }
 };

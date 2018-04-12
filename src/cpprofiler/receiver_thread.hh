@@ -11,11 +11,14 @@ class Conductor;
 class Message;
 class Execution;
 class ReceiverWorker;
+class Settings;
 
 class ReceiverThread : public QThread {
 Q_OBJECT
     const intptr_t m_socket_desc;
     std::unique_ptr<ReceiverWorker> m_worker;
+
+    const Settings& m_settings;
 
     void run() override;
 
@@ -26,7 +29,7 @@ signals:
     void doneReceiving();
 
 public:
-    ReceiverThread(intptr_t socket_desc);
+    ReceiverThread(intptr_t socket_desc, const Settings& s);
     ~ReceiverThread();
 
 

@@ -80,12 +80,14 @@ class Execution {
     std::string m_name;
 
     std::unique_ptr<tree::NodeTree> m_tree;
-    SolverData m_solver_data;    
+
+    /// UID to NodeID map and labels (needs mutex protection?)
+    SolverData m_solver_data;
 
 public:
     std::string name();
 
-    Execution(const std::string& name);
+    Execution(const std::string& name, bool restarts = false);
     ~Execution();
 
     SolverData& solver_data();

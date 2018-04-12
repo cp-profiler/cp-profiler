@@ -2,7 +2,6 @@
 #define CPPROFILER_TREE_TRADITIONAL_VIEW_HH
 
 #include <QWidget>
-#include <QAbstractScrollArea>
 
 #include <memory>
 #include <set>
@@ -21,52 +20,7 @@ class NodeTree;
 class NodeID;
 class Structure;
 
-struct DisplayState {
-    float scale;
-
-
-    int root_x = 0;
-    int root_y = 0;
-};
-
-class TreeScrollArea : public QAbstractScrollArea {
-Q_OBJECT
-    const NodeTree& m_tree;
-    const UserData& m_user_data;
-    const Layout& m_layout;
-
-    DisplayState m_options;
-    const VisualFlags& m_vis_flags;
-
-    NodeID m_start_node;
-
-    QPoint getNodeCoordinate(NodeID nid);
-    NodeID findNodeClicked(int x, int y);
-
-    void paintEvent(QPaintEvent* e) override;
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseDoubleClickEvent(QMouseEvent* event) override;
-
-signals:
-    void nodeClicked(NodeID nid);
-    void nodeDoubleClicked(NodeID nid);
-
-public:
-
-    TreeScrollArea(NodeID start,
-                   const NodeTree&,
-                   const UserData&,
-                   const Layout&,
-                   const VisualFlags&);
-
-    /// center the x coordinate
-    void centerX(int x);
-
-    void setScale(int val);
-
-    void changeStartNode(NodeID nid);
-
-};
+class TreeScrollArea;
 
 
 class TraditionalView : public QObject {
@@ -82,8 +36,15 @@ class TraditionalView : public QObject {
     std::unique_ptr<LayoutComputer> m_layout_computer;
     std::unique_ptr<TreeScrollArea> m_scroll_area;
 
+    /// only update layout if it is stale
+    bool m_layout_stale = true;
+
     /// returns currently selected node; can be NodeID::NoNode
     NodeID node() const;
+
+private slots:
+
+    void redraw();
 public:
 
     TraditionalView(const NodeTree& tree);
@@ -104,6 +65,9 @@ signals:
     void needsRedrawing();
 
 public slots:
+
+    void autoUpdate();
+
     void handleDoubleClick();
 
     void setScale(int scale);
@@ -125,6 +89,9 @@ public slots:
     void toggleHidden();
     void unhideNode(NodeID nid);
 
+    void hideFailedAt(NodeID nid);
+
+    /// hide all failed descendants of the current node
     void hideFailed();
 
     /// unhide all descendants of the current node
@@ -135,6 +102,7 @@ public slots:
     void selectNode(NodeID nid);
 
     void forceComputeLayout();
+    void computeLayout();
 
     void setLayoutOutdated();
 

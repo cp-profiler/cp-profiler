@@ -11,9 +11,11 @@ namespace cpprofiler { namespace tree {
 
 namespace cpprofiler { namespace utils {
 
+/// count all descendants of `n`
 int count_descendants(const tree::NodeTree& nt, NodeID n);
 
-void apply_for_all_descendants(const tree::NodeTree& nt, NodeID root, const NodeAction& action);
+/// apply `action` to `root` and to all of its descendants
+void apply_below(const tree::NodeTree& nt, NodeID root, const NodeAction& action);
 
 
 }}

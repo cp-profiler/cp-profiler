@@ -86,17 +86,6 @@ namespace cpprofiler { namespace tree {
         return m_nodes[pid]->childrenCount();
     }
 
-    int Structure::childrenCount_safe(NodeID pid) const {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return childrenCount(pid);
-    }
-
-
-    int Structure::getNumberOfSiblings_safe(NodeID nid) const {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return getNumberOfSiblings(nid);
-    }
-
     int Structure::getNumberOfSiblings(NodeID nid) const {
         auto pid = getParent(nid);
         return childrenCount(pid);
@@ -166,7 +155,7 @@ std::vector<NodeID> preOrder(const Structure& tree) {
         auto nid = stk.top(); stk.pop();
         result.push_back(nid);
 
-        for (auto i = tree.childrenCount_safe(nid) - 1; i >= 0 ; --i) {
+        for (auto i = tree.childrenCount(nid) - 1; i >= 0 ; --i) {
             auto child = tree.getChild_safe(nid, i);
             stk.push(child);
         }
@@ -175,14 +164,7 @@ std::vector<NodeID> preOrder(const Structure& tree) {
     return result;
 }
 
-std::vector<NodeID> postOrder(const Structure& tree) {
-    utils::MutexLocker lock(&tree.getMutex());
-    return postOrder_unsafe(tree);
-
-}
-
 std::vector<NodeID> anyOrder(const Structure& tree) {
-    utils::MutexLocker lock(&tree.getMutex());
 
     auto count = tree.nodeCount();
     std::vector<NodeID> result;
@@ -195,7 +177,7 @@ std::vector<NodeID> anyOrder(const Structure& tree) {
     return result;
 }
 
-std::vector<NodeID> postOrder_unsafe(const Structure& tree) {
+std::vector<NodeID> postOrder(const Structure& tree) {
     /// PO-traversal requires two stacks
     std::stack<NodeID> stk_1;
     std::vector<NodeID> result;

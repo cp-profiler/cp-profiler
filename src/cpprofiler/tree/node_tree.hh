@@ -141,10 +141,9 @@ public:
 
     /// *************************** Tree Modifiers ***************************
 
-    NodeID createRootNew(int kids, Label label = emptyLabel);
+    NodeID createRoot(int kids, Label label = emptyLabel);
 
     NodeID createRoot_safe(int kids);
-    NodeID createRoot(int kids);
 
     NodeID createDummyRoot();
 
@@ -177,15 +176,15 @@ public:
     /// Total number of nodes (including undetermined)
     int nodeCount_safe() const;
 
+    int nodeCount() const;
+
     NodeStatus getStatus(NodeID nid) const;
 
     int getNumberOfSiblings(NodeID nid) const;
-    int getNumberOfSiblings_safe(NodeID nid) const;
 
     int getAlternative_safe(NodeID nid) const;
     int getAlternative(NodeID nid) const;
 
-    int childrenCount_safe(NodeID nid) const;
     int childrenCount(NodeID nid) const;
 
     NodeID getChild_safe(NodeID nid, int alt) const;
@@ -197,7 +196,7 @@ public:
     /// whether the node is the right-most child
     bool isRightMostChild(NodeID nid) const;
 
-    bool isLeaf_safe(NodeID) const;
+    bool isLeaf(NodeID) const;
 
     /// return the depth of the node
     int calculateDepth_safe(NodeID nid) const;
@@ -221,8 +220,7 @@ signals:
 
     void structureUpdated();
 
-    void nodesCreated(int count);
-
+    /// sets immediate children and nodes up the tree as dirty
     void childrenStructureChanged(NodeID nid);
 
     void node_stats_changed();
@@ -241,7 +239,7 @@ void NodeTree::preOrderApply(NodeID start, Callback cb) const {
 
         cb(nid);
 
-        for (auto i = childrenCount_safe(nid) - 1; i >= 0; --i) {
+        for (auto i = childrenCount(nid) - 1; i >= 0; --i) {
             auto child = getChild_safe(nid, i);
             stk.push(child);
         }

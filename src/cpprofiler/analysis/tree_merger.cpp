@@ -153,7 +153,7 @@ void TreeMerger::run() {
 
     stack_l.push(root_l); stack_r.push(root_r);
 
-    auto root = res_tree.createRootNew(0);
+    auto root = res_tree.createRoot(0);
 
     stack.push(root);
 

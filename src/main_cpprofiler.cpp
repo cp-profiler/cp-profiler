@@ -7,6 +7,7 @@
 
 #include "cpprofiler/tests/tree_test.hh"
 #include "cpprofiler/tests/execution_test.hh"
+#include "cpprofiler/utils/debug.hh"
 
 int main(int argc, char *argv[]) {
 
@@ -18,7 +19,7 @@ int main(int argc, char *argv[]) {
 
     cpprofiler::tests::tree_test::run();
 
-    std::cerr << "main thread:" << std::this_thread::get_id() << std::endl;
+    cpprofiler::debug("thread") << "main thread:" << std::this_thread::get_id() << std::endl;
 
     cpprofiler::Conductor conductor;
 

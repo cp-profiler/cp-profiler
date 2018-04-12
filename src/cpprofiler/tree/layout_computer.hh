@@ -22,9 +22,8 @@ public:
 
         LayoutComputer(const NodeTree& tree, Layout& layout, const VisualFlags& nf);
 
+        /// compute the layout and return where any work was required
         bool compute();
-
-        void markAsOutdated();
 
         void dirtyUp(NodeID nid);
 

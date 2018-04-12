@@ -1,5 +1,6 @@
 #include <QWidget>
 #include <QLabel>
+#include <thread>
 
 
 #include "tree/node_tree.hh"
@@ -56,6 +57,13 @@ public:
 public slots:
 
   void update() {
+
+      static bool done = false;
+
+      if (!done) {
+          debug("thread") << "StatsBar::update thread:" << std::this_thread::get_id() << std::endl;
+          done = true;
+      }
 
       depthLabel->setNum(stats.max_depth());
       openLabel->setNum(stats.undetermined_count());

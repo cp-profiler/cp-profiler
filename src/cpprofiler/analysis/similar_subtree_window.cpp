@@ -129,7 +129,7 @@ static std::vector<SubtreePattern> runSimilarShapes(const NodeTree& tree, const 
 
     std::multiset<ShapeInfo, CompareShapes> shape_set;
 
-    auto node_order = helper::postOrder_unsafe(tree.tree_structure());
+    auto node_order = helper::postOrder(tree.tree_structure());
 
     for (auto nid : node_order) {
         shape_set.insert({nid, lo.getShape_unsafe(nid)});
@@ -312,7 +312,7 @@ static void partition_step(const NodeTree& nt, Partition& p, int h, std::vector<
 
         const auto max_kids = std::accumulate(group.begin(), group.end(), 0, [&nt](int cur, NodeID nid) {
             auto pid = nt.getParent_safe(nid);
-            return std::max(cur, nt.childrenCount_safe(pid));
+            return std::max(cur, nt.childrenCount(pid));
         });
 
         int alt = 0;
@@ -369,12 +369,12 @@ static int calculateHeightOf(NodeID nid, const NodeTree& nt, std::vector<int>& h
 
     int cur_max = 0;
 
-    auto kids = nt.childrenCount_safe(nid);
+    auto kids = nt.childrenCount(nid);
 
     if (kids == 0) {
         cur_max = 1;
     } else {
-        for (auto alt = 0; alt < nt.childrenCount_safe(nid); ++alt) {
+        for (auto alt = 0; alt < nt.childrenCount(nid); ++alt) {
             auto child = nt.getChild_safe(nid, alt);
             cur_max = std::max(cur_max, calculateHeightOf(child, nt, height_info) + 1);
         }
@@ -447,7 +447,7 @@ static vector<SubtreePattern> eliminateSubsumed(const NodeTree& tree, const vect
     for (const auto& pattern : patterns) {
         for (auto nid : pattern.nodes()) {
 
-            const auto kids = tree.childrenCount_safe(nid);
+            const auto kids = tree.childrenCount(nid);
             for (auto alt = 0; alt < kids; ++alt) {
                 auto kid = tree.getChild_safe(nid, alt);
                 marked.insert(kid);

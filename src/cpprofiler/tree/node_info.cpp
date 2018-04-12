@@ -31,19 +31,19 @@ namespace cpprofiler { namespace tree {
 namespace cpprofiler { namespace tree {
 
 NodeStatus NodeInfo::getStatus(NodeID nid) const {
-    utils::MutexLocker lock(&m_mutex);
+    utils::MutexLocker lock(&m_mutex, "node info");
     if (static_cast<int>(nid) >= m_flags.size()) throw;
     return static_cast<NodeStatus>(m_flags[nid].getNumericFlag(STATUS));
 }
 
 void NodeInfo::setStatus(NodeID nid, NodeStatus status) {
-    utils::MutexLocker lock(&m_mutex);
+    utils::MutexLocker lock(&m_mutex, "node info");
     if (static_cast<int>(nid) >= m_flags.size()) throw;
     m_flags[nid].setNumericFlag(STATUS, static_cast<int>(status));
 }
 
 void NodeInfo::addEntry(NodeID nid) {
-    utils::MutexLocker lock(&m_mutex);
+    utils::MutexLocker lock(&m_mutex, "node info");
     if (nid != m_flags.size()) throw;
     m_flags.push_back({});
     m_has_solved_children.push_back(false);

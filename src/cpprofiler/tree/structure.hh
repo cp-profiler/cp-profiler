@@ -45,7 +45,6 @@ public:
     int getAlternative_safe(NodeID nid) const;
 
     int getNumberOfSiblings(NodeID nid) const;
-    int getNumberOfSiblings_safe(NodeID nid) const;
 
     int childrenCount(NodeID pid) const;
 
@@ -64,8 +63,6 @@ public:
     void resetNumberOfChildren(NodeID nid, int kids);
     void resetNumberOfChildren_safe(NodeID nid, int kids);
 
-    int childrenCount_safe(NodeID pid) const;
-
     int calculateDepth(NodeID nid) const;
     int calculateDepth_safe(NodeID nid) const;
 
@@ -78,8 +75,6 @@ public:
 namespace cpprofiler { namespace tree { namespace helper {
 
 std::vector<NodeID> postOrder(const Structure& tree);
-
-std::vector<NodeID> postOrder_unsafe(const Structure& tree);
 
 std::vector<NodeID> preOrder(const Structure& tree);
 

@@ -3,8 +3,9 @@
 #include <QWidget>
 
 #include "../user_data.hh"
-#include "traditional_view.hh"
+#include "tree_scroll_area.hh"
 #include "layout_computer.hh"
+#include "visual_flags.hh"
 #include "layout.hh"
 #include "../core.hh"
 

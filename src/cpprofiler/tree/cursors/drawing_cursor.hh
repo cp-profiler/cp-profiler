@@ -22,7 +22,7 @@ namespace cpprofiler { namespace tree {
 class Layout;
 
 /// This uses unsafe methods for tree structure!
-class DrawingCursor : public UnsafeNodeCursor {
+class DrawingCursor : public NodeCursor {
 
     const Layout& m_layout;
 

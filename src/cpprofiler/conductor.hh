@@ -6,6 +6,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include "settings.hh"
+
 namespace cpprofiler {
 
 class TcpServer;
@@ -37,6 +39,8 @@ private:
     // void getSelectedExecutions
 
     static constexpr quint16 DEFAULT_PORT = 6565;
+
+    Settings m_settings;
 
     std::unique_ptr<TcpServer> m_server;
     std::vector<std::shared_ptr<Execution>> m_executions;

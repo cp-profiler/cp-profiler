@@ -36,7 +36,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         auto& tree = ex->tree();
 
-        auto root = tree.createRootNew(2, "0");
+        auto root = tree.createRoot(2, "0");
         auto n1 =  tree.addNodeNew(root, 0, 2, tree::NodeStatus::BRANCH, "1");
         auto n2 =  tree.addNodeNew(root, 1, 2, tree::NodeStatus::BRANCH, "2");
 
@@ -110,7 +110,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         auto& tree = ex->tree();
 
-        auto root = tree.createRootNew(4);
+        auto root = tree.createRoot(4);
         auto n1 =  tree.addNodeNew(root, 0, 2, tree::NodeStatus::BRANCH, "five");
         auto n2 =  tree.addNodeNew(root, 1, 2, tree::NodeStatus::BRANCH, "seven");
         auto n3 =  tree.addNodeNew(root, 2, 0, tree::NodeStatus::FAILED);
@@ -137,7 +137,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         auto& tree = ex->tree();
 
-        auto root = tree.createRootNew(4);
+        auto root = tree.createRoot(4);
         auto n1 =  tree.addNodeNew(root, 0, 2, tree::NodeStatus::BRANCH);
         auto n2 =  tree.addNodeNew(root, 1, 2, tree::NodeStatus::BRANCH);
         auto n3 =  tree.addNodeNew(root, 2, 0, tree::NodeStatus::FAILED);
@@ -169,7 +169,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         auto& tree = ex->tree();
 
-        auto root = tree.createRootNew(4);
+        auto root = tree.createRoot(4);
         auto n1 =  tree.addNodeNew(root, 0, 0, tree::NodeStatus::FAILED);
         auto n2 =  tree.addNodeNew(root, 1, 0, tree::NodeStatus::FAILED);
         auto n3 =  tree.addNodeNew(root, 2, 0, tree::NodeStatus::FAILED);
@@ -184,7 +184,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         auto& tree = ex->tree();
 
-        auto root = tree.createRootNew(2);
+        auto root = tree.createRoot(2);
         auto n1 =  tree.addNodeNew(root, 0, 2, tree::NodeStatus::BRANCH, "abcde");
         auto n2 =  tree.addNodeNew(root, 1, 2, tree::NodeStatus::BRANCH, "efghijk");
 
@@ -213,7 +213,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         auto& tree = ex->tree();
 
-        auto root = tree.createRootNew(2, "0");
+        auto root = tree.createRoot(2, "0");
         auto n1 =  tree.addNodeNew(root, 0, 2, tree::NodeStatus::BRANCH, "1");
         auto n2 =  tree.addNodeNew(root, 1, 2, tree::NodeStatus::BRANCH, "2");
 
@@ -248,7 +248,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     void build_for_comparison_a(tree::NodeTree& tree) {
 
-        auto root = tree.createRootNew(2, "0");
+        auto root = tree.createRoot(2, "0");
 
         auto n1 = tree.addNodeNew(root, 0, 2, tree::NodeStatus::BRANCH, "1");
         auto n2 = tree.addNodeNew(root, 1, 2, tree::NodeStatus::BRANCH, "2");
@@ -265,7 +265,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     void build_for_comparison_b(tree::NodeTree& tree) {
 
-        auto root = tree.createRootNew(2, "0");
+        auto root = tree.createRoot(2, "0");
 
         auto n1 = tree.addNodeNew(root, 0, 2, tree::NodeStatus::BRANCH, "1");
         auto n2 = tree.addNodeNew(root, 1, 0, tree::NodeStatus::FAILED, "2");
@@ -303,7 +303,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         auto& tree = ex->tree();
 
-        // auto root = tree.createRootNew(2, "root");
+        // auto root = tree.createRoot(2, "root");
         auto root = tree.createDummyRoot();
 
         // tree.transformNode(root, 2, tree::NodeStatus::BRANCH);
@@ -314,14 +314,44 @@ namespace cpprofiler { namespace tests { namespace execution {
     //     auto n4 = tree.addNode(n1, 1, 0, tree::NodeStatus::FAILED, "4");
     }
 
+
+    void hiding_failed_test(Conductor& c) {
+
+        auto ex = new Execution("test hiding failed");
+
+        c.addNewExecution(ex);
+
+        auto& tree = ex->tree();
+
+        auto root = tree.createRoot(2, "0");
+
+        auto n1 = tree.addNodeNew(root, 0, 2, tree::NodeStatus::BRANCH, "1");
+        auto n2 = tree.addNodeNew(root, 1, 2, tree::NodeStatus::BRANCH, "2");
+
+        auto n3 = tree.addNodeNew(n1, 0, 2, tree::NodeStatus::BRANCH, "3");
+        auto n4 = tree.addNodeNew(n1, 1, 0, tree::NodeStatus::SOLVED, "4");
+
+        auto n5 = tree.addNodeNew(n3, 0, 0, tree::NodeStatus::FAILED, "5");
+        auto n6 = tree.addNodeNew(n3, 1, 0, tree::NodeStatus::FAILED, "6");
+
+        auto n7 = tree.addNodeNew(n2, 0, 0, tree::NodeStatus::UNDETERMINED, "7");
+        auto n8 = tree.addNodeNew(n2, 1, 2, tree::NodeStatus::BRANCH, "8");
+
+        auto n9 = tree.addNodeNew(n8, 0, 0, tree::NodeStatus::FAILED, "9");
+        auto n10 = tree.addNodeNew(n8, 1, 0, tree::NodeStatus::FAILED, "10");
+
+    }
+
     void run(Conductor& conductor) {
 
         // binary_test_1_for_identical_subtrees(conductor);
         // binary_test_2_for_identical_subtrees(conductor);
-        binary_tree_execution(conductor);
+        // binary_tree_execution(conductor);
         // simple_nary_execution(conductor);
         // nary_execution(conductor);
         // larger_nary_execution(conductor);
+
+        // hiding_failed_test(conductor);
 
         // comparison(conductor);
 

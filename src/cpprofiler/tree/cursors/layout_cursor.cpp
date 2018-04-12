@@ -20,11 +20,11 @@
 namespace cpprofiler { namespace tree {
 
     LayoutCursor::LayoutCursor(NodeID start, const NodeTree& tree, const VisualFlags& nf, Layout& lo)
-        : UnsafeNodeCursor(start, tree), m_layout(lo), m_nt(tree), m_tree(tree.tree_structure()), m_vis_flags(nf) {}
+        : NodeCursor(start, tree), m_layout(lo), m_nt(tree), m_tree(tree.tree_structure()), m_vis_flags(nf) {}
 
     bool LayoutCursor::mayMoveDownwards() {
-        return UnsafeNodeCursor::mayMoveDownwards() &&
-            //    !m_vis_flags.get_hidden(m_cur_node) &&
+        return NodeCursor::mayMoveDownwards() &&
+               !m_vis_flags.get_hidden(m_cur_node) &&
                m_layout.isDirty_unsafe(m_cur_node);
     }
 

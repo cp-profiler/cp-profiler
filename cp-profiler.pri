@@ -6,13 +6,14 @@ SOURCES += \
     $$PWD/src/cpprofiler/receiver_worker.cpp \
     $$PWD/src/cpprofiler/execution.cpp \
     $$PWD/src/cpprofiler/user_data.cpp \
-    $$PWD/src/cpprofiler/builder_thread.cpp \
+    $$PWD/src/cpprofiler/tree_builder.cpp \
     $$PWD/src/cpprofiler/execution_list.cpp \
     $$PWD/src/cpprofiler/execution_window.cpp \
     $$PWD/src/cpprofiler/utils/utils.cpp \
     $$PWD/src/cpprofiler/utils/tree_utils.cpp \
     $$PWD/src/cpprofiler/utils/perf_helper.cpp \
     $$PWD/src/cpprofiler/utils/array.cpp \
+    $$PWD/src/cpprofiler/utils/debug.cpp \
     $$PWD/src/cpprofiler/utils/std_ext.cpp \
     $$PWD/src/cpprofiler/tree/node.cpp \
     $$PWD/src/cpprofiler/tree/structure.cpp \
@@ -24,6 +25,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/tree/node_info.cpp \
     $$PWD/src/cpprofiler/tree/visual_flags.cpp \
     $$PWD/src/cpprofiler/tree/traditional_view.cpp \
+    $$PWD/src/cpprofiler/tree/tree_scroll_area.cpp \
     $$PWD/src/cpprofiler/tree/cursors/node_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/layout_cursor.cpp \
@@ -38,19 +40,21 @@ SOURCES += \
 
 HEADERS += \
     $$PWD/src/cpprofiler/config.hh \
+    $$PWD/src/cpprofiler/settings.hh \
     $$PWD/src/cpprofiler/conductor.hh \
     $$PWD/src/cpprofiler/tcp_server.hh \
     $$PWD/src/cpprofiler/receiver_thread.hh \
     $$PWD/src/cpprofiler/receiver_worker.hh \
     $$PWD/src/cpprofiler/execution.hh \
     $$PWD/src/cpprofiler/user_data.hh \
-    $$PWD/src/cpprofiler/builder_thread.hh \
+    $$PWD/src/cpprofiler/tree_builder.hh \
     $$PWD/src/cpprofiler/execution_list.hh \
     $$PWD/src/cpprofiler/execution_window.hh \
     $$PWD/src/cpprofiler/utils/utils.hh \
     $$PWD/src/cpprofiler/utils/tree_utils.hh \
     $$PWD/src/cpprofiler/utils/perf_helper.hh \
     $$PWD/src/cpprofiler/utils/array.hh \
+    $$PWD/src/cpprofiler/utils/debug.hh \
     $$PWD/src/cpprofiler/utils/std_ext.hh \
     $$PWD/src/cpprofiler/tree/node.hh \
     $$PWD/src/cpprofiler/tree/structure.hh \
@@ -62,6 +66,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/node_info.hh \
     $$PWD/src/cpprofiler/tree/visual_flags.hh \
     $$PWD/src/cpprofiler/tree/traditional_view.hh \
+    $$PWD/src/cpprofiler/tree/tree_scroll_area.hh \
     $$PWD/src/cpprofiler/tree/subtree_view.hh \
     $$PWD/src/cpprofiler/tree/cursors/node_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.hh \

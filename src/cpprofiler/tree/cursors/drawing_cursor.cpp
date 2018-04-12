@@ -43,7 +43,7 @@ namespace cpprofiler { namespace tree {
 
     DrawingCursor::DrawingCursor(NodeID start, const NodeTree& tree,
         const Layout& layout, const UserData& user_data, const VisualFlags& flags, QPainter& painter, QPoint start_pos, const QRect& clip)
-    : UnsafeNodeCursor(start, tree), m_node_tree(tree), m_layout(layout), m_user_data(user_data), m_vis_flags(flags), m_painter(painter), clippingRect(clip) {
+    : NodeCursor(start, tree), m_node_tree(tree), m_layout(layout), m_user_data(user_data), m_vis_flags(flags), m_painter(painter), clippingRect(clip) {
         cur_x = start_pos.x(); cur_y = start_pos.y();
     }
 
@@ -156,9 +156,9 @@ namespace cpprofiler { namespace tree {
                 /// draw bounding box and shape
         if (m_user_data.getSelectedNode() == m_cur_node) {
             m_painter.setBrush(QColor{0, 0, 0, 20});
-            auto bb = m_layout.getBoundingBox_unsafe(m_cur_node);
+            auto bb = m_layout.getBoundingBox(m_cur_node);
 
-            auto height = m_layout.getDepth_unsafe(m_cur_node) * layout::dist_y;
+            auto height = m_layout.getDepth(m_cur_node) * layout::dist_y;
             m_painter.drawRect(cur_x + bb.left, cur_y, bb.right - bb.left, height);
             // drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
         }
@@ -204,41 +204,41 @@ namespace cpprofiler { namespace tree {
                 draw::unexplored(m_painter, cur_x, cur_y, selected);
             } break;
         }
+
     }
 
     void DrawingCursor::moveUpwards() {
         cur_x -= m_layout.getOffset_unsafe(m_cur_node);
         cur_y -= layout::dist_y;
-        UnsafeNodeCursor::moveUpwards();
+        NodeCursor::moveUpwards();
     }
 
     void DrawingCursor::moveDownwards() {
-        UnsafeNodeCursor::moveDownwards();
+        NodeCursor::moveDownwards();
         cur_x += m_layout.getOffset_unsafe(m_cur_node);
         cur_y += layout::dist_y;
     }
 
     void DrawingCursor::moveSidewards() {
         cur_x -= m_layout.getOffset_unsafe(m_cur_node);
-        UnsafeNodeCursor::moveSidewards();
+        NodeCursor::moveSidewards();
         cur_x += m_layout.getOffset_unsafe(m_cur_node);
     }
 
     bool DrawingCursor::mayMoveSidewards() {
-        return UnsafeNodeCursor::mayMoveSidewards();
+        return NodeCursor::mayMoveSidewards();
     }
 
     bool DrawingCursor::mayMoveDownwards() {
         /// TODO: this should be about children?
-        return UnsafeNodeCursor::mayMoveDownwards() &&
+        return NodeCursor::mayMoveDownwards() &&
                !m_vis_flags.get_hidden(m_cur_node) &&
                m_layout.getLayoutDone_unsafe(m_cur_node) &&
                !isClipped();
     }
     
     bool DrawingCursor::mayMoveUpwards() {
-
-        return UnsafeNodeCursor::mayMoveUpwards();
+        return NodeCursor::mayMoveUpwards();
     }
 
     bool DrawingCursor::isClipped() {

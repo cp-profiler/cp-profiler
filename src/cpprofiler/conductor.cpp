@@ -13,7 +13,7 @@
 #include "cpp-integration/message.hpp"
 
 #include "execution.hh"
-#include "builder_thread.hh"
+#include "tree_builder.hh"
 #include "execution_list.hh"
 #include "execution_window.hh"
 
@@ -61,27 +61,29 @@ namespace cpprofiler {
             std::cerr << "callback, handle: " << socketDesc << std::endl;
 
             {
-                auto receiver = new ReceiverThread(socketDesc);
+                auto receiver = new ReceiverThread(socketDesc, m_settings);
                 connect(receiver, &QThread::finished, receiver, &QObject::deleteLater);
-
                 connect(receiver, &ReceiverThread::newExecution,
                     this, &Conductor::addNewExecution);
-
-                auto builder = new BuilderThread();
                 connect(receiver, &QThread::finished, receiver, &QObject::deleteLater);
-                connect(builder, &QThread::finished, builder, &QObject::deleteLater);
+
+                auto builderThread = new QThread();
+                auto builder = new TreeBuilder();
+
+                builder->moveToThread(builderThread);
+                connect(builderThread, &QThread::finished, builderThread, &QObject::deleteLater);
 
                 connect(receiver, &ReceiverThread::newExecution,
-                    builder, &BuilderThread::startBuilding);
+                    builder, &TreeBuilder::startBuilding);
 
                 connect(receiver, &ReceiverThread::newNode,
-                    builder, &BuilderThread::handleNode);
+                    builder, &TreeBuilder::handleNode);
 
                 connect(receiver, &ReceiverThread::doneReceiving,
-                    builder, &BuilderThread::finishBuilding);
+                    builder, &TreeBuilder::finishBuilding);
 
                 receiver->start();
-                builder->start();
+                builderThread->start();
             }
 
             {
@@ -106,12 +108,10 @@ namespace cpprofiler {
 
     Conductor::~Conductor(){
 
-        std::cerr << "~Conductor\n";
+        debug("memory") << "~Conductor\n";
     }
 
     void Conductor::addNewExecution(Execution* e) {
-
-        std::cerr << "new execution created\n";
 
         m_executions.push_back(std::shared_ptr<Execution>(e));
         m_execution_list->addExecution(*e);
@@ -178,8 +178,10 @@ namespace cpprofiler {
 
             auto json_obj = json_doc.object();
 
-            // qDebug() << json_obj["name"].toString();
+            m_settings.receiver_delay = json_obj["receiver_delay"].toInt();
         }
+
+        qDebug() << "settings read";
 
     }
 

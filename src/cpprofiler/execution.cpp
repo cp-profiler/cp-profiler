@@ -2,6 +2,7 @@
 #include "execution.hh"
 #include "user_data.hh"
 #include "tree/node_tree.hh"
+#include "utils/debug.hh"
 
 #include <iostream>
 
@@ -11,14 +12,19 @@ namespace cpprofiler {
         return m_name;
     }
 
-    Execution::Execution(const std::string& name)
+    Execution::Execution(const std::string& name, bool restarts)
         : m_name{name}, m_tree{new tree::NodeTree()}
     {
-        std::cerr << "Execution()\n";
+
+        /// need to create a dummy root node
+        // TODO: make number of children dynamic
+        m_tree->createRoot(100, "root");
+
+        debug("memory") << "Execution()\n";
     }
 
     Execution::~Execution() {
-        std::cerr << "~Execution()\n";
+        debug("memory") << "~Execution()\n";
     }
 
     const SolverData& Execution::solver_data() const {

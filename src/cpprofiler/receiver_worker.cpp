@@ -8,14 +8,16 @@
 #include <QJsonDocument>
 
 #include "execution.hh"
+#include "utils/utils.hh"
 
 
 #include "tree/node.hh"
+#include "settings.hh"
 
 namespace cpprofiler {
 
-    ReceiverWorker::ReceiverWorker(QTcpSocket& socket)
-    : m_socket(socket)
+    ReceiverWorker::ReceiverWorker(QTcpSocket& socket, const Settings& s)
+    : m_socket(socket), m_settings(s)
     {
 
     }
@@ -26,6 +28,13 @@ namespace cpprofiler {
     }
 
     void ReceiverWorker::doRead() {
+
+        static bool done = false;
+
+        if (!done) {
+            debug("thread") << "ReceiverWorker:doRead thread:" << std::this_thread::get_id() << std::endl;
+            done = true;
+        }
 
         // are there enough bytes to read something
         bool can_read_more = true;
@@ -87,6 +96,7 @@ namespace cpprofiler {
         /// create new execution
 
         std::string execution_name = "<no name>";
+        bool has_restarts = false;
 
         if (msg.has_info()) {
 
@@ -103,15 +113,22 @@ namespace cpprofiler {
                 if (name_val.isString()) {
                     execution_name = name_val.toString().toStdString();
                 }
+
+                auto restarts_val = json_obj.value("has_restarts");
+
+                if (restarts_val.isBool()) {
+                    has_restarts = restarts_val.toBool();
+                }
             }
 
 
         }
 
         std::cerr << "execution name: " << execution_name << std::endl;
+        std::cerr << "has restarts: " << (has_restarts ? "true" : "false") << std::endl;
 
         /// Conductor will take the ownership of the new Execution
-        execution = new Execution{execution_name};
+        execution = new Execution{execution_name, has_restarts};
 
         /// This uses a blocking connection
         emit newExecution(execution);
@@ -126,6 +143,10 @@ namespace cpprofiler {
     /// label, nogood and info can be quieried at any time
 
     void ReceiverWorker::handleMessage(const Message& msg) {
+
+        if (m_settings.receiver_delay > 0) {
+            utils::sleep_for_ms(m_settings.receiver_delay);
+        }
 
         switch (msg.type()) {
             case cpprofiler::MsgType::NODE:
@@ -143,7 +164,7 @@ namespace cpprofiler {
             break;
             case cpprofiler::MsgType::DONE:
                 emit doneReceiving();
-                std::cerr << "DONE\n";
+                debug("done") << "Done receiving\n";
             break;
             case cpprofiler::MsgType::RESTART:
                 std::cerr << "RESTART\n";

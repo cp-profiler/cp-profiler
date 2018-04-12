@@ -10,10 +10,11 @@ namespace cpprofiler {namespace utils {
 class DebugMutex : public QMutex {
 public:
 
-    DebugMutex() : QMutex() {}
+    DebugMutex() : QMutex(QMutex::Recursive) {}
 
-    void lock() {
-        // qDebug() << "lock";
+    void lock(std::string msg) {
+
+        // qDebug() << "(" << msg.c_str() << ") lock";
 
         QMutex::lock();
     }
@@ -24,8 +25,8 @@ public:
         return QMutex::tryLock();
     }
 
-    void unlock() {
-        // qDebug() << "unlock";
+    void unlock(std::string msg) {
+        // qDebug() << "(" << msg.c_str() << ") unlock";
         QMutex::unlock();
         
     }
@@ -36,14 +37,16 @@ class DebugMutexLocker {
 
     DebugMutex* m_mutex;
 
+    std::string m_msg;
+
 
 public:
-    DebugMutexLocker(DebugMutex* m) : m_mutex(m) {
-        m_mutex->lock();
+    DebugMutexLocker(DebugMutex* m, std::string msg = "") : m_mutex(m), m_msg(msg) {
+        m_mutex->lock(m_msg);
     }
 
     ~DebugMutexLocker() {
-        m_mutex->unlock();
+        m_mutex->unlock(m_msg);
     }
 
 };

@@ -9,30 +9,19 @@ namespace cpprofiler { namespace utils {
 
 int count_descendants(const NodeTree& nt, NodeID nid) {
 
-    if (nid == NodeID::NoNode) {
-        throw std::exception();
-    }
-
-    std::stack<NodeID> stk;
-
-    stk.push(nid);
-
     int count = 0;
 
-    while (!stk.empty()) {
-        ++count;
-        const auto n = stk.top(); stk.pop();
-        const auto kids = nt.childrenCount(n);
-        for (auto alt = 0; alt < kids; ++alt) {
-            stk.push(nt.getChild(n, alt));
-        }
-    }
+    auto fun = [&count](NodeID n) {
+        count++;
+    };
+
+    apply_below(nt, nid, fun);
 
     return count;
 
 }
 
-void apply_for_all_descendants(const NodeTree& nt, NodeID nid, const NodeAction& action) {
+void apply_below(const NodeTree& nt, NodeID nid, const NodeAction& action) {
 
     if (nid == NodeID::NoNode) {
         throw std::exception();
