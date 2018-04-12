@@ -60,8 +60,7 @@ public:
     NodeID addChild_safe(NodeID pid, int alt, int kids);
 
     /// Reset node count and create undet nodes for children
-    void resetNumberOfChildren(NodeID nid, int kids);
-    void resetNumberOfChildren_safe(NodeID nid, int kids);
+    void setNumberOfChildren(NodeID nid, int kids);
 
     int calculateDepth(NodeID nid) const;
     int calculateDepth_safe(NodeID nid) const;

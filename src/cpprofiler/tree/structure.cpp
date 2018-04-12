@@ -51,13 +51,8 @@ namespace cpprofiler { namespace tree {
         return addChild(pid, alt, kids);
     }
 
-    void Structure::resetNumberOfChildren_safe(NodeID nid, int kids) {
-        utils::MutexLocker locker(&m_structure_mutex);
-       resetNumberOfChildren(nid, kids);
-    }
-
-    void Structure::resetNumberOfChildren(NodeID nid, int kids) {
-        m_nodes[nid]->resetNumberOfChildren(kids);
+    void Structure::setNumberOfChildren(NodeID nid, int kids) {
+        m_nodes[nid]->setNumberOfChildren(kids);
 
         for (auto i = 0; i < kids; ++i) {
             addChild(nid, i, 0);

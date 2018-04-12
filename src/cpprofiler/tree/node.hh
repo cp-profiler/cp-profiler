@@ -52,11 +52,11 @@ public:
 
     Node(NodeID parent_nid, int kids = 0);
 
+    /// Return the number of immediate children nodes
     int childrenCount() const;
-    void setNumberOfChildren(int n);
 
     /// similar to setNumberOfChildren, but handles existing children
-    void resetNumberOfChildren(int n);
+    void setNumberOfChildren(int n);
 
     void setChild(NodeID, int alt);
     NodeID getChild(int alt);

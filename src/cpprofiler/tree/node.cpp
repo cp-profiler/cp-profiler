@@ -37,23 +37,23 @@ namespace cpprofiler { namespace tree {
     }
 
     /// TODO(maxim): make sure this is only called once...
+    // void Node::setNumberOfChildren(int n) {
+    //     if (n < 0) throw std::exception();
+
+    //     switch (n) {
+    //         case 0: setTag(Tag::LEAF); break;
+    //         case 1: setTag(Tag::ONE_CHILD); break;
+    //         case 2: setTag(Tag::TWO_CHILDREN); break;
+    //         default: {
+    //             setTag(Tag::MORE_CHILDREN);
+    //             m_noOfChildren = n;
+    //             m_children = new NodeID[n];
+    //         } break;
+    //     }
+
+    // }
+
     void Node::setNumberOfChildren(int n) {
-        if (n < 0) throw std::exception();
-
-        switch (n) {
-            case 0: setTag(Tag::LEAF); break;
-            case 1: setTag(Tag::ONE_CHILD); break;
-            case 2: setTag(Tag::TWO_CHILDREN); break;
-            default: {
-                setTag(Tag::MORE_CHILDREN);
-                m_noOfChildren = n;
-                m_children = new NodeID[n];
-            } break;
-        }
-
-    }
-
-    void Node::resetNumberOfChildren(int n) {
         // can only change from 0 to 2 for now
         if (childrenCount() != 0) throw std::exception();
 

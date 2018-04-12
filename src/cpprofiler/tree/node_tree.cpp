@@ -108,7 +108,7 @@ NodeID NodeTree::addNodeNew(NodeID parent_id, int alt, int kids, tree::NodeStatu
     setLabel(nid, label);
 
     if (kids > 0) {
-        m_structure->resetNumberOfChildren(nid, kids);
+        m_structure->setNumberOfChildren(nid, kids);
         emit childrenStructureChanged(parent_id); /// updates dirty status for nodes
 
         for (auto i = 0; i < kids; ++i) {
@@ -236,8 +236,8 @@ int NodeTree::childrenCount(NodeID nid) const {
     return m_structure->childrenCount(nid);
 }
 
-void NodeTree::resetNumberOfChildren(NodeID nid, int kids) {
-    m_structure->resetNumberOfChildren(nid, kids);
+void NodeTree::setNumberOfChildren(NodeID nid, int kids) {
+    m_structure->setNumberOfChildren(nid, kids);
 }
 
 void NodeTree::notifyAncestors(NodeID nid) {

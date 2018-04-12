@@ -171,10 +171,6 @@ void TreeMerger::run() {
 
             auto kids = tree_l.childrenCount(node_l);
 
-            // dupNode(node_l, tree_l, target, res_tree);
-
-            // res_tree.resetNumberOfChildren(target, kids);
-
             auto status = tree_l.getStatus(node_l);
             auto label = tree_l.getLabel(node_l);
             res_tree.transformNode(target, kids, status, label);

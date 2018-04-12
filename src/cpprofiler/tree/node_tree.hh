@@ -113,7 +113,7 @@ Q_OBJECT
     void addEntry(NodeID nid);
 
     /// Not sure if I need to keep this
-    void resetNumberOfChildren(NodeID nid, int kids);
+    void setNumberOfChildren(NodeID nid, int kids);
 
     /// notify ancestor nodes of a solution
     void notifyAncestors(NodeID nid);

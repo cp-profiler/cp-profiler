@@ -84,10 +84,10 @@ void TreeBuilder::handleNode(Message* node) {
 
         if (pid == NodeID::NoNode) {
 
-            if (p_uid.rid == -1) {
-                nid = tree.createRoot(kids);
-            } else {
+            if (m_execution->doesRestarts()) {
                 nid = tree.addNodeNew(NodeID{0}, n_uid.rid, kids, status);
+            } else {
+                nid = tree.createRoot(kids);
             }
 
         } else {

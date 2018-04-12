@@ -84,6 +84,9 @@ class Execution {
     /// UID to NodeID map and labels (needs mutex protection?)
     SolverData m_solver_data;
 
+    /// Whether the execution contains restarts
+    bool m_is_restarts;
+
 public:
     std::string name();
 
@@ -98,6 +101,8 @@ public:
 
     tree::NodeTree& tree();
     const tree::NodeTree& tree() const;
+
+    bool doesRestarts() const;
 };
 
 }
