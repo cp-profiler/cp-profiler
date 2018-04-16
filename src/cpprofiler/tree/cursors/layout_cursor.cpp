@@ -297,6 +297,24 @@ namespace cpprofiler { namespace tree {
                 }
             }
 
+            if (nkids == 1) {
+                
+                const auto kid = m_tree.getChild(nid, 0);
+                const auto& kid_s = m_layout.getShape_unsafe(kid);
+
+                auto shape = ShapeUniqPtr(new Shape(kid_s.depth() + 1));
+
+                (*shape)[0] = {0, 0};
+
+                for (auto depth = 0; depth < kid_s.depth(); depth++) {
+                    (*shape)[depth+1] = kid_s[depth];
+                }
+
+                shape->setBoundingBox(kid_s.boundingBox());
+
+                m_layout.setShape_unsafe(nid, std::move(shape));
+            }
+
             if (nkids == 2) {
                 computeForNodeBinary(nid, m_layout, m_nt, m_vis_flags);
             }

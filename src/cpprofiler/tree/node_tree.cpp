@@ -27,10 +27,6 @@ Structure& NodeTree::tree_structure() {
     return *m_structure;
 }
 
-NodeID NodeTree::addChild(NodeID pid, int alt, int kids) {
-    return m_structure->addChild(pid, alt, kids);
-}
-
 const NodeInfo& NodeTree::node_info() const {
     return *m_node_info;
 }
@@ -44,13 +40,13 @@ NodeID NodeTree::createRoot_safe(int kids) {
     return m_structure->createRoot(kids);
 }
 
-void NodeTree::transformNode(NodeID nid, int kids, NodeStatus status, Label label) {
+void NodeTree::promoteNode(NodeID nid, int kids, NodeStatus status, Label label) {
 
-    /// find parent
-    auto pid = getParent(nid);
-    auto alt = getAlternative(nid);
+    /// find parent and kid's position
+    const auto pid = getParent(nid);
+    const auto alt = getAlternative(nid);
 
-    addNodeNew(pid, alt, kids, status, label);
+    promoteNode(pid, alt, kids, status, label);
 }
 
 /// create undet root that can be later transformed into a branch node
@@ -92,7 +88,17 @@ NodeID NodeTree::createRoot(int kids, Label label) {
     return nid;
 }
 
-NodeID NodeTree::addNodeNew(NodeID parent_id, int alt, int kids, tree::NodeStatus status, Label label) {
+void NodeTree::addExtraChild(NodeID pid) {
+    const auto nid = m_structure->addExtraChild(pid);
+    addEntry(nid);
+
+    m_node_info->setStatus(nid, NodeStatus::UNDETERMINED);
+    m_node_stats.add_undetermined(1);
+
+    emit structureUpdated();
+}
+
+NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStatus status, Label label) {
 
     NodeID nid;
     
@@ -108,7 +114,7 @@ NodeID NodeTree::addNodeNew(NodeID parent_id, int alt, int kids, tree::NodeStatu
     setLabel(nid, label);
 
     if (kids > 0) {
-        m_structure->setNumberOfChildren(nid, kids);
+        m_structure->addChildren(nid, kids);
         emit childrenStructureChanged(parent_id); /// updates dirty status for nodes
 
         for (auto i = 0; i < kids; ++i) {
@@ -147,7 +153,7 @@ NodeID NodeTree::addNodeNew(NodeID parent_id, int alt, int kids, tree::NodeStatu
         } break;
     }
 
-    emit structureUpdated(); /// causes layout update
+    emit structureUpdated();
 
     return nid;
 }
@@ -234,10 +240,6 @@ bool NodeTree::isLeaf(NodeID nid) const {
 
 int NodeTree::childrenCount(NodeID nid) const {
     return m_structure->childrenCount(nid);
-}
-
-void NodeTree::setNumberOfChildren(NodeID nid, int kids) {
-    m_structure->setNumberOfChildren(nid, kids);
 }
 
 void NodeTree::notifyAncestors(NodeID nid) {

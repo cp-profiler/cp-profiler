@@ -20,13 +20,15 @@ class LayoutComputer;
 
 class Structure {
 
-    friend class LayoutComputer;
-    friend class TraditionalView;
-
-    // mutable QReadWriteLock m_lock;
     mutable utils::Mutex m_structure_mutex;
 
     std::vector<std::unique_ptr<Node>> m_nodes;
+
+    /// Allocate memory for a new node and return its Id
+    NodeID createNode(NodeID pid, int kids);
+
+    /// Create a new node with `kids` kids and add set it as the `alt`th kid of `pid`
+    NodeID createChild(NodeID pid, int alt, int kids);
 
 public:
 
@@ -48,24 +50,23 @@ public:
 
     int childrenCount(NodeID pid) const;
 
-    NodeID createRoot(int kids);
-
-    /// Create a new node with `kids` kids and add set is as a `alt`th kid of `pid`
-    NodeID addChild(NodeID pid, int alt, int kids);
-
     NodeID getRoot() const;
-
     int nodeCount() const;
-
-    NodeID addChild_safe(NodeID pid, int alt, int kids);
-
-    /// Reset node count and create undet nodes for children
-    void setNumberOfChildren(NodeID nid, int kids);
 
     int calculateDepth(NodeID nid) const;
     int calculateDepth_safe(NodeID nid) const;
 
     int nodeCount_safe() const;
+
+    /// Create a root node and `kids` children
+    NodeID createRoot(int kids);
+
+    /// Extend node's children with one more child
+    NodeID addExtraChild(NodeID nid);
+
+    /// Add `kids` children to an open node
+    void addChildren(NodeID nid, int kids);
+
 };
 
 }}

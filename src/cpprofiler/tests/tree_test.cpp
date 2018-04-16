@@ -4,46 +4,9 @@
 #include "../utils/array.hh"
 #include "../utils/debug.hh"
 
+#include <cassert>
+
 namespace cpprofiler { namespace tests { namespace tree_test {
-
-
-        static void binary_tree() {
-            tree::NodeTree nt;
-
-            auto nid = nt.createRoot(3);
-
-            auto n1 = nt.addChild(nid, 0, 2);
-            auto n2 = nt.addChild(nid, 1, 2);
-            auto n11 = nt.addChild(nid, 2, 2);
-
-            debug() << "n1: " << n1;
-            debug() << "n2: " << n2;
-            debug() << "n11: " << n11;
-
-            debug() << "n1 control: " << nt.getChild(nid, 0);
-            debug() << "n2 control: " << nt.getChild(nid, 1);
-
-            auto n3 = nt.addChild(n1, 0, 0);
-            auto n4 = nt.addChild(n1, 1, 0);
-
-            debug() << "n3: " << n3;
-            debug() << "n4: " << n4;
-
-            try {
-                auto n5 = nt.addChild(n2, 0, 0);
-                auto n6 = nt.addChild(n2, 0, 0);
-                debug() << "warning: adding a node in place of an existing one";
-            } catch (std::exception& e) {}
-
-            try {
-                nt.addChild(n2, 2, 0);
-                debug() << "bug: must not have room for this child";
-            } catch (std::exception& e) {}
-
-            debug() << "siblings: " << nt.getNumberOfSiblings(n1);
-            debug() << "siblings: " << nt.getNumberOfSiblings(n4);
-        }
-
 
         class TestClass {
         private:
@@ -94,11 +57,33 @@ namespace cpprofiler { namespace tests { namespace tree_test {
 
         }
 
+        void growing_tree() {
+
+            tree::Structure str;
+
+            auto root = str.createRoot(0);
+
+            auto n1 = str.addExtraChild(root);
+
+            assert(n1 == str.getChild(root, 0));
+
+            auto n2 = str.addExtraChild(root);
+
+            assert(n1 == str.getChild(root, 0));
+            assert(n2 == str.getChild(root, 1));
+
+            auto n3 = str.addExtraChild(root);
+
+            assert(n1 == str.getChild(root, 0));
+            assert(n2 == str.getChild(root, 1));
+            assert(n3 == str.getChild(root, 2));
+        }
+
         void run() {
 
-            // binary_tree();
+            growing_tree();
 
-            array_usage();
+            // array_usage();
 
         }
 

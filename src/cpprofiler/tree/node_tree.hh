@@ -99,10 +99,6 @@ Q_OBJECT
     /// How do I make sure that this is syncronised with the number of nodes?
     /// (using NodeTree::addEntry method)
 
-    /// NodeTree::addNode calls addEntry for every node (including white nodes)
-
-    /// NodeTree::resetNumberOfChildren creates new nodes,
-    /// but doesn't update the data structures
     std::unique_ptr<NodeInfo> m_node_info;
 
     std::vector<Label> m_labels;
@@ -111,9 +107,6 @@ Q_OBJECT
 
     /// Ensure all relevant data structures contain this node
     void addEntry(NodeID nid);
-
-    /// Not sure if I need to keep this
-    void setNumberOfChildren(NodeID nid, int kids);
 
     /// notify ancestor nodes of a solution
     void notifyAncestors(NodeID nid);
@@ -147,17 +140,16 @@ public:
 
     NodeID createDummyRoot();
 
-    NodeID addChild(NodeID pid, int alt, int kids);
-
     /// turn a white node into some other node
-    void transformNode(NodeID nid, int kids, NodeStatus status, Label = emptyLabel);
+    void promoteNode(NodeID nid, int kids, NodeStatus status, Label = emptyLabel);
 
-    // NodeID addNode(NodeID parent_id, int alt, int kids, NodeStatus status, Label = emptyLabel);
-
+    /// TODO: rename it to resetNode
     /// Turn undet node into a real one, updating stats and emitting signals
-    NodeID addNodeNew(NodeID parent_id, int alt, int kids, NodeStatus status, Label = emptyLabel);
+    NodeID promoteNode(NodeID parent_id, int alt, int kids, NodeStatus status, Label = emptyLabel);
 
-    /// Set the flage for open children
+    void addExtraChild(NodeID pid);
+
+    /// Set the flag for open children
     void setHasOpenChildren(NodeID nid, bool val);
 
     void setLabel(NodeID nid, const Label& label);

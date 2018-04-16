@@ -38,29 +38,38 @@ private:
     /// The children, or in case there are at most two, the first child
     void* m_childrenOrFirstChild;
 
-    NodeID* m_children;
-
     // The number of children, in case it is greater than 2, or the second child (if negative)
     int m_noOfChildren;
 
     Tag getTag() const;
     void setTag(Tag);
 
-    void setParent(NodeID pid);
+    /// Return children ptr (if nkids > 2) without the tag
+    NodeID* getPtr() const;
+
+    /// Set children ptr (if kids > 2) reseting the tag
+    void setPtr(NodeID* ptr);
 
 public:
 
-    Node(NodeID parent_nid, int kids = 0);
+    Node(NodeID pid, int kids = 0);
 
-    /// Return the number of immediate children nodes
+    /// Return the number of immediate children
     int childrenCount() const;
 
-    /// similar to setNumberOfChildren, but handles existing children
+    /// Allocate memory for children, possibly moving existing children
     void setNumberOfChildren(int n);
 
-    void setChild(NodeID, int alt);
+    /// Assign nid as the child at position alt
+    void setChild(NodeID nid, int alt);
+
+    /// Make room in the node for another child
+    void addChild();
+
+    /// Get the identifier of the child at position alt
     NodeID getChild(int alt);
 
+    /// Get the identifier of the parent
     NodeID getParent() const;
 
     ~Node();

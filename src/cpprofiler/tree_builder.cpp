@@ -85,13 +85,13 @@ void TreeBuilder::handleNode(Message* node) {
         if (pid == NodeID::NoNode) {
 
             if (m_execution->doesRestarts()) {
-                nid = tree.addNodeNew(NodeID{0}, n_uid.rid, kids, status);
+                nid = tree.promoteNode(NodeID{0}, n_uid.rid, kids, status);
             } else {
                 nid = tree.createRoot(kids);
             }
 
         } else {
-            nid = tree.addNodeNew(pid, alt, kids, status);
+            nid = tree.promoteNode(pid, alt, kids, status);
         }
     }
 

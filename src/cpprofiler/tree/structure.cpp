@@ -28,34 +28,42 @@ namespace cpprofiler { namespace tree {
         auto root_nid = getRoot();
         /// create `kids` white nodes
         for (auto i = 0; i < kids; ++i) {
-            addChild(root_nid, i, 0);
+            createChild(root_nid, i, 0);
         }
 
         return root_nid;
     }
 
-    NodeID Structure::addChild(NodeID pid, int alt, int kids) {
+    NodeID Structure::createNode(NodeID pid, int kids) {
         auto nid = NodeID{m_nodes.size()};
         m_nodes.push_back(std::unique_ptr<Node>{new Node(pid, kids)});
-
-        auto p_node = m_nodes[pid].get();
-        p_node->setChild(nid, alt);
-
-        if (p_node->getChild(alt) != nid) throw;
-
         return nid;
     }
 
-    NodeID Structure::addChild_safe(NodeID pid, int alt, int kids) {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return addChild(pid, alt, kids);
+    NodeID Structure::createChild(NodeID pid, int alt, int kids) {
+        const auto nid = createNode(pid, kids);
+        m_nodes[pid]->setChild(nid, alt);
+        return nid;
     }
 
-    void Structure::setNumberOfChildren(NodeID nid, int kids) {
+    NodeID Structure::addExtraChild(NodeID pid) {
+
+        const auto alt = childrenCount(pid);
+
+        /// make room for another child
+        m_nodes[pid]->addChild();
+
+        auto kid = createChild(pid, alt, 0);
+        return kid;
+    }
+
+    void Structure::addChildren(NodeID nid, int kids) {
+        if (m_nodes[nid]->childrenCount() > 0) throw;
+
         m_nodes[nid]->setNumberOfChildren(kids);
 
         for (auto i = 0; i < kids; ++i) {
-            addChild(nid, i, 0);
+            createChild(nid, i, 0);
         }
     }
 

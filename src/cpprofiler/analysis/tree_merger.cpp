@@ -104,7 +104,7 @@ static void copy_tree_into(NodeTree& nt, NodeID nid, const NodeTree& nt_s, NodeI
         /// TODO: make sure only the reference to a label is stored
         auto label = nt_s.getLabel(node_s);
 
-        nt.transformNode(node, kids, status, label);
+        nt.promoteNode(node, kids, status, label);
 
         for (auto alt = 0; alt < kids; ++alt) {
             stack.push( nt.getChild(node, alt) );
@@ -119,7 +119,7 @@ void create_pentagon(NodeTree& nt, NodeID nid,
                 const NodeTree& nt_l, NodeID nid_l,
                 const NodeTree& nt_r, NodeID nid_r) {
 
-    nt.transformNode(nid, 2, NodeStatus::MERGED);
+    nt.promoteNode(nid, 2, NodeStatus::MERGED);
 
     /// copy the subtree of nt_l into target_l
     auto target_l = nt.getChild(nid, 0);
@@ -173,7 +173,7 @@ void TreeMerger::run() {
 
             auto status = tree_l.getStatus(node_l);
             auto label = tree_l.getLabel(node_l);
-            res_tree.transformNode(target, kids, status, label);
+            res_tree.promoteNode(target, kids, status, label);
 
             for (auto i = kids - 1; i >= 0; --i) {
                 stack_l.push( tree_l.getChild(node_l, i) );

@@ -103,6 +103,8 @@ void TraditionalView::navDown() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
+    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
+
     auto kids = m_tree.childrenCount(cur_nid);
 
     if (kids > 0) {
@@ -118,6 +120,8 @@ void TraditionalView::navUp() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
+    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
+
     auto pid = m_tree.getParent_safe(cur_nid);
 
     if (pid != NodeID::NoNode) {
@@ -131,15 +135,17 @@ void TraditionalView::navLeft() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto pid = m_tree.getParent_safe(cur_nid);
+    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
+
+    auto pid = m_tree.getParent(cur_nid);
     if (pid == NodeID::NoNode) return;
 
-    auto cur_alt = m_tree.getAlternative_safe(cur_nid);
+    auto cur_alt = m_tree.getAlternative(cur_nid);
 
     auto kids = m_tree.childrenCount(pid);
 
     if (cur_alt > 0) {
-        m_user_data->setSelectedNode(m_tree.getChild_safe(pid, cur_alt - 1));
+        m_user_data->setSelectedNode(m_tree.getChild(pid, cur_alt - 1));
         centerCurrentNode();
     }
 
@@ -149,6 +155,9 @@ void TraditionalView::navLeft() {
 void TraditionalView::navRight() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
+
+    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
+
     auto pid = m_tree.getParent_safe(cur_nid);
 
     if (pid == NodeID::NoNode) return;
@@ -387,14 +396,11 @@ void TraditionalView::selectNode(NodeID nid) {
 }
 
 void TraditionalView::forceComputeLayout() {
-    // perfHelper.begin("layout");
-    m_layout_computer->compute();
-    // perfHelper.end();
-    m_layout_stale = false;
-    emit needsRedrawing();
+    computeLayout();
 }
 
 void TraditionalView::computeLayout() {
+    qDebug() << "compute Layout";
     auto changed = m_layout_computer->compute();
     m_layout_stale = false;
     if (changed) {
@@ -403,6 +409,7 @@ void TraditionalView::computeLayout() {
 }
 
 void TraditionalView::setLayoutOutdated() {
+    qDebug() << "set layout stale";
     m_layout_stale = true;
 }
 

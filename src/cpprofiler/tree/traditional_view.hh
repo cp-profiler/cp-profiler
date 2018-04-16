@@ -102,6 +102,8 @@ public slots:
     void selectNode(NodeID nid);
 
     void forceComputeLayout();
+
+    // same as forceComputeLayout???
     void computeLayout();
 
     void setLayoutOutdated();
