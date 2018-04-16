@@ -85,6 +85,7 @@ void TreeBuilder::handleNode(Message* node) {
         if (pid == NodeID::NoNode) {
 
             if (m_execution->doesRestarts()) {
+                tree.addExtraChild(NodeID{0});
                 nid = tree.promoteNode(NodeID{0}, n_uid.rid, kids, status);
             } else {
                 nid = tree.createRoot(kids);

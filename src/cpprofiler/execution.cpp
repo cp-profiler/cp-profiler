@@ -22,7 +22,7 @@ namespace cpprofiler {
         // TODO: make number of children dynamic
 
         if (restarts) {
-            m_tree->createRoot(100, "root");
+            m_tree->createRoot(0, "root");
         }
 
         debug("memory") << "Execution()\n";
