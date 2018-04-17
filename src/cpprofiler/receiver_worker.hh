@@ -39,7 +39,7 @@ Q_OBJECT
         int bytes_read = 0;
     } m_state;
 
-    Execution* execution;
+    // Execution* execution;
 
     cpprofiler::MessageMarshalling marshalling;
 
@@ -51,7 +51,7 @@ Q_OBJECT
 
 signals:
 
-    void newExecution(Execution* e);
+    void notifyStart(const std::string& ex_name, int ex_id, bool restarts);
     void newNode(Message* node);
     void doneReceiving();
 

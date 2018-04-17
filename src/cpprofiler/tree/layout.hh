@@ -17,8 +17,6 @@ class Structure;
 class BoundingBox;
 class ShapeDeleter;
 
-
-/// IMPORTANT: Methods marked as `unsafe` require the caller to hold m_layout_mutex
 class Layout : public QObject {
 Q_OBJECT
 
@@ -36,29 +34,25 @@ public:
 
     utils::Mutex& getMutex() const;
 
-    void setChildOffset_unsafe(NodeID nid, double offset);
+    void setChildOffset(NodeID nid, double offset);
 
-    void setLayoutDone_unsafe(NodeID nid, bool);
+    void setLayoutDone(NodeID nid, bool);
 
-    const Shape& getShape_unsafe(NodeID nid) const;
+    const Shape& getShape(NodeID nid) const;
 
-    void setShape_unsafe(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape);
+    void setShape(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape);
 
     double getOffset(NodeID nid) const;
-    double getOffset_unsafe(NodeID nid) const;
 
     int getDepth(NodeID nid) const;
-    int getDepth_unsafe(NodeID nid) const;
 
     bool getLayoutDone(NodeID nid) const;
-    bool getLayoutDone_unsafe(NodeID nid) const;
 
-    bool isDirty_unsafe(NodeID nid) const;
+    bool isDirty(NodeID nid) const;
 
-    void setDirty_unsafe(NodeID nid, bool val);
+    void setDirty(NodeID nid, bool val);
 
     const BoundingBox& getBoundingBox(NodeID nid) const;
-    const BoundingBox& getBoundingBox_unsafe(NodeID nid) const;
 
     Layout();
     ~Layout();

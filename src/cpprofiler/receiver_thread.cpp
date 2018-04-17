@@ -28,8 +28,8 @@ namespace cpprofiler {
         /// propagate the signal further upwards;
         /// blocking connection is used to ensure that the execution is created
         /// before any further message is processed
-        connect(m_worker.get(), &ReceiverWorker::newExecution,
-            this, &ReceiverThread::newExecution, Qt::BlockingQueuedConnection);
+        connect(m_worker.get(), &ReceiverWorker::notifyStart,
+            this, &ReceiverThread::notifyStart, Qt::BlockingQueuedConnection);
 
         connect(m_worker.get(), &ReceiverWorker::newNode,
             this, &ReceiverThread::newNode);

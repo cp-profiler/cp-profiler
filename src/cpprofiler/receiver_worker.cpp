@@ -98,6 +98,8 @@ namespace cpprofiler {
         std::string execution_name = "<no name>";
         bool has_restarts = false;
 
+        int exec_id = -1;
+
         if (msg.has_info()) {
 
             auto info_bytes = QByteArray::fromStdString(msg.info());
@@ -119,21 +121,26 @@ namespace cpprofiler {
                 if (restarts_val.isBool()) {
                     has_restarts = restarts_val.toBool();
                 }
+
+                {
+                    auto e_id_val = json_obj.value("execution_id");
+                    exec_id = e_id_val.toInt();
+                }
+
+
             }
 
 
         }
 
+        std::cerr << "execution id: " << exec_id << std::endl;
         std::cerr << "execution name: " << execution_name << std::endl;
         std::cerr << "has restarts: " << (has_restarts ? "true" : "false") << std::endl;
 
         /// Conductor will take the ownership of the new Execution
-        execution = new Execution{execution_name, has_restarts};
+        // auto execution = new Execution{execution_name, has_restarts};
 
-        /// This uses a blocking connection
-        emit newExecution(execution);
-
-
+        emit notifyStart(execution_name, exec_id, has_restarts); // blocking connection
 
     }
 

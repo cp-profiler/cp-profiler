@@ -22,6 +22,7 @@
 
 #include "utils/std_ext.hh"
 
+#include <random>
 
 #include <QProgressDialog>
 
@@ -56,38 +57,18 @@ namespace cpprofiler {
 
         m_server.reset(new TcpServer([this](intptr_t socketDesc) {
 
-            // TODO(maxim): interpret the data, see if new execution is needed
-
-            std::cerr << "callback, handle: " << socketDesc << std::endl;
-
             {
+                /// Initiate a receiver thread
                 auto receiver = new ReceiverThread(socketDesc, m_settings);
+                /// Delete the receiver one the thread is finished
                 connect(receiver, &QThread::finished, receiver, &QObject::deleteLater);
-                connect(receiver, &ReceiverThread::newExecution,
-                    this, &Conductor::addNewExecution);
-                connect(receiver, &QThread::finished, receiver, &QObject::deleteLater);
-
-                auto builderThread = new QThread();
-                auto builder = new TreeBuilder();
-
-                builder->moveToThread(builderThread);
-                connect(builderThread, &QThread::finished, builderThread, &QObject::deleteLater);
-
-                connect(receiver, &ReceiverThread::newExecution,
-                    builder, &TreeBuilder::startBuilding);
-
-                connect(receiver, &ReceiverThread::newNode,
-                    builder, &TreeBuilder::handleNode);
-
-                connect(receiver, &ReceiverThread::doneReceiving,
-                    builder, &TreeBuilder::finishBuilding);
+                /// Handle the start message in this connector
+                connect(receiver, &ReceiverThread::notifyStart, [this, receiver](const std::string& ex_name, int ex_id, bool restarts) {
+                    handleStart(receiver, ex_name, ex_id, restarts);
+                });
 
                 receiver->start();
-                builderThread->start();
-            }
 
-            {
-                
             }
 
         }));
@@ -111,12 +92,64 @@ namespace cpprofiler {
         debug("memory") << "~Conductor\n";
     }
 
-    void Conductor::addNewExecution(Execution* e) {
+    void Conductor::handleStart(ReceiverThread* receiver, const std::string& ex_name, int ex_id, bool restarts) {
 
-        m_executions.push_back(std::shared_ptr<Execution>(e));
-        m_execution_list->addExecution(*e);
+        auto res = m_executions.find(ex_id);
 
-        showTraditionalView(e);
+        if (res == m_executions.end() || ex_id == 0) {
+
+            /// needs a new execution
+            auto ex = addNewExecution(ex_name, ex_id, restarts);
+
+            /// The builder should only be created for a new execution
+            auto builderThread = new QThread();
+            auto builder = new TreeBuilder(*ex);
+
+            m_builders[ex_id] = builder;
+            builder->moveToThread(builderThread);
+
+            /// is this the right time to delete the builder thread?
+            connect(builderThread, &QThread::finished, builderThread, &QObject::deleteLater);
+            builderThread->start();
+        }
+
+        /// obtain the builder aready assigned to this execution
+        ///(either just now or by another connection)
+        auto builder = m_builders[ex_id];
+
+        connect(receiver, &ReceiverThread::newNode,
+            builder, &TreeBuilder::handleNode);
+
+        connect(receiver, &ReceiverThread::doneReceiving,
+            builder, &TreeBuilder::finishBuilding);
+
+
+    }
+
+    static int getRandomExID() {
+        std::mt19937 rng;
+        rng.seed(std::random_device()());
+        std::uniform_int_distribution<std::mt19937::result_type> dist(100);
+
+        return dist(rng);
+    }
+
+    Execution* Conductor::addNewExecution(const std::string& ex_name, int ex_id, bool restarts) {
+
+        auto ex = std::make_shared<Execution>(ex_name, restarts);
+
+        if (ex_id == 0) {
+            ex_id = getRandomExID();
+        }
+
+        debug("force") << "EXECUTION_ID: " << ex_id << std::endl;
+
+        m_executions[ex_id] = ex;
+        m_execution_list->addExecution(*ex);
+
+        showTraditionalView(ex.get());
+
+        return ex.get();
 
     }
 

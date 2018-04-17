@@ -24,7 +24,7 @@ Q_OBJECT
 
 signals:
 
-    void newExecution(Execution* e);
+    void notifyStart(const std::string& ex_name, int ex_id, bool restarts);
     void newNode(Message* node);
     void doneReceiving();
 

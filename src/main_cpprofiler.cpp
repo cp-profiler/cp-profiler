@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
 
-    cpprofiler::tests::tree_test::run();
+    // cpprofiler::tests::tree_test::run();
 
     cpprofiler::debug("thread") << "main thread:" << std::this_thread::get_id() << std::endl;
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
 
     conductor.show();
 
-    cpprofiler::tests::execution::run(conductor);
+    // cpprofiler::tests::execution::run(conductor);
 
     return app.exec();
 }

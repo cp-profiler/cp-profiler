@@ -9,16 +9,12 @@
 
 namespace cpprofiler { namespace tree {
 
-    const Shape& Layout::getShape_unsafe(NodeID nid) const {
-
-        // if (m_shapes.size() <= nid) {
-        //     m_shapes.resize(static_cast<int>(nid)+1);
-        // }
+    const Shape& Layout::getShape(NodeID nid) const {
 
         return *m_shapes[nid];
     }
 
-    void Layout::setShape_unsafe(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape) {
+    void Layout::setShape(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape) {
         if (m_shapes.size() <= nid) {
             m_shapes.resize(static_cast<int>(nid)+1);
         }
@@ -30,7 +26,7 @@ namespace cpprofiler { namespace tree {
         return m_layout_mutex;
     }
 
-    void Layout::setChildOffset_unsafe(NodeID nid, double offset) {
+    void Layout::setChildOffset(NodeID nid, double offset) {
 
         if (m_child_offsets.size() <= nid) {
             m_child_offsets.resize(static_cast<int>(nid)+1);
@@ -40,7 +36,7 @@ namespace cpprofiler { namespace tree {
     }
 
 
-    void Layout::setLayoutDone_unsafe(NodeID nid, bool val) {
+    void Layout::setLayoutDone(NodeID nid, bool val) {
 
         if (m_layout_done.size() <= nid) {
             m_layout_done.resize(static_cast<int>(nid)+1);
@@ -49,7 +45,7 @@ namespace cpprofiler { namespace tree {
         m_layout_done[nid] = val;
     }
 
-    bool Layout::getLayoutDone_unsafe(NodeID nid) const {
+    bool Layout::getLayoutDone(NodeID nid) const {
 
         if (m_layout_done.size() <= nid) {
             return false;
@@ -64,10 +60,6 @@ namespace cpprofiler { namespace tree {
     Layout::~Layout() = default;
 
     double Layout::getOffset(NodeID nid) const {
-        return getOffset_unsafe(nid);
-    }
-
-    double Layout::getOffset_unsafe(NodeID nid) const {
         if (m_child_offsets.size() <= nid) {
             return 0;
         }
@@ -75,26 +67,13 @@ namespace cpprofiler { namespace tree {
         return m_child_offsets[nid];
     }
 
-    int Layout::getDepth(NodeID nid) const {
-        // utils::MutexLocker locker(&m_layout_mutex);
-        return getDepth_unsafe(nid);
-    }
 
-    int Layout::getDepth_unsafe(NodeID nid) const {
-        return getShape_unsafe(nid).depth();
+    int Layout::getDepth(NodeID nid) const {
+        return getShape(nid).depth();
     }
 
     const BoundingBox& Layout::getBoundingBox(NodeID nid) const {
-        // utils::MutexLocker locker(&m_layout_mutex);
-        return getBoundingBox_unsafe(nid);
-    }
-
-    const BoundingBox& Layout::getBoundingBox_unsafe(NodeID nid) const {
-        return getShape_unsafe(nid).boundingBox();
-    }
-
-    bool Layout::getLayoutDone(NodeID nid) const {
-        return getLayoutDone_unsafe(nid);
+        return getShape(nid).boundingBox();
     }
 
     void Layout::growDataStructures(int n_nodes) {
@@ -103,7 +82,7 @@ namespace cpprofiler { namespace tree {
         m_child_offsets.resize(old_size + n_nodes);
     }
 
-    bool Layout::isDirty_unsafe(NodeID nid) const {
+    bool Layout::isDirty(NodeID nid) const {
 
         // qDebug() << "is Dirty";
 
@@ -119,20 +98,13 @@ namespace cpprofiler { namespace tree {
         return m_dirty[nid];
     }
 
-    void Layout::setDirty_unsafe(NodeID nid, bool val) {
-
-        // qDebug() << "set Dirty";
+    void Layout::setDirty(NodeID nid, bool val) {
 
         if (m_dirty.size() <= nid) {
             m_dirty.resize(static_cast<int>(nid)+1, true);
         }
 
         m_dirty[nid] = val;
-
-        // for (auto el : m_dirty) {
-        //     std::cerr << el << " ";
-        // }
-        // std::cerr << "\n";
     }
 
 

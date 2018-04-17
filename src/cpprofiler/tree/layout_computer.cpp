@@ -27,7 +27,7 @@ void LayoutComputer::setDirty(NodeID nid) {
     auto& tree_mutex = m_tree.treeMutex();
     auto& layout_mutex = m_layout.getMutex();
 
-    m_layout.setDirty_unsafe(nid, true);
+    m_layout.setDirty(nid, true);
 }
 
 
@@ -36,8 +36,8 @@ void LayoutComputer::dirtyUp(NodeID nid) {
     auto& tree_mutex = m_tree.treeMutex();
     auto& layout_mutex = m_layout.getMutex();
 
-    while (nid != NodeID::NoNode && !m_layout.isDirty_unsafe(nid)) {
-        m_layout.setDirty_unsafe(nid, true);
+    while (nid != NodeID::NoNode && !m_layout.isDirty(nid)) {
+        m_layout.setDirty(nid, true);
         nid = m_tree.getParent(nid);
     }
 

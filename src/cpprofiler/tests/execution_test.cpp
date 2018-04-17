@@ -30,9 +30,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     void binary_tree_execution(Conductor& conductor) {
 
-        auto ex = new Execution("test execution");
-
-        conductor.addNewExecution(ex);
+        auto ex = conductor.addNewExecution("test execution");
 
         auto& tree = ex->tree();
 
@@ -104,9 +102,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     void nary_execution(Conductor& conductor) {
 
-        auto ex = new Execution("n-ary execution");
-
-        conductor.addNewExecution(ex);
+        auto ex = conductor.addNewExecution("n-ary execution");
 
         auto& tree = ex->tree();
 
@@ -131,9 +127,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     void larger_nary_execution(Conductor& conductor) {
 
-        auto ex = new Execution("n-ary execution");
-
-        conductor.addNewExecution(ex);
+        auto ex = conductor.addNewExecution("n-ary execution");
 
         auto& tree = ex->tree();
 
@@ -163,9 +157,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     void simple_nary_execution(Conductor& conductor) {
 
-        auto ex = new Execution("n-ary execution");
-
-        conductor.addNewExecution(ex);
+        auto ex = conductor.addNewExecution("n-ary execution");
 
         auto& tree = ex->tree();
 
@@ -178,9 +170,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     void binary_test_1_for_identical_subtrees(Conductor& conductor) {
 
-        auto ex = new Execution("test for identical subtree algorithm");
-
-        conductor.addNewExecution(ex);
+        auto ex = conductor.addNewExecution("test for identical subtree algorithm");
 
         auto& tree = ex->tree();
 
@@ -207,9 +197,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     void binary_test_2_for_identical_subtrees(Conductor& conductor) {
 
-        auto ex = new Execution("test for identical subtree algorithm");
-
-        conductor.addNewExecution(ex);
+        auto ex = conductor.addNewExecution("test for identical subtree algorithm");
 
         auto& tree = ex->tree();
 
@@ -282,12 +270,10 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     void comparison(Conductor& c) {
 
-        auto ex1 = new Execution("Execution A");
-        c.addNewExecution(ex1);
+        auto ex1 = c.addNewExecution("Execution A");
         build_for_comparison_a(ex1->tree());
 
-        auto ex2 = new Execution("Execution B");
-        c.addNewExecution(ex2);
+        auto ex2 = c.addNewExecution("Execution B");
         build_for_comparison_b(ex2->tree());
 
         c.mergeTrees(ex1, ex2);
@@ -296,10 +282,7 @@ namespace cpprofiler { namespace tests { namespace execution {
     void tree_building(Conductor& c) {
 
         /// create a dummy root node
-
-        auto ex = new Execution("test tree");
-
-        c.addNewExecution(ex);
+        auto ex = c.addNewExecution("test tree");
 
         auto& tree = ex->tree();
 
@@ -316,9 +299,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     void hiding_failed_test(Conductor& c) {
 
-        auto ex = new Execution("test hiding failed");
-
-        c.addNewExecution(ex);
+        auto ex = c.addNewExecution("test hiding failed");
 
         auto& tree = ex->tree();
 
@@ -343,10 +324,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     void restart_tree(Conductor& c) {
 
-
-        auto ex = new Execution("Restart Tree");
-
-        c.addNewExecution(ex);
+        auto ex = c.addNewExecution("Restart Tree");
 
         auto& tree = ex->tree();
 

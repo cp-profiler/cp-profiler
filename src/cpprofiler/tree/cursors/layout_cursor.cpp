@@ -25,11 +25,7 @@ namespace cpprofiler { namespace tree {
     bool LayoutCursor::mayMoveDownwards() {
         return NodeCursor::mayMoveDownwards() &&
                !m_vis_flags.get_hidden(m_cur_node) &&
-               m_layout.isDirty_unsafe(m_cur_node);
-    }
-
-    void LayoutCursor::setLabelPainter(QPainter* painter) {
-        m_painter = painter;
+               m_layout.isDirty(m_cur_node);
     }
 
     /// Compute the distance between s1 and s2 (that is, how far apart should the
@@ -170,8 +166,8 @@ namespace cpprofiler { namespace tree {
         auto kid_l = nt.getChild(nid, 0);
         auto kid_r = nt.getChild(nid, 1);
 
-        const auto& s1 = layout.getShape_unsafe(kid_l);
-        const auto& s2 = layout.getShape_unsafe(kid_r);
+        const auto& s1 = layout.getShape(kid_l);
+        const auto& s2 = layout.getShape(kid_r);
 
         std::vector<int> offsets(2);
         auto combined = combine_shapes(s1, s2, offsets);
@@ -186,10 +182,10 @@ namespace cpprofiler { namespace tree {
             });
         }
 
-        layout.setShape_unsafe(nid, std::move(combined));
+        layout.setShape(nid, std::move(combined));
 
-        layout.setChildOffset_unsafe(kid_l, offsets[0]);
-        layout.setChildOffset_unsafe(kid_r, offsets[1]);
+        layout.setChildOffset(kid_l, offsets[0]);
+        layout.setChildOffset(kid_r, offsets[1]);
     }
 
     static inline void computeForNodeNary(NodeID nid, int nkids, Layout& layout, const Structure& tree) {
@@ -200,18 +196,18 @@ namespace cpprofiler { namespace tree {
         for (auto i = 0; i < nkids - 1; ++i) {
             auto kid_l = tree.getChild(nid, i);
             auto kid_r = tree.getChild(nid, i+1);
-            const auto& s1 = layout.getShape_unsafe(kid_l);
-            const auto& s2 = layout.getShape_unsafe(kid_r);
+            const auto& s1 = layout.getShape(kid_l);
+            const auto& s2 = layout.getShape(kid_r);
             distances[i] = distance_between(s1, s2);
         }
 
         /// calculate total width (the sum of all distances + )
         int total_width = 0;
         const auto leftmost_kid = tree.getChild(nid, 0);
-        const auto& leftmost_shape = layout.getShape_unsafe(leftmost_kid);
+        const auto& leftmost_shape = layout.getShape(leftmost_kid);
         {
             const auto rightmost_kid = tree.getChild(nid, nkids - 1);
-            const auto& rightmost_shape = layout.getShape_unsafe(rightmost_kid);
+            const auto& rightmost_shape = layout.getShape(rightmost_kid);
 
             total_width -= leftmost_shape.boundingBox().left;
             for (auto distance : distances) {
@@ -227,7 +223,7 @@ namespace cpprofiler { namespace tree {
         {
             for (auto i = 0; i < nkids; ++i) {
                 auto kid_l = tree.getChild(nid, i);
-                const auto& s1 = layout.getShape_unsafe(kid_l);
+                const auto& s1 = layout.getShape(kid_l);
                 max_depth = std::max(max_depth, s1.depth());
             }
         }
@@ -244,7 +240,7 @@ namespace cpprofiler { namespace tree {
         auto cur_x = -half_w - leftmost_shape.boundingBox().left;
         for (auto i = 0; i < nkids; ++i) {
             const auto kid = tree.getChild(nid, i);
-            layout.setChildOffset_unsafe(kid, cur_x);
+            layout.setChildOffset(kid, cur_x);
             x_offsets[i] = cur_x;
             cur_x += distances[i];
         }
@@ -257,7 +253,7 @@ namespace cpprofiler { namespace tree {
             auto rightmost_x = 0;
             for (auto kid = 0; kid < nkids; ++kid) {
                 const auto kid_id = tree.getChild(nid, kid);
-                const auto& shape = layout.getShape_unsafe(kid_id);
+                const auto& shape = layout.getShape(kid_id);
                 if (shape.depth() > depth - 1) {
                     leftmost_x = std::min(leftmost_x, shape[depth-1].l + x_offsets[kid]);
                     rightmost_x = std::max(leftmost_x, shape[depth-1].r + x_offsets[kid]);
@@ -269,7 +265,7 @@ namespace cpprofiler { namespace tree {
         }
 
 
-        layout.setShape_unsafe(nid, std::move(combined));
+        layout.setShape(nid, std::move(combined));
 
 
     }
@@ -279,28 +275,28 @@ namespace cpprofiler { namespace tree {
 
         /// Check if the node is hidden:
         if (m_vis_flags.get_hidden(nid)) {
-            m_layout.setShape_unsafe(nid, ShapeUniqPtr(&Shape::hidden));
+            m_layout.setShape(nid, ShapeUniqPtr(&Shape::hidden));
         } else {
             auto nkids = m_tree.childrenCount(nid);
 
             if (nkids == 0) {
 
                 if (!m_vis_flags.get_label_shown(nid)) {
-                    m_layout.setShape_unsafe(nid, ShapeUniqPtr(&Shape::leaf));
+                    m_layout.setShape(nid, ShapeUniqPtr(&Shape::leaf));
                 } else {
                     /// TODO
                     auto shape = ShapeUniqPtr{new Shape{1}};
                     (*shape)[0] = calculateForSingleNode(nid, m_nt, m_vis_flags);
 
                     shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
-                    m_layout.setShape_unsafe(nid, std::move(shape));
+                    m_layout.setShape(nid, std::move(shape));
                 }
             }
 
             if (nkids == 1) {
                 
                 const auto kid = m_tree.getChild(nid, 0);
-                const auto& kid_s = m_layout.getShape_unsafe(kid);
+                const auto& kid_s = m_layout.getShape(kid);
 
                 auto shape = ShapeUniqPtr(new Shape(kid_s.depth() + 1));
 
@@ -312,7 +308,7 @@ namespace cpprofiler { namespace tree {
 
                 shape->setBoundingBox(kid_s.boundingBox());
 
-                m_layout.setShape_unsafe(nid, std::move(shape));
+                m_layout.setShape(nid, std::move(shape));
             }
 
             if (nkids == 2) {
@@ -324,17 +320,16 @@ namespace cpprofiler { namespace tree {
             }
         }
 
-        m_layout.setLayoutDone_unsafe(nid, true);
+        m_layout.setLayoutDone(nid, true);
     }
 
     void LayoutCursor::processCurrentNode() {
-        // m_layout_order.push_back(m_cur_node);
 
-        auto dirty = m_layout.isDirty_unsafe(m_cur_node);
+        auto dirty = m_layout.isDirty(m_cur_node);
 
         if (dirty) {
             computeForNode(m_cur_node);
-            m_layout.setDirty_unsafe(m_cur_node, false);
+            m_layout.setDirty(m_cur_node, false);
         }
     }
 

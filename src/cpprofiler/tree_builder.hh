@@ -10,10 +10,13 @@ class Execution;
 class TreeBuilder : public QObject{
     Q_OBJECT
 
-    Execution* m_execution = nullptr;
+    Execution& m_execution;
 
 public:
-    void startBuilding(Execution* e);
+
+    TreeBuilder(Execution& ex);
+
+    void startBuilding();
 
     void finishBuilding();
 

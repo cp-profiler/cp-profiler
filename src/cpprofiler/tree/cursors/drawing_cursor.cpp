@@ -74,7 +74,7 @@ namespace cpprofiler { namespace tree {
         painter.setBrush(QColor{0, 0, 0, 50});
         painter.setPen(Qt::NoPen);
 
-        auto& shape = layout.getShape_unsafe(nid);
+        auto& shape = layout.getShape(nid);
 
         int depth = shape.depth();
         QPointF *points = new QPointF[depth * 2];
@@ -112,7 +112,7 @@ namespace cpprofiler { namespace tree {
 
         if (m_cur_node != m_start_node) {
 
-            auto parent_x = cur_x - m_layout.getOffset_unsafe(m_cur_node);
+            auto parent_x = cur_x - m_layout.getOffset(m_cur_node);
             auto parent_y = cur_y - static_cast<double>(layout::dist_y);
 
             m_painter.drawLine(parent_x, parent_y + BRANCH_WIDTH, cur_x, cur_y);
@@ -208,21 +208,21 @@ namespace cpprofiler { namespace tree {
     }
 
     void DrawingCursor::moveUpwards() {
-        cur_x -= m_layout.getOffset_unsafe(m_cur_node);
+        cur_x -= m_layout.getOffset(m_cur_node);
         cur_y -= layout::dist_y;
         NodeCursor::moveUpwards();
     }
 
     void DrawingCursor::moveDownwards() {
         NodeCursor::moveDownwards();
-        cur_x += m_layout.getOffset_unsafe(m_cur_node);
+        cur_x += m_layout.getOffset(m_cur_node);
         cur_y += layout::dist_y;
     }
 
     void DrawingCursor::moveSidewards() {
-        cur_x -= m_layout.getOffset_unsafe(m_cur_node);
+        cur_x -= m_layout.getOffset(m_cur_node);
         NodeCursor::moveSidewards();
-        cur_x += m_layout.getOffset_unsafe(m_cur_node);
+        cur_x += m_layout.getOffset(m_cur_node);
     }
 
     bool DrawingCursor::mayMoveSidewards() {
@@ -233,7 +233,7 @@ namespace cpprofiler { namespace tree {
         /// TODO: this should be about children?
         return NodeCursor::mayMoveDownwards() &&
                !m_vis_flags.get_hidden(m_cur_node) &&
-               m_layout.getLayoutDone_unsafe(m_cur_node) &&
+               m_layout.getLayoutDone(m_cur_node) &&
                !isClipped();
     }
     
@@ -242,13 +242,13 @@ namespace cpprofiler { namespace tree {
     }
 
     bool DrawingCursor::isClipped() {
-        auto bb = m_layout.getBoundingBox_unsafe(m_cur_node);
+        auto bb = m_layout.getBoundingBox(m_cur_node);
 
         if (
             (cur_x + bb.left > clippingRect.x() + clippingRect.width()) ||
             (cur_x + bb.right < clippingRect.x()) ||
             (cur_y > clippingRect.y() + clippingRect.height()) ||
-            (cur_y + (m_layout.getDepth_unsafe(m_cur_node) + 1) * layout::dist_y < clippingRect.y())
+            (cur_y + (m_layout.getDepth(m_cur_node) + 1) * layout::dist_y < clippingRect.y())
         ) {
             // qDebug() << "node clipped";
             return true;

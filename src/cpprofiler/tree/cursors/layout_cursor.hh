@@ -23,8 +23,6 @@ public:
     // Constructor
     LayoutCursor(NodeID start, const NodeTree& tree, const VisualFlags& nf, Layout& lo);
 
-    void setLabelPainter(QPainter* painter);
-
     void computeForNode(NodeID nid);
 
     bool mayMoveDownwards();

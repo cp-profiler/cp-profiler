@@ -41,9 +41,6 @@ TraditionalView::TraditionalView(const NodeTree& tree)
 
     m_scroll_area.reset(new TreeScrollArea(root_node, m_tree, *m_user_data, *m_layout, *m_vis_flags));
 
-    // auto painter = m_scroll_area.getLabelPainter();
-    // m_layout_computer.setLabelPainter(painter);
-
     // std::cerr << "traditional view thread:" << std::this_thread::get_id() << std::endl;
 
     // m_scroll_area
@@ -409,7 +406,7 @@ void TraditionalView::computeLayout() {
 }
 
 void TraditionalView::setLayoutOutdated() {
-    qDebug() << "set layout stale";
+    debug("layout") << "set layout stale";
     m_layout_stale = true;
 }
 
@@ -433,7 +430,7 @@ void TraditionalView::printNodeInfo() {
     qDebug() << "offset:" << m_layout->getOffset(cur_nid);
     auto bb = m_layout->getBoundingBox(cur_nid);
     qDebug() << "bb:[" << bb.left << "," << bb.right << "]";
-    qDebug() << "dirty:" << m_layout->isDirty_unsafe(cur_nid);
+    qDebug() << "dirty:" << m_layout->isDirty(cur_nid);
     qDebug() << "hidden:" << m_vis_flags->get_hidden(cur_nid);
     qDebug() << "has solved kids:" << m_tree.hasSolvedChildren(cur_nid);
     qDebug() << "has open kids:" << m_tree.hasOpenChildren(cur_nid);

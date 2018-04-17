@@ -237,7 +237,7 @@ namespace cpprofiler { namespace tree {
             setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
             setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-            qDebug() << "TreeScrollArea()";
+            debug("memory") << "TreeScrollArea()";
     }
 
     void TreeScrollArea::centerX(int x) {

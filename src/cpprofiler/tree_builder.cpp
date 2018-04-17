@@ -35,8 +35,12 @@ static std::ostream& operator<<(std::ostream& os, const Message& msg) {
     return os;
 }
 
-void TreeBuilder::startBuilding(Execution* e) {
-    m_execution = e;
+TreeBuilder::TreeBuilder(Execution& ex): m_execution(ex) {
+    std::cerr << "  TreeBuilder()\n";
+    startBuilding();
+}
+
+void TreeBuilder::startBuilding() {
     perfHelper.begin("tree building");
     std::cerr << "  Builder: start building\n";
 }
@@ -63,19 +67,20 @@ void TreeBuilder::handleNode(Message* node) {
     auto n_uid = node->nodeUID();
     auto p_uid = node->parentUID();
 
-    auto& tree = m_execution->tree();
+    auto& tree = m_execution.tree();
 
     tree::NodeID pid = tree::NodeID::NoNode;
 
     /// who else has access to solver_data?
     if (p_uid.nid != -1) {
-        pid = m_execution->solver_data().getNodeId({p_uid.nid, p_uid.rid, p_uid.tid});
+        pid = m_execution.solver_data().getNodeId({p_uid.nid, p_uid.rid, p_uid.tid});
     }
 
 
     const auto kids = node->kids();
     const auto alt = node->alt();
     const auto status = static_cast<tree::NodeStatus>(node->status());
+    const auto& label = node->label();
 
     NodeID nid;
 
@@ -84,7 +89,7 @@ void TreeBuilder::handleNode(Message* node) {
 
         if (pid == NodeID::NoNode) {
 
-            if (m_execution->doesRestarts()) {
+            if (m_execution.doesRestarts()) {
                 tree.addExtraChild(NodeID{0});
                 nid = tree.promoteNode(NodeID{0}, n_uid.rid, kids, status);
             } else {
@@ -96,7 +101,7 @@ void TreeBuilder::handleNode(Message* node) {
         }
     }
 
-    m_execution->solver_data().setNodeId({n_uid.nid, n_uid.rid, n_uid.tid}, nid);
+    m_execution.solver_data().setNodeId({n_uid.nid, n_uid.rid, n_uid.tid}, nid);
 
 }
 

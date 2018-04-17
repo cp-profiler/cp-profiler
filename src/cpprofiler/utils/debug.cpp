@@ -12,9 +12,13 @@ std::ostream& debug(std::string type) {
 
     if (type == "memory") {
         return oss;
-    } else if (type == "node") {
+    } else if (type == "force") {
         return std::cerr;
+    } else if (type == "node") {
+        return oss;
     } else if (type == "done") {
+        return std::cerr;
+    } else if (type == "build") {
         return std::cerr;
     } else {
         return oss;

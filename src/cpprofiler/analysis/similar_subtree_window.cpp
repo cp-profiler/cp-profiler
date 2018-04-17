@@ -132,7 +132,7 @@ static std::vector<SubtreePattern> runSimilarShapes(const NodeTree& tree, const 
     auto node_order = helper::postOrder(tree.tree_structure());
 
     for (auto nid : node_order) {
-        shape_set.insert({nid, lo.getShape_unsafe(nid)});
+        shape_set.insert({nid, lo.getShape(nid)});
     }
 
     std::vector<SubtreePattern> shapes;
