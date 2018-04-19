@@ -27,6 +27,8 @@ public:
 
         void dirtyUp(NodeID nid);
 
+        bool isDirty(NodeID nid);
+
         void setDirty(NodeID nid);
     };
 

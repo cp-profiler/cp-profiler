@@ -43,8 +43,6 @@ namespace cpprofiler { namespace tree {
         return max + layout::min_dist_x;
     }
 
-    using ShapeUniqPtr = std::unique_ptr<Shape, ShapeDeleter>;
-
     /// Combine shapes s1 and s2 to form a shape of a shape for the parent node;
     /// offsets will contain the resulting relative distance from the parent node (along x);
     static ShapeUniqPtr combine_shapes(const Shape& s1, const Shape& s2, std::vector<int>& offsets) {

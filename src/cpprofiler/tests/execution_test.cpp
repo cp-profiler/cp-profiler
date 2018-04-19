@@ -107,22 +107,22 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto& tree = ex->tree();
 
         auto root = tree.createRoot(4);
-        auto n1 =  tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "five");
-        auto n2 =  tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "seven");
-        auto n3 =  tree.promoteNode(root, 2, 0, tree::NodeStatus::FAILED);
-        auto n4 =  tree.promoteNode(root, 3, 2, tree::NodeStatus::BRANCH);
+        auto n1 =  tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
+        auto n2 =  tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
+        auto n3 =  tree.promoteNode(root, 2, 0, tree::NodeStatus::FAILED, "3");
+        auto n4 =  tree.promoteNode(root, 3, 2, tree::NodeStatus::BRANCH, "4");
 
-        auto n5 =  tree.promoteNode(n1, 0, 0, tree::NodeStatus::FAILED);
-        auto n6 =  tree.promoteNode(n1, 1, 0, tree::NodeStatus::FAILED);
+        auto n5 =  tree.promoteNode(n1, 0, 0, tree::NodeStatus::FAILED, "5");
+        auto n6 =  tree.promoteNode(n1, 1, 0, tree::NodeStatus::FAILED, "6");
 
-        auto n7 =  tree.promoteNode(n2, 0, 0, tree::NodeStatus::FAILED);
-        auto n8 =  tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH);
+        auto n7 =  tree.promoteNode(n2, 0, 0, tree::NodeStatus::FAILED, "7");
+        auto n8 =  tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH, "8");
 
-        auto n9 =  tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED);
-        auto n10 =  tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED);
+        auto n9 =  tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "9");
+        auto n10 =  tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "10");
 
-        auto n11 =  tree.promoteNode(n8, 0, 0, tree::NodeStatus::FAILED);
-        auto n12 =  tree.promoteNode(n8, 1, 0, tree::NodeStatus::FAILED);
+        auto n11 =  tree.promoteNode(n8, 0, 0, tree::NodeStatus::FAILED, "11");
+        auto n12 =  tree.promoteNode(n8, 1, 0, tree::NodeStatus::FAILED, "12");
     }
 
     void larger_nary_execution(Conductor& conductor) {
@@ -360,7 +360,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         // tree_building(c);
 
-        restart_tree(c);
+        // restart_tree(c);
 
     }
 

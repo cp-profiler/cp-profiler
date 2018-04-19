@@ -22,10 +22,13 @@ LayoutComputer::LayoutComputer(const NodeTree& tree, Layout& layout, const Visua
 
 }
 
+bool LayoutComputer::isDirty(NodeID nid) {
+    return m_layout.isDirty(nid);
+}
+
 void LayoutComputer::setDirty(NodeID nid) {
 
-    auto& tree_mutex = m_tree.treeMutex();
-    auto& layout_mutex = m_layout.getMutex();
+    utils::DebugMutexLocker lock(&m_layout.getMutex());
 
     m_layout.setDirty(nid, true);
 }
@@ -33,8 +36,10 @@ void LayoutComputer::setDirty(NodeID nid) {
 
 void LayoutComputer::dirtyUp(NodeID nid) {
 
-    auto& tree_mutex = m_tree.treeMutex();
-    auto& layout_mutex = m_layout.getMutex();
+    /// Is it necessary to have a tree mutex here?
+    utils::DebugMutexLocker layout_lock(&m_layout.getMutex());
+
+    // m_layout.growDataStructures(m_tree.nodeCount());
 
     while (nid != NodeID::NoNode && !m_layout.isDirty(nid)) {
         m_layout.setDirty(nid, true);
@@ -61,10 +66,13 @@ bool LayoutComputer::compute() {
     utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
     utils::DebugMutexLocker layout_lock(&m_layout.getMutex());
 
-    perfHelper.begin("layout");
+    /// ensure memory is allocated for every node's shape
+    m_layout.growDataStructures(m_tree.nodeCount());
+
+    // perfHelper.begin("layout");
     LayoutCursor lc(m_tree.getRoot(), m_tree, m_vis_flags, m_layout);
     PostorderNodeVisitor<LayoutCursor>(lc).run();
-    perfHelper.end();
+    // perfHelper.end();
 
     // perfHelper.begin("layout: actually compute");
 

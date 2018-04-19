@@ -89,7 +89,7 @@ public slots:
     void toggleHidden();
     void unhideNode(NodeID nid);
 
-    void hideFailedAt(NodeID nid);
+    void hideFailedAt(NodeID nid, bool onlyDirty = false);
 
     /// hide all failed descendants of the current node
     void hideFailed();

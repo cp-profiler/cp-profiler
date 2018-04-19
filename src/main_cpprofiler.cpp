@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
 
     conductor.show();
 
-    // cpprofiler::tests::execution::run(conductor);
+    cpprofiler::tests::execution::run(conductor);
 
     return app.exec();
 }

@@ -17,17 +17,22 @@ class Structure;
 class BoundingBox;
 class ShapeDeleter;
 
+using ShapeUniqPtr = std::unique_ptr<Shape, ShapeDeleter>;
+
 class Layout : public QObject {
 Q_OBJECT
 
     mutable utils::Mutex m_layout_mutex;
 
+    /// TODO: make sure this is always protected by a mutex
     std::vector<std::unique_ptr<Shape, ShapeDeleter>> m_shapes;
 
     /// Relative offset from the parent node along the x axis
     std::vector<double> m_child_offsets;
 
+    /// Indicates whether layout for the node and its children is done
     std::vector<bool> m_layout_done;
+
     std::vector<bool> m_dirty;
 
 public:

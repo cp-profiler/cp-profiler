@@ -6,6 +6,8 @@
 #include "utils/debug.hh"
 #include "execution.hh"
 
+#include "tree/node_tree.hh"
+
 #include <thread>
 
 namespace cpprofiler {
@@ -80,7 +82,7 @@ void TreeBuilder::handleNode(Message* node) {
     const auto kids = node->kids();
     const auto alt = node->alt();
     const auto status = static_cast<tree::NodeStatus>(node->status());
-    const auto& label = node->label();
+    const auto& label = node->has_label() ? node->label() : tree::emptyLabel;
 
     NodeID nid;
 
@@ -91,13 +93,13 @@ void TreeBuilder::handleNode(Message* node) {
 
             if (m_execution.doesRestarts()) {
                 tree.addExtraChild(NodeID{0});
-                nid = tree.promoteNode(NodeID{0}, n_uid.rid, kids, status);
+                nid = tree.promoteNode(NodeID{0}, n_uid.rid, kids, status, label);
             } else {
                 nid = tree.createRoot(kids);
             }
 
         } else {
-            nid = tree.promoteNode(pid, alt, kids, status);
+            nid = tree.promoteNode(pid, alt, kids, status, label);
         }
     }
 

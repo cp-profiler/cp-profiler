@@ -119,11 +119,11 @@ namespace cpprofiler { namespace tree {
 
         utils::DebugMutexLocker layout_locker(&m_layout.getMutex());
 
-        perfHelper.begin("tree drawing");
+        // perfHelper.begin("tree drawing");
 
         DrawingCursor dc(m_start_node, m_tree, m_layout, m_user_data, m_vis_flags, painter, start_pos, clip);
         PreorderNodeVisitor<DrawingCursor>(dc).run();
-        perfHelper.end();
+        // perfHelper.end();
 
     }
 

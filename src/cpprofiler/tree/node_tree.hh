@@ -49,12 +49,12 @@ public:
     }
 
     void subtract_undetermined(int n) {
-        m_undetermined = m_undetermined - n;
+        // m_undetermined = m_undetermined - n;
         emit stats_changed();
     }
 
     void add_undetermined(int n) {
-        m_undetermined = m_undetermined + n;
+        // m_undetermined = m_undetermined + n;
         emit stats_changed();
     }
 
@@ -84,9 +84,7 @@ signals:
 };
 
 using Label = std::string;
-
 static Label emptyLabel = {};
-
 
 /// Node tree encapsulates tree structure,
 /// node statistics (number of nodes etc.),

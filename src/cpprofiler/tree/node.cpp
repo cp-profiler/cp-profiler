@@ -64,7 +64,7 @@ namespace cpprofiler { namespace tree {
     }
 
     Node::Node(NodeID parent_nid, int kids) : m_parent(parent_nid) {
-        debug("node") << "    Node()\n";
+        // debug("node") << "    Node()\n";
         setTag(Tag::LEAF); /// initialize to be a leaf first
         setNumberOfChildren(kids);
     }

@@ -51,7 +51,6 @@ TraditionalView::TraditionalView(const NodeTree& tree)
     connect(this, &TraditionalView::needsRedrawing, this, &TraditionalView::redraw);
 
     connect(&tree, &NodeTree::childrenStructureChanged, [this](NodeID nid) {
-        // std::cerr << "dirty up thread:" << std::this_thread::get_id() << std::endl;
 
         if (nid == NodeID::NoNode) { return; }
 
@@ -69,7 +68,7 @@ TraditionalView::TraditionalView(const NodeTree& tree)
 
     connect(autoHideTimer, &QTimer::timeout, this, &TraditionalView::autoUpdate);
 
-    autoHideTimer->start(100);
+    autoHideTimer->start(30);
 
     qDebug() << "TraditionalView() finished";
 
@@ -241,12 +240,20 @@ void TraditionalView::toggleHidden() {
     emit needsRedrawing();
 }
 
-void TraditionalView::hideFailedAt(NodeID n) {
-    HideFailedCursor hfc(n, m_tree, *m_vis_flags, *m_layout_computer);
+void TraditionalView::hideFailedAt(NodeID n, bool onlyDirty) {
+    /// Do nothing if there is no tree
+    if (m_tree.nodeCount() == 0) return;
+
+    bool modified = false;
+
+    HideFailedCursor hfc(n, m_tree, *m_vis_flags, *m_layout_computer, onlyDirty, modified);
     PostorderNodeVisitor<HideFailedCursor>(hfc).run();
 
-    setLayoutOutdated();
-    emit needsRedrawing();
+    if (modified) {
+        setLayoutOutdated();
+        emit needsRedrawing();
+    }
+
 }
 
 void TraditionalView::hideFailed() {
@@ -259,11 +266,11 @@ void TraditionalView::hideFailed() {
 void TraditionalView::autoUpdate() {
 
     // {
-    //     perfHelper.begin("hide failed");
+    // //     perfHelper.begin("hide failed");
     //     utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
     //     auto root = m_tree.getRoot();
-    //     hideFailedAt(root);
-    //     perfHelper.end();
+    //     hideFailedAt(root, true);
+    // //     perfHelper.end();
     // }
 
     
@@ -303,6 +310,7 @@ void TraditionalView::unhideNode(NodeID nid) {
     auto hidden = m_vis_flags->get_hidden(nid);
     if (hidden) {
         m_vis_flags->set_hidden(nid, false);
+        m_layout->setLayoutDone(nid, false);
         dirtyUp(nid);
         setLayoutOutdated();
         emit needsRedrawing();
@@ -397,7 +405,9 @@ void TraditionalView::forceComputeLayout() {
 }
 
 void TraditionalView::computeLayout() {
-    qDebug() << "compute Layout";
+
+    static int counter = 0;
+    // debug("layout") << "compute Layout:" << ++counter;
     auto changed = m_layout_computer->compute();
     m_layout_stale = false;
     if (changed) {
@@ -406,7 +416,7 @@ void TraditionalView::computeLayout() {
 }
 
 void TraditionalView::setLayoutOutdated() {
-    debug("layout") << "set layout stale";
+    debug("layout") << "set layout stale\n";
     m_layout_stale = true;
 }
 

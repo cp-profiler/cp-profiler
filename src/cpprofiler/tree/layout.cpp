@@ -15,10 +15,6 @@ namespace cpprofiler { namespace tree {
     }
 
     void Layout::setShape(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape) {
-        if (m_shapes.size() <= nid) {
-            m_shapes.resize(static_cast<int>(nid)+1);
-        }
-
         m_shapes[nid] = std::move(shape);
     }
 
@@ -27,30 +23,20 @@ namespace cpprofiler { namespace tree {
     }
 
     void Layout::setChildOffset(NodeID nid, double offset) {
-
-        if (m_child_offsets.size() <= nid) {
-            m_child_offsets.resize(static_cast<int>(nid)+1);
-        }
-
         m_child_offsets[nid] = offset;
     }
 
 
     void Layout::setLayoutDone(NodeID nid, bool val) {
-
-        if (m_layout_done.size() <= nid) {
-            m_layout_done.resize(static_cast<int>(nid)+1);
+        if (nid < m_layout_done.size()) {
+            m_layout_done[nid] = val;
         }
-
-        m_layout_done[nid] = val;
     }
 
     bool Layout::getLayoutDone(NodeID nid) const {
-
-        if (m_layout_done.size() <= nid) {
+        if (nid >= m_layout_done.size()) {
             return false;
         }
-
         return m_layout_done.at(nid);
     }
 
@@ -60,10 +46,6 @@ namespace cpprofiler { namespace tree {
     Layout::~Layout() = default;
 
     double Layout::getOffset(NodeID nid) const {
-        if (m_child_offsets.size() <= nid) {
-            return 0;
-        }
-
         return m_child_offsets[nid];
     }
 
@@ -77,34 +59,26 @@ namespace cpprofiler { namespace tree {
     }
 
     void Layout::growDataStructures(int n_nodes) {
-        // utils::MutexLocker locker(&m_layout_mutex);
-        auto old_size = m_child_offsets.size();
-        m_child_offsets.resize(old_size + n_nodes);
+
+        if (n_nodes > m_shapes.size()) {
+            m_child_offsets.resize(n_nodes, 0);
+            m_shapes.resize(n_nodes); /// should new entires be initialized?
+            m_layout_done.resize(n_nodes, false);
+            m_dirty.resize(n_nodes, true);
+        }
     }
 
     bool Layout::isDirty(NodeID nid) const {
-
-        // qDebug() << "is Dirty";
-
-        // for (auto el : m_dirty) {
-        //     std::cerr << el << " ";
-        // }
-        // std::cerr << "\n";
-
-        if (m_dirty.size() <= nid) {
+        if (nid >= m_dirty.size()) {
             return true;
         }
-
         return m_dirty[nid];
     }
 
     void Layout::setDirty(NodeID nid, bool val) {
-
-        if (m_dirty.size() <= nid) {
-            m_dirty.resize(static_cast<int>(nid)+1, true);
+        if (nid < m_dirty.size()) {
+            m_dirty[nid] = val;
         }
-
-        m_dirty[nid] = val;
     }
 
 
