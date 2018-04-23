@@ -101,14 +101,13 @@ void TraditionalView::navDown() {
 
     utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
 
-    auto kids = m_tree.childrenCount(cur_nid);
+    const auto kids = m_tree.childrenCount(cur_nid);
 
-    if (kids > 0) {
-        auto first_kid = m_tree.getChild_safe(cur_nid, 0);
-        m_user_data->setSelectedNode(first_kid);
-        centerCurrentNode();
-    }
+    if (kids == 0 || m_vis_flags->get_hidden(cur_nid)) return;
 
+    auto first_kid = m_tree.getChild_safe(cur_nid, 0);
+    m_user_data->setSelectedNode(first_kid);
+    centerCurrentNode();
     emit needsRedrawing();
 }
 
