@@ -131,35 +131,39 @@ namespace cpprofiler { namespace tree {
         return result;
     }
 
-    static Extent calculateForSingleNode(NodeID nid, const NodeTree& nt, const VisualFlags& nf) {
+    static Extent calculateForSingleNode(NodeID nid, const NodeTree& nt, bool label_shown, bool hidden) {
 
         Extent result{-traditional::HALF_MAX_NODE_W, traditional::HALF_MAX_NODE_W};
         /// see if the node dispays labels and needs its (top) extents extended
-        if (nf.get_label_shown(nid)) {
 
-            /// TODO: use font metrics?
-            const auto& label = nt.getLabel(nid);
-            auto label_width = label.size() * 9;
+        if (hidden) {
+            result = {-traditional::HALF_COLLAPSED_WIDTH, traditional::HALF_COLLAPSED_WIDTH};
+        }
 
-            /// Note: this assumes that the default painter used for drawing text
-            // QPainter painter;
-            // auto fm = painter.fontMetrics();
-            // auto label_width = fm.width(label.c_str());
+        if (!label_shown) return result;
 
-            /// Note that labels are shown on the left for all alt
-            /// except the last one (right-most)
-            bool draw_left = nt.isRightMostChild(nid) ? false : true;
+        /// TODO: use font metrics?
+        const auto& label = nt.getLabel(nid);
+        auto label_width = label.size() * 9;
 
-            if (draw_left) {
-                result.l -= label_width;
-            } else {
-                result.r += label_width;
-            }
+        /// Note: this assumes that the default painter used for drawing text
+        // QPainter painter;
+        // auto fm = painter.fontMetrics();
+        // auto label_width = fm.width(label.c_str());
+
+        /// Note that labels are shown on the left for all alt
+        /// except the last one (right-most)
+        bool draw_left = nt.isRightMostChild(nid) ? false : true;
+
+        if (draw_left) {
+            result.l -= label_width;
+        } else {
+            result.r += label_width;
         }
         return result;
     }
 
-    static inline void computeForNodeBinary(NodeID nid, Layout& layout, const NodeTree& nt, const VisualFlags& nf) {
+    static inline void computeForNodeBinary(NodeID nid, Layout& layout, const NodeTree& nt, bool label_shown) {
 
         auto kid_l = nt.getChild(nid, 0);
         auto kid_r = nt.getChild(nid, 1);
@@ -169,7 +173,8 @@ namespace cpprofiler { namespace tree {
 
         std::vector<int> offsets(2);
         auto combined = combine_shapes(s1, s2, offsets);
-        (*combined)[0] = calculateForSingleNode(nid, nt, nf);
+
+        (*combined)[0] = calculateForSingleNode(nid, nt, label_shown, false);
 
         /// Extents for root node changed -> check if bounding box is correct
         const auto& bb = combined->boundingBox();
@@ -271,27 +276,38 @@ namespace cpprofiler { namespace tree {
     /// Computes layout for nid (shape, bounding box, offsets for its children)
     void LayoutCursor::computeForNode(NodeID nid) {
 
+        const bool hidden = m_vis_flags.get_hidden(nid);
+        const bool label_shown = m_vis_flags.get_label_shown(nid);
+
         /// Check if the node is hidden:
-        if (m_vis_flags.get_hidden(nid)) {
-            m_layout.setShape(nid, ShapeUniqPtr(&Shape::hidden));
+        if (hidden) {
+
+            if (!label_shown) {
+                m_layout.setShape(nid, ShapeUniqPtr(&Shape::hidden));
+            } else {
+
+                auto shape = ShapeUniqPtr{new Shape{2}};
+                (*shape)[0] = calculateForSingleNode(nid, m_nt, label_shown, true);
+                (*shape)[1] = (*shape)[0];
+                shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
+                m_layout.setShape(nid, std::move(shape));
+            }
+
+
         } else {
             auto nkids = m_tree.childrenCount(nid);
 
             if (nkids == 0) {
-
                 if (!m_vis_flags.get_label_shown(nid)) {
                     m_layout.setShape(nid, ShapeUniqPtr(&Shape::leaf));
                 } else {
-                    /// TODO
                     auto shape = ShapeUniqPtr{new Shape{1}};
-                    (*shape)[0] = calculateForSingleNode(nid, m_nt, m_vis_flags);
+                    (*shape)[0] = calculateForSingleNode(nid, m_nt, label_shown, false);
 
                     shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
                     m_layout.setShape(nid, std::move(shape));
                 }
-            }
-
-            if (nkids == 1) {
+            } else if (nkids == 1) {
                 
                 const auto kid = m_tree.getChild(nid, 0);
                 const auto& kid_s = m_layout.getShape(kid);
@@ -307,13 +323,9 @@ namespace cpprofiler { namespace tree {
                 shape->setBoundingBox(kid_s.boundingBox());
 
                 m_layout.setShape(nid, std::move(shape));
-            }
-
-            if (nkids == 2) {
-                computeForNodeBinary(nid, m_layout, m_nt, m_vis_flags);
-            }
-
-            if (nkids > 2) {
+            } else if (nkids == 2) {
+                computeForNodeBinary(nid, m_layout, m_nt, label_shown);
+            } else if (nkids > 2) {
                 computeForNodeNary(nid, nkids, m_layout, m_tree);
             }
         }
