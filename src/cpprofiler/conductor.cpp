@@ -26,9 +26,11 @@
 
 #include <QProgressDialog>
 
+#include "name_map.hh"
+
 namespace cpprofiler {
 
-    Conductor::Conductor() {
+    Conductor::Conductor(Options opt) : m_options(opt) {
 
         setWindowTitle("CP-Profiler");
 
@@ -100,6 +102,10 @@ namespace cpprofiler {
 
             /// needs a new execution
             auto ex = addNewExecution(ex_name, ex_id, restarts);
+
+            /// construct a name map
+            auto name_map = std::make_shared<NameMap>(m_options.paths, m_options.mzn);
+            ex->setNameMap(name_map);
 
             /// The builder should only be created for a new execution
             auto builderThread = new QThread();

@@ -1,10 +1,12 @@
 
 #include "execution.hh"
+#include "name_map.hh"
 #include "user_data.hh"
 #include "tree/node_tree.hh"
 #include "utils/debug.hh"
 
 #include <iostream>
+
 
 namespace cpprofiler {
 
@@ -30,6 +32,11 @@ namespace cpprofiler {
 
     Execution::~Execution() {
         debug("memory") << "~Execution()\n";
+    }
+
+    void Execution::setNameMap(std::shared_ptr<const NameMap> nm) {
+        name_map_ = nm;
+        m_tree->setNameMap(nm);
     }
 
     const SolverData& Execution::solver_data() const {

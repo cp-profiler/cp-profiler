@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "settings.hh"
+#include "options.hh"
 
 namespace cpprofiler {
 
@@ -23,7 +24,7 @@ Q_OBJECT
 
 public:
 
-    Conductor();
+    Conductor(Options opt);
 
     ~Conductor();
 
@@ -54,6 +55,8 @@ private:
 
     std::unique_ptr<TcpServer> m_server;
     // std::vector<std::shared_ptr<Execution>> m_executions;
+
+    Options m_options;
 
     /// a map from execution id to an execution
     std::unordered_map<int, std::shared_ptr<Execution>> m_executions;

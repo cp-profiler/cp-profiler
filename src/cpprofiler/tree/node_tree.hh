@@ -8,6 +8,10 @@
 #include "node_id.hh"
 #include "node.hh"
 
+namespace cpprofiler {
+    class NameMap;
+}
+
 namespace cpprofiler { namespace tree {
 
 class Structure;
@@ -93,11 +97,9 @@ class NodeTree : public QObject {
 Q_OBJECT
     std::unique_ptr<Structure> m_structure;
 
-
-    /// How do I make sure that this is syncronised with the number of nodes?
-    /// (using NodeTree::addEntry method)
-
     std::unique_ptr<NodeInfo> m_node_info;
+
+    std::shared_ptr<const NameMap> name_map_;
 
     std::vector<Label> m_labels;
 
@@ -129,6 +131,8 @@ public:
     const NodeStats& node_stats() const;
 
     utils::Mutex& treeMutex() const;
+
+    void setNameMap(std::shared_ptr<const NameMap> nm);
 
     /// *************************** Tree Modifiers ***************************
 
@@ -191,7 +195,7 @@ public:
     /// return the depth of the node
     int calculateDepth_safe(NodeID nid) const;
 
-    const Label& getLabel(NodeID nid) const;
+    const Label getLabel(NodeID nid) const;
 
     bool hasSolvedChildren(NodeID nid) const;
 

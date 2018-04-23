@@ -2,6 +2,7 @@
 
 #include "structure.hh"
 #include "node_info.hh"
+#include "../name_map.hh"
 #include <QDebug>
 #include <cassert>
 
@@ -13,6 +14,10 @@ NodeTree::NodeTree() : m_structure{new Structure()}, m_node_info(new NodeInfo) {
 }
 
 NodeTree::~NodeTree() = default;
+
+void NodeTree::setNameMap(std::shared_ptr<const NameMap> nm) {
+    name_map_ = nm;
+}
 
 void NodeTree::addEntry(NodeID nid) {
     m_node_info->addEntry(nid);
@@ -253,8 +258,12 @@ void NodeTree::setHasOpenChildren(NodeID nid, bool val) {
     m_node_info->setHasOpenChildren(nid, val);
 }
 
-const Label& NodeTree::getLabel(NodeID nid) const {
-    return m_labels.at(nid);
+const Label NodeTree::getLabel(NodeID nid) const {
+    auto& orig = m_labels.at(nid);
+    if (name_map_) {
+        return name_map_->replaceNames(orig);
+    }
+    return orig;
 }
 
 bool NodeTree::hasSolvedChildren(NodeID nid) const {

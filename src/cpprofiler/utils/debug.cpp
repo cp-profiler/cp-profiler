@@ -21,9 +21,9 @@ std::ostream& debug(std::string type) {
     }
 }
 
-// std::ostream& no_debug() {
-    // return oss;
-// }
+std::ostream& operator<<(std::ostream& os, const QString& str) {
+    return os << str.toStdString();
+}
 
 
 

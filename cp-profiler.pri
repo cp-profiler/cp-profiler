@@ -1,5 +1,7 @@
 SOURCES += \
     $$PWD/src/main_cpprofiler.cpp \
+    $$PWD/src/cpprofiler/command_line_parser.cpp \
+    $$PWD/src/cpprofiler/name_map.cpp \
     $$PWD/src/cpprofiler/conductor.cpp \
     $$PWD/src/cpprofiler/tcp_server.cpp \
     $$PWD/src/cpprofiler/receiver_thread.cpp \
@@ -10,6 +12,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/execution_list.cpp \
     $$PWD/src/cpprofiler/execution_window.cpp \
     $$PWD/src/cpprofiler/utils/utils.cpp \
+    $$PWD/src/cpprofiler/utils/string_utils.cpp \
     $$PWD/src/cpprofiler/utils/tree_utils.cpp \
     $$PWD/src/cpprofiler/utils/perf_helper.cpp \
     $$PWD/src/cpprofiler/utils/array.cpp \
@@ -40,6 +43,9 @@ SOURCES += \
 
 HEADERS += \
     $$PWD/src/cpprofiler/config.hh \
+    $$PWD/src/cpprofiler/options.hh \
+    $$PWD/src/cpprofiler/command_line_parser.hh \
+    $$PWD/src/cpprofiler/name_map.hh \
     $$PWD/src/cpprofiler/settings.hh \
     $$PWD/src/cpprofiler/conductor.hh \
     $$PWD/src/cpprofiler/tcp_server.hh \
@@ -51,6 +57,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/execution_list.hh \
     $$PWD/src/cpprofiler/execution_window.hh \
     $$PWD/src/cpprofiler/utils/utils.hh \
+    $$PWD/src/cpprofiler/utils/string_utils.hh \
     $$PWD/src/cpprofiler/utils/tree_utils.hh \
     $$PWD/src/cpprofiler/utils/perf_helper.hh \
     $$PWD/src/cpprofiler/utils/array.hh \

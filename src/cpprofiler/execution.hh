@@ -44,6 +44,7 @@ namespace std
 
 namespace cpprofiler {
 
+class NameMap;
 
 class IdMap {
 
@@ -84,6 +85,8 @@ class Execution {
     /// UID to NodeID map and labels (needs mutex protection?)
     SolverData m_solver_data;
 
+    std::shared_ptr<const NameMap> name_map_;
+
     /// Whether the execution contains restarts
     bool m_is_restarts;
 
@@ -92,6 +95,8 @@ public:
 
     Execution(const std::string& name, bool restarts = false);
     ~Execution();
+
+    void setNameMap(std::shared_ptr<const NameMap> nm);
 
     SolverData& solver_data();
     const SolverData& solver_data() const;
