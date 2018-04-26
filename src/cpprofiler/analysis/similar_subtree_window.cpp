@@ -18,6 +18,7 @@
 #include "../tree/structure.hh"
 #include "../tree/layout.hh"
 #include "../tree/node_tree.hh"
+#include "../utils/tree_utils.hh"
 
 #include "subtree_pattern.hh"
 #include "../tree/subtree_view.hh"
@@ -129,7 +130,7 @@ static std::vector<SubtreePattern> runSimilarShapes(const NodeTree& tree, const 
 
     std::multiset<ShapeInfo, CompareShapes> shape_set;
 
-    auto node_order = helper::postOrder(tree.tree_structure());
+    auto node_order = utils::postOrder(tree);
 
     for (auto nid : node_order) {
         shape_set.insert({nid, lo.getShape(nid)});
@@ -223,7 +224,7 @@ static Partition initialPartition(const NodeTree& nt) {
     Group solution_nodes;
     Group branch_nodes;
     {
-        auto nodes = helper::anyOrder(nt.tree_structure());
+        auto nodes = utils::anyOrder(nt);
 
         for (auto nid : nodes) {
             auto status = nt.getStatus(nid);
@@ -325,12 +326,9 @@ static void partition_step(const NodeTree& nt, Partition& p, int h, std::vector<
                     /// Mark the parent of nid to separate
                     auto pid = nt.getParent_safe(nid);
                     marked.push_back(pid);
-
-                    qDebug() << "mark" << pid;
                 }
             }
 
-            qDebug() << "--- separate ---";
             /// separate marked nodes from their groups
             p.remaining = separate_marked(p.remaining, marked);
         }

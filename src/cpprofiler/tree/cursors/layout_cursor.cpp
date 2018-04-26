@@ -20,7 +20,7 @@
 namespace cpprofiler { namespace tree {
 
     LayoutCursor::LayoutCursor(NodeID start, const NodeTree& tree, const VisualFlags& nf, Layout& lo)
-        : NodeCursor(start, tree), m_layout(lo), m_nt(tree), m_tree(tree.tree_structure()), m_vis_flags(nf) {}
+        : NodeCursor(start, tree), m_layout(lo), tree_(tree), m_vis_flags(nf) {}
 
     bool LayoutCursor::mayMoveDownwards() {
         return NodeCursor::mayMoveDownwards() &&
@@ -191,7 +191,7 @@ namespace cpprofiler { namespace tree {
         layout.setChildOffset(kid_r, offsets[1]);
     }
 
-    static inline void computeForNodeNary(NodeID nid, int nkids, Layout& layout, const Structure& tree) {
+    static inline void computeForNodeNary(NodeID nid, int nkids, Layout& layout, const NodeTree& tree) {
 
         /// calculate all distances
         std::vector<int> distances(nkids - 1);
@@ -287,7 +287,7 @@ namespace cpprofiler { namespace tree {
             } else {
 
                 auto shape = ShapeUniqPtr{new Shape{2}};
-                (*shape)[0] = calculateForSingleNode(nid, m_nt, label_shown, true);
+                (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, true);
                 (*shape)[1] = (*shape)[0];
                 shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
                 m_layout.setShape(nid, std::move(shape));
@@ -295,21 +295,21 @@ namespace cpprofiler { namespace tree {
 
 
         } else {
-            auto nkids = m_tree.childrenCount(nid);
+            auto nkids = tree_.childrenCount(nid);
 
             if (nkids == 0) {
                 if (!m_vis_flags.get_label_shown(nid)) {
                     m_layout.setShape(nid, ShapeUniqPtr(&Shape::leaf));
                 } else {
                     auto shape = ShapeUniqPtr{new Shape{1}};
-                    (*shape)[0] = calculateForSingleNode(nid, m_nt, label_shown, false);
+                    (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, false);
 
                     shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
                     m_layout.setShape(nid, std::move(shape));
                 }
             } else if (nkids == 1) {
                 
-                const auto kid = m_tree.getChild(nid, 0);
+                const auto kid = tree_.getChild(nid, 0);
                 const auto& kid_s = m_layout.getShape(kid);
 
                 auto shape = ShapeUniqPtr(new Shape(kid_s.depth() + 1));
@@ -324,9 +324,9 @@ namespace cpprofiler { namespace tree {
 
                 m_layout.setShape(nid, std::move(shape));
             } else if (nkids == 2) {
-                computeForNodeBinary(nid, m_layout, m_nt, label_shown);
+                computeForNodeBinary(nid, m_layout, tree_, label_shown);
             } else if (nkids > 2) {
-                computeForNodeNary(nid, nkids, m_layout, m_tree);
+                computeForNodeNary(nid, nkids, m_layout, tree_);
             }
         }
 

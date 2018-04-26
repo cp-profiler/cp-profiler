@@ -71,16 +71,4 @@ public:
 }}
 
 
-namespace cpprofiler { namespace tree { namespace helper {
-
-std::vector<NodeID> postOrder(const Structure& tree);
-
-std::vector<NodeID> preOrder(const Structure& tree);
-
-std::vector<NodeID> anyOrder(const Structure& tree);
-
-
-}}}
-
-
 #endif

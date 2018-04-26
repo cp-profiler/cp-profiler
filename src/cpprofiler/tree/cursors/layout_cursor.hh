@@ -13,8 +13,7 @@ namespace cpprofiler { namespace tree {
 class LayoutCursor : public NodeCursor {
 
     Layout& m_layout;
-    const NodeTree& m_nt;
-    const Structure& m_tree;
+    const NodeTree& tree_;
     const VisualFlags& m_vis_flags;
     /// painter used for dispaying text (labels)
     const QPainter* m_painter = nullptr;

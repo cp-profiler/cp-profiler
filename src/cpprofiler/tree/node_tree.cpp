@@ -24,14 +24,6 @@ void NodeTree::addEntry(NodeID nid) {
     m_labels.push_back({});
 }
 
-const Structure& NodeTree::tree_structure() const {
-    return *m_structure;
-}
-
-Structure& NodeTree::tree_structure() {
-    return *m_structure;
-}
-
 const NodeInfo& NodeTree::node_info() const {
     return *m_node_info;
 }

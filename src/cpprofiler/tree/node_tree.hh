@@ -122,15 +122,12 @@ public:
     NodeTree();
     ~NodeTree();
 
-    const tree::Structure& tree_structure() const;
-    tree::Structure& tree_structure();
-
     const NodeInfo& node_info() const;
     NodeInfo& node_info();
 
     const NodeStats& node_stats() const;
 
-    utils::Mutex& treeMutex() const;
+    cpprofiler::utils::Mutex& treeMutex() const;
 
     void setNameMap(std::shared_ptr<const NameMap> nm);
 

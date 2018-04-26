@@ -346,7 +346,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     void run(Conductor& c) {
 
-        // binary_test_1_for_identical_subtrees(c);
+        binary_test_1_for_identical_subtrees(c);
         // binary_test_2_for_identical_subtrees(c);
         // binary_tree_execution(c);
         // simple_nary_execution(c);
