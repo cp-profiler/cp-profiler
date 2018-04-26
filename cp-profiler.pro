@@ -6,6 +6,6 @@ QT += widgets network
 
 CONFIG += c++11
 
-SOURCES += main_cpprofiler.cpp
+SOURCES += $$PWD/src/main_cpprofiler.cpp
 
 include(cp-profiler.pri)
