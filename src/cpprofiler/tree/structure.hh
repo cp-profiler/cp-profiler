@@ -54,7 +54,6 @@ public:
     int nodeCount() const;
 
     int calculateDepth(NodeID nid) const;
-    int calculateDepth_safe(NodeID nid) const;
 
     int nodeCount_safe() const;
 

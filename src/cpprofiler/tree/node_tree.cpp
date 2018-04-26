@@ -216,8 +216,8 @@ int NodeTree::depth() const {
     m_node_stats.max_depth();
 }
 
-int NodeTree::calculateDepth_safe(NodeID nid) const {
-    return m_structure->calculateDepth_safe(nid);
+int NodeTree::calculateDepth(NodeID nid) const {
+    return m_structure->calculateDepth(nid);
 }
 
 int NodeTree::getAlternative_safe(NodeID nid) const {

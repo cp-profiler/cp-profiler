@@ -193,7 +193,7 @@ public:
     bool isLeaf(NodeID) const;
 
     /// return the depth of the node
-    int calculateDepth_safe(NodeID nid) const;
+    int calculateDepth(NodeID nid) const;
 
     const Label getLabel(NodeID nid) const;
 

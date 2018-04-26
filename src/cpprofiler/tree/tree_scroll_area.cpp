@@ -240,11 +240,16 @@ namespace cpprofiler { namespace tree {
             debug("memory") << "TreeScrollArea()";
     }
 
-    void TreeScrollArea::centerX(int x) {
-        auto viewport_size = viewport()->size();
-        auto h_page_step = viewport_size.width() / m_options.scale;
-        auto value = std::max(0, static_cast<int>(x - h_page_step/2));
-        horizontalScrollBar()->setValue(value);
+    void TreeScrollArea::centerPoint(int x, int y) {
+        const auto viewport_size = viewport()->size();
+        const auto h_page_step = viewport_size.width() / m_options.scale;
+        const auto v_page_step = viewport_size.height() / m_options.scale;
+
+        const auto value_x = std::max(0, static_cast<int>(x - h_page_step/2));
+        horizontalScrollBar()->setValue(value_x);
+
+        const auto value_y = std::max(0, static_cast<int>(y - v_page_step/2));
+        verticalScrollBar()->setValue(value_y);
     }
 
     void TreeScrollArea::changeStartNode(NodeID nid) {

@@ -126,11 +126,6 @@ namespace cpprofiler { namespace tree {
         return m_nodes.size();
     }
 
-    int Structure::calculateDepth_safe(NodeID nid) const {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return calculateDepth(nid);
-    }
-
     int Structure::calculateDepth(NodeID nid) const {
         int depth = 0;
         while (nid != NodeID::NoNode) {

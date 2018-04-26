@@ -376,17 +376,20 @@ static int global_node_x_offset(const NodeTree& tree, const Layout& layout, Node
     return x_off;
 }
 
-
+/// Does this need any locking?
 void TraditionalView::centerNode(NodeID nid) {
 
-    auto x_offset = global_node_x_offset(m_tree, *m_layout, nid);
+    const auto x_offset = global_node_x_offset(m_tree, *m_layout, nid);
 
-    auto root_nid = m_tree.getRoot_safe();
-    auto bb = m_layout->getBoundingBox(root_nid);
+    const auto root_nid = m_tree.getRoot_safe();
+    const auto bb = m_layout->getBoundingBox(root_nid);
 
-    auto value = x_offset - bb.left;
+    const auto value_x = x_offset - bb.left;
 
-    m_scroll_area->centerX(value);
+    const auto depth = m_tree.calculateDepth(nid);
+    const auto value_y = depth * layout::dist_y;
+
+    m_scroll_area->centerPoint(value_x, value_y);
 }
 
 void TraditionalView::centerCurrentNode() {

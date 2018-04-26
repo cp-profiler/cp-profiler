@@ -53,7 +53,7 @@ public:
                    const VisualFlags&);
 
     /// center the x coordinate
-    void centerX(int x);
+    void centerPoint(int x, int y);
 
     void setScale(int val);
 
