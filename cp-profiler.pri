@@ -1,5 +1,4 @@
 SOURCES += \
-    $$PWD/src/main_cpprofiler.cpp \
     $$PWD/src/cpprofiler/command_line_parser.cpp \
     $$PWD/src/cpprofiler/name_map.cpp \
     $$PWD/src/cpprofiler/conductor.cpp \

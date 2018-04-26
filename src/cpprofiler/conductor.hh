@@ -18,6 +18,15 @@ class ExecutionList;
 class ExecutionWindow;
 class ReceiverThread;
 class TreeBuilder;
+class NameMap;
+
+using ExecID = int;
+
+struct ExecMeta {
+    std::string group_name;
+    std::string ex_name;
+    std::shared_ptr<NameMap> name_map;
+};
 
 class Conductor : public QMainWindow {
 Q_OBJECT
@@ -38,6 +47,13 @@ public:
 
     ExecutionWindow& getExecutionWindow(Execution* e);
 
+    int getListenPort() const;
+
+    int getNextExecId() const;
+
+    void setMetaData(int exec_id, const std::string& group_name,
+                    const std::string& execution_name,
+                    std::shared_ptr<NameMap> nm);
 
 signals:
 
@@ -53,6 +69,9 @@ private:
 
     Settings m_settings;
 
+    /// Port number opened for solvers to connect to
+    quint16 listen_port_;
+
     std::unique_ptr<TcpServer> m_server;
     // std::vector<std::shared_ptr<Execution>> m_executions;
 
@@ -65,6 +84,8 @@ private:
     std::unordered_map<int, TreeBuilder*> m_builders;
 
     std::unique_ptr<ExecutionList> m_execution_list;
+
+    std::unordered_map<ExecID, ExecMeta> exec_meta_;
 
     std::unordered_map<const Execution*,
         std::unique_ptr<ExecutionWindow>> m_execution_windows;

@@ -21,8 +21,9 @@ namespace cpprofiler {
     static vector<string> read_file_by_lines(const string& file) {
         std::ifstream model_file(file, std::ifstream::in);
 
+        /// Come back here next time
         if (!model_file.is_open()) {
-          debug("force") << "ERR: cannot open " << file << std::endl;
+          debug("force") << "ERR: cannot open model file " << file << std::endl;
           return {};
         }
 
@@ -204,44 +205,48 @@ namespace cpprofiler {
 
     }
 
-    NameMap::NameMap(const string& path_filename, const string& model_filename) {
+    NameMap::NameMap() {
 
+    }
+
+    bool NameMap::initialize(const std::string& path_filename, const std::string& model_filename) {
       vector<string> model_lines = read_file_by_lines(model_filename);
       vector<string> paths_lines = read_file_by_lines(path_filename);
 
-      if (model_lines.size() == 0 || paths_lines.size() == 0) return;
+      if (model_lines.size() == 0 || paths_lines.size() == 0) return false;
 
       try {
 
-      for (auto& line : paths_lines) {
-        const auto parts = utils::split(line, '\t');
+        for (auto& line : paths_lines) {
+          const auto parts = utils::split(line, '\t');
 
-        const auto id = parts.at(0);
-        const auto nice_name = parts.at(1);
-        const auto path = parts.at(2);
-        const auto loc = getLocation(parts.at(2));
+          const auto id = parts.at(0);
+          const auto nice_name = parts.at(1);
+          const auto path = parts.at(2);
+          const auto loc = getLocation(parts.at(2));
 
-        id_map_.insert({ id, SymbolRecord(nice_name, path, loc.first) });
+          id_map_.insert({ id, SymbolRecord(nice_name, path, loc.first) });
 
-        const auto is_final = loc.second;
+          const auto is_final = loc.second;
 
-        /// TODO: handle complex expressions
+          /// TODO: handle complex expressions
 
-        // // if a nice name is not actually nice
-        // if (nice_name.substr(0, 12) == "X_INTRODUCED") {
-        //   /// example: X_INTRODUCED_16_ should become ...
-        //   addIdExpressionToMap(model_lines, parts.at(0));
-        // } else {
-        //   // addDecompIdExpressionToMap(s[0], modelText);
-        // }
+          // // if a nice name is not actually nice
+          // if (nice_name.substr(0, 12) == "X_INTRODUCED") {
+          //   /// example: X_INTRODUCED_16_ should become ...
+          //   addIdExpressionToMap(model_lines, parts.at(0));
+          // } else {
+          //   // addDecompIdExpressionToMap(s[0], modelText);
+          // }
 
-      }
+        }
+
+        return true;
 
       } catch (std::exception& e) {
         qDebug() << "ERR: invalid name map";
+        return false;
       }
-
-
     }
 
     const NiceName& NameMap::getNiceName(const std::string& ident) const {

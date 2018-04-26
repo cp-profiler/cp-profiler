@@ -10,7 +10,7 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include "cpp-integration/message.hpp"
+#include "../cpp-integration/message.hpp"
 
 #include "execution.hh"
 #include "tree_builder.hh"
@@ -75,18 +75,49 @@ namespace cpprofiler {
 
         }));
 
-        quint16 listen_port = DEFAULT_PORT;
+        listen_port_ = DEFAULT_PORT;
 
         // See if the default port is available
-        auto res = m_server->listen(QHostAddress::Any, listen_port);
+        auto res = m_server->listen(QHostAddress::Any, listen_port_);
         if (!res) {
             // If not, try any port
             m_server->listen(QHostAddress::Any, 0);
-            listen_port = m_server->serverPort();
+            listen_port_ = m_server->serverPort();
         }
 
-        std::cerr << "Ready to listen on: " << listen_port << std::endl;
+        std::cerr << "Ready to listen on: " << listen_port_ << std::endl;
 
+    }
+
+    static int getRandomExID() {
+        std::mt19937 rng;
+        rng.seed(std::random_device()());
+        std::uniform_int_distribution<std::mt19937::result_type> dist(100);
+
+        return dist(rng);
+    }
+
+    int Conductor::getNextExecId() const {
+        int eid=0;
+        while(m_executions.find(eid) != m_executions.end()) {
+            eid++;
+        }
+        return eid;
+    }
+
+    void Conductor::setMetaData(int exec_id, const std::string& group_name,
+                    const std::string& exec_name,
+                    std::shared_ptr<NameMap> nm)
+    {
+        exec_meta_.insert({exec_id, {group_name, exec_name, nm}});
+
+        debug("force") << "exec_id:" << exec_id << std::endl;
+        debug("force") << "gr_name:" << group_name << std::endl;
+        debug("force") << "ex_name:" << exec_name << std::endl;
+    }
+
+    int Conductor::getListenPort() const {
+        return static_cast<int>(listen_port_);
     }
 
     Conductor::~Conductor(){
@@ -100,12 +131,29 @@ namespace cpprofiler {
 
         if (res == m_executions.end() || ex_id == 0) {
 
+            /// Note: metadata from MiniZinc IDE overrides that provided by the solver
+            std::string ex_name_used = ex_name;
+
+            const bool ide_used = (exec_meta_.find(ex_id) != exec_meta_.end());
+
+            if (ide_used) {
+                debug("force") << "already know metadata for this ex_id!\n";
+                ex_name_used = exec_meta_[ex_id].ex_name;
+            }
+
             /// needs a new execution
-            auto ex = addNewExecution(ex_name, ex_id, restarts);
+            auto ex = addNewExecution(ex_name_used, ex_id, restarts);
 
             /// construct a name map
-            auto name_map = std::make_shared<NameMap>(m_options.paths, m_options.mzn);
-            ex->setNameMap(name_map);
+            if (ide_used) {
+                ex->setNameMap(exec_meta_[ex_id].name_map);
+            } else if (m_options.paths != "" && m_options.mzn != "") {
+                auto nm = std::make_shared<NameMap>();
+                auto success = nm->initialize(m_options.paths, m_options.mzn);
+                if (success) {
+                    ex->setNameMap(nm);
+                }
+            }
 
             /// The builder should only be created for a new execution
             auto builderThread = new QThread();
@@ -130,14 +178,6 @@ namespace cpprofiler {
             builder, &TreeBuilder::finishBuilding);
 
 
-    }
-
-    static int getRandomExID() {
-        std::mt19937 rng;
-        rng.seed(std::random_device()());
-        std::uniform_int_distribution<std::mt19937::result_type> dist(100);
-
-        return dist(rng);
     }
 
     Execution* Conductor::addNewExecution(const std::string& ex_name, int ex_id, bool restarts) {

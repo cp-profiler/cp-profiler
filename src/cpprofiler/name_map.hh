@@ -57,7 +57,11 @@ public:
     static constexpr char minor_sep = '|';
     static constexpr char major_sep = ';';
 
-    NameMap(const std::string& path_filename, const std::string& model_filename);
+    NameMap();
+
+    /// Read paths and the model files to construct name mapping;
+    /// Returns `true` if successful -- `false` otherwise
+    bool initialize(const std::string& path_filename, const std::string& model_filename);
 
     std::string replaceNames(const std::string& text, bool expand = false) const;
 

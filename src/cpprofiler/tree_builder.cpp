@@ -1,6 +1,6 @@
 #include "tree_builder.hh"
 
-#include "cpp-integration/message.hpp"
+#include "../cpp-integration/message.hpp"
 
 #include "utils/perf_helper.hh"
 #include "utils/debug.hh"

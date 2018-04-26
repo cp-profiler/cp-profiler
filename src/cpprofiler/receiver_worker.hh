@@ -4,7 +4,7 @@
 #include <QObject>
 #include <memory>
 
-#include "cpp-integration/message.hpp"
+#include "../cpp-integration/message.hpp"
 
 class QTcpSocket;
 
