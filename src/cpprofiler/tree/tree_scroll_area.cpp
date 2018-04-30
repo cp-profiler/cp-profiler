@@ -54,14 +54,15 @@ namespace cpprofiler { namespace tree {
 
         painter.scale(m_options.scale,m_options.scale);
 
-        auto root_nid = m_tree.getRoot_safe();
+        // auto root_nid = m_tree.getRoot_safe();
 
-        if (!m_layout.getLayoutDone(root_nid)) { return; }
+        if (!m_layout.getLayoutDone(m_start_node)) { return; }
 
-        auto bb = m_layout.getBoundingBox(root_nid);
+        auto bb = m_layout.getBoundingBox(m_start_node);
 
         auto tree_width = bb.right - bb.left;
-        auto tree_height = m_layout.getDepth(root_nid) * layout::dist_y;
+
+        auto tree_height = m_layout.getDepth(m_start_node) * layout::dist_y;
 
         auto viewport_size = viewport()->size();
 

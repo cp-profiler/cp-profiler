@@ -37,7 +37,8 @@ private:
 
     std::unique_ptr<tree::SubtreeView> m_subtree_view;
 
-    SimilarityType m_sim_type = SimilarityType::SUBTREE;
+    // SimilarityType m_sim_type = SimilarityType::SUBTREE;
+    SimilarityType m_sim_type = SimilarityType::SHAPE;
 
 public:
     SimilarSubtreeWindow(QWidget* parent, const tree::NodeTree& nt, const tree::Layout& lo);

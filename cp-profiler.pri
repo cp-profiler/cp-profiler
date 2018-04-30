@@ -38,6 +38,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/analysis/merging/pentagon_rect.cpp \
     $$PWD/src/cpprofiler/analysis/tree_merger.cpp \
     $$PWD/src/cpprofiler/analysis/histogram_scene.cpp \
+    $$PWD/src/cpprofiler/analysis/pattern_rect.cpp \
     $$PWD/src/cpprofiler/tree/node_drawing.cpp \
 
 HEADERS += \
@@ -87,6 +88,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/analysis/tree_merger.hh \
     $$PWD/src/cpprofiler/analysis/subtree_pattern.hh \
     $$PWD/src/cpprofiler/analysis/histogram_scene.hh \
+    $$PWD/src/cpprofiler/analysis/pattern_rect.hh \
     $$PWD/src/cpprofiler/analysis/merging/pentagon_list_widget.hh \
     $$PWD/src/cpprofiler/analysis/merging/merge_result.hh \
     $$PWD/src/cpprofiler/analysis/merging/pentagon_rect.hh \

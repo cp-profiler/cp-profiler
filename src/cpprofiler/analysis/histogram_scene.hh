@@ -2,6 +2,7 @@
 #define CPPROFILER_ANALYSES_HISTOGRAM_SCENE
 
 #include <memory>
+#include <unordered_map>
 #include <QGraphicsScene>
 #include <QGraphicsSimpleTextItem>
 
@@ -13,9 +14,10 @@ namespace cpprofiler { namespace analysis {
 static constexpr int SHAPE_RECT_HEIGHT = 16;
 static constexpr int NUMBER_WIDTH = 50;
 static constexpr int COLUMN_WIDTH = NUMBER_WIDTH + 10;
-static constexpr int ROW_HEIGHT = SHAPE_RECT_HEIGHT + 2;
 
-static constexpr int SELECTION_WIDTH = 500;
+/// vertical distance between two shape rectangles
+static constexpr int V_DISTANCE = 2;
+static constexpr int ROW_HEIGHT = SHAPE_RECT_HEIGHT + V_DISTANCE;
 
 enum class Align {
   CENTER,
@@ -48,6 +50,9 @@ static void addText(QGraphicsScene& scene, int col, int row,
 
 class PatternRect;
 
+using PatternRectPtr = std::shared_ptr<PatternRect>;
+using PatternPtr = std::shared_ptr<SubtreePattern>;
+
 class HistogramScene : public QObject {
 Q_OBJECT
     std::unique_ptr<QGraphicsScene> m_scene;
@@ -56,12 +61,18 @@ Q_OBJECT
     int m_selected_idx = -1;
 
     /// need a list of rects to enable navigation;
-    std::vector<PatternRect*> m_rects;
+    std::vector<PatternRectPtr> m_rects;
+
+    std::vector<PatternPtr> patterns_;
+
+    std::unordered_map<PatternRectPtr, PatternPtr> rect2pattern_;
 
     /// find pattern idx in m_rects using PatternRect
     int findPatternIdx(PatternRect* pattern);
 
     void setPatternSelected(int idx);
+
+    PatternPtr rectToPattern(PatternRectPtr prect);
 
 public:
     HistogramScene() {
@@ -70,19 +81,18 @@ public:
 
     }
 
+    void reset();
+
     QGraphicsScene* scene() {
         return m_scene.get();
     }
 
-    void reset() {
-        m_scene.reset(nullptr);
-        m_rects.clear();
-    }
-
-
     void handleClick(PatternRect* prect);
 
-    void drawPatterns(std::vector<SubtreePattern>&& patterns);
+    /// Draw the patterns onto the scene
+    void drawPatterns();
+
+    void setPatterns(std::vector<SubtreePattern>&& patterns);
 
 signals:
 
@@ -95,66 +105,6 @@ public slots:
     void nextPattern();
 
 };
-
-class PatternRect : public QGraphicsRectItem {
-
-    SubtreePattern m_pattern;
-
-    QGraphicsRectItem visible_rect;
-
-    HistogramScene& m_hist_scene;
-
-    void mousePressEvent(QGraphicsSceneMouseEvent*) override {
-        m_hist_scene.handleClick(this);
-    }
-
-    static QColor normal_outline;
-    static QColor highlighted_outline;
-
-public:
-    PatternRect(HistogramScene& hist_scene, int x, int y, int width, int height, SubtreePattern&& pattern)
-    : QGraphicsRectItem(x, y, SELECTION_WIDTH, height),
-      m_pattern(std::move(pattern)), visible_rect(x, y, width, height), m_hist_scene(hist_scene) {
-
-        //   setFlag(QGraphicsItem::ItemIsSelectable);
-
-        QColor gold(252, 209, 22);
-        setPen(Qt::NoPen);
-
-        QColor patternRectColor(255, 215, 179);
-        visible_rect.setBrush(patternRectColor);
-      }
-
-    void set_highlighted(bool val) {
-
-        QPen pen;
-        if (val) {
-            pen.setWidth(3);
-            pen.setBrush(highlighted_outline);
-        } else {
-            // pen.setBrush(normal_outline);
-            pen.setStyle(Qt::NoPen);
-        }
-        setPen(pen);
-    }
-
-    void addToScene() {
-        m_hist_scene.scene()->addItem(&visible_rect);
-        m_hist_scene.scene()->addItem(this);
-    }
-
-    NodeID node() {
-        return m_pattern.first();
-    }
-
-    const std::vector<NodeID>& nodes() {
-        return m_pattern.nodes();
-    }
-
-};
-
-
-
 
 
 }}

@@ -1,9 +1,12 @@
 #pragma once
+#include "../core.hh"
 
 namespace cpprofiler { namespace analysis {
     struct SubtreePattern {
         std::vector<NodeID> m_nodes;
         int m_height;
+        /// number of nodes in one (first) of the subtrees
+        int size_;
 
         int count() const {
             return m_nodes.size();

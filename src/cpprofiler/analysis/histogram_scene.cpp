@@ -1,11 +1,12 @@
 #include "histogram_scene.hh"
+#include "pattern_rect.hh"
 
 namespace cpprofiler { namespace analysis {
 
 QColor PatternRect::normal_outline{252, 209, 22};
 QColor PatternRect::highlighted_outline{252, 148, 77};
 
-static PatternRect* addRect(HistogramScene& hist_scene, int row, int val, SubtreePattern&& pattern) {
+static std::shared_ptr<PatternRect> addRect(HistogramScene& hist_scene, int row, int val) {
 
     int x = 0;
     int y = row * ROW_HEIGHT;
@@ -13,7 +14,7 @@ static PatternRect* addRect(HistogramScene& hist_scene, int row, int val, Subtre
     int width = val * 40;
 
     /// Note: items will be deleted when the scene is destroyed
-    auto item = new PatternRect{hist_scene, x, y, width, SHAPE_RECT_HEIGHT, std::move(pattern)};
+    auto item = std::make_shared<PatternRect>(hist_scene, x, y, width, SHAPE_RECT_HEIGHT);
     item->addToScene();
 
     return item;
@@ -29,9 +30,9 @@ static void addText(QGraphicsScene& scene, int col, int row, int value) {
     addText(scene, col, row, int_text_item, Align::RIGHT);
 }
 
-void HistogramScene::drawPatterns(std::vector<SubtreePattern>&& patterns) {
+void HistogramScene::drawPatterns() {
 
-    auto& scene = *m_scene.get();
+    auto& scene = *m_scene;
 
     addText(scene, 0, 0, "hight");
     addText(scene, 1, 0, "count");
@@ -39,32 +40,66 @@ void HistogramScene::drawPatterns(std::vector<SubtreePattern>&& patterns) {
 
     int row = 1;
 
-    for (auto&& pattern : patterns) {
+    for (auto&& p : patterns_) {
 
-        const auto nid = pattern.first();
-        const int count = pattern.count();
-        const int height = pattern.height();
+        const auto nid = p->first();
+        const int count = p->count();
+        const int height = p->height();
 
-        auto item = addRect(*this, row, count, std::move(pattern));
+        auto item = addRect(*this, row, count);
 
         m_rects.push_back(item);
+        rect2pattern_.insert(std::make_pair(item, p));
+
+        /// number of nodes in the frist subtree represeting a pattern
+        const auto size = p->size_;
 
         addText(scene, 0, row, height);
         addText(scene, 1, row, count);
-        addText(scene, 2, row, "?");
+        addText(scene, 2, row, size);
 
         ++row;
+    }
+
+}
+
+void HistogramScene::setPatterns(std::vector<SubtreePattern>&& patterns) {
+    patterns_.reserve(patterns.size());
+
+    for (auto& p : patterns) {
+        patterns_.push_back(std::make_shared<SubtreePattern>(std::move(p)));
     }
 }
 
 int HistogramScene::findPatternIdx(PatternRect* pattern) {
     for (auto i = 0; i < m_rects.size(); ++i) {
-        if (pattern == m_rects[i]) {
+        if (pattern == m_rects[i].get()) {
             return i;
         }
     }
 
     return -1;
+}
+
+PatternPtr HistogramScene::rectToPattern(PatternRectPtr prect) {
+    if (rect2pattern_.find(prect) != rect2pattern_.end()) {
+        return rect2pattern_[prect];
+    }
+    return nullptr;
+}
+
+void HistogramScene::reset() {
+
+    if (m_selected) {
+        m_selected->setHighlighted(false);
+        m_selected = nullptr;
+        m_selected_idx = -1;
+    }
+
+    m_rects.clear();
+    rect2pattern_.clear();
+    m_scene->clear();
+    patterns_.clear();
 }
 
 void HistogramScene::setPatternSelected(int idx) {
@@ -73,24 +108,27 @@ void HistogramScene::setPatternSelected(int idx) {
 
     auto prect = m_rects[idx];
 
-    emit pattern_selected(prect->node());
+    auto pattern = rectToPattern(prect);
+    if (!pattern) return;
 
-    emit should_be_highlighted(prect->nodes());
+    emit pattern_selected(pattern->first());
+
+    emit should_be_highlighted(pattern->nodes());
 
     {
         if (idx == m_selected_idx) {
-            m_selected->set_highlighted(false);
+            m_selected->setHighlighted(false);
             m_selected_idx = -1;
             m_selected = nullptr;
         } else {
             m_selected_idx = idx;
             /// unselect the old one
             if (m_selected) {
-                m_selected->set_highlighted(false);
+                m_selected->setHighlighted(false);
             }
-            prect->set_highlighted(true);
+            prect->setHighlighted(true);
             m_selected_idx = idx;
-            m_selected = prect;
+            m_selected = prect.get();
         }
     }
 

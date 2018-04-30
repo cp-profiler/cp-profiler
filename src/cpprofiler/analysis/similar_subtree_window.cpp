@@ -24,6 +24,7 @@
 #include "../tree/subtree_view.hh"
 
 #include "histogram_scene.hh"
+#include "../utils/perf_helper.hh"
 
 
 using namespace cpprofiler::tree;
@@ -125,16 +126,52 @@ struct CompareShapes {
 };
 
 
+static std::vector<int> calculateSubtreeSizes(const NodeTree& nt) {
+
+    const int nc = nt.nodeCount();
+
+    std::vector<int> sizes(nc);
+
+    std::function<void(NodeID)> countDescendants;
+
+    /// Count descendants plus one (the node itself)
+    countDescendants = [&] (NodeID n) {
+        auto nkids = nt.childrenCount(n);
+        if (nkids == 0) {
+            sizes[n] = 1;
+        } else {
+            int count = 1; // the node itself
+            for (auto alt = 0u; alt < nkids; ++alt) {
+                const auto kid = nt.getChild(n, alt);
+                countDescendants(kid);
+                count += sizes[kid];
+            }
+            sizes[n] = count;
+        }
+    };
+
+    const auto root = nt.getRoot();
+    countDescendants(root);
+
+    return sizes;
+}
 
 static std::vector<SubtreePattern> runSimilarShapes(const NodeTree& tree, const Layout& lo) {
 
+    perfHelper.begin("similar shapes body");
+
     std::multiset<ShapeInfo, CompareShapes> shape_set;
 
-    auto node_order = utils::postOrder(tree);
+    auto node_order = utils::anyOrder(tree);
 
-    for (auto nid : node_order) {
+    for (const auto nid : node_order) {
         shape_set.insert({nid, lo.getShape(nid)});
     }
+
+    perfHelper.end();
+    perfHelper.begin("similar shapes result");
+
+    auto sizes = calculateSubtreeSizes(tree);
 
     std::vector<SubtreePattern> shapes;
 
@@ -144,11 +181,20 @@ static std::vector<SubtreePattern> runSimilarShapes(const NodeTree& tree, const 
         auto upper = shape_set.upper_bound(*it);
 
         const int height = it->shape.depth();
-        shapes.push_back(SubtreePattern{{}, height});
+
+        auto pattern = SubtreePattern{{}, height, 0};
         for (; it != upper; ++it) {
-            shapes[shapes.size() - 1].m_nodes.push_back(it->nid);
+            pattern.m_nodes.emplace_back(it->nid);
         }
+
+        /// TODO: use a caching for calculating this
+        pattern.size_ = sizes.at(pattern.first());
+
+        shapes.push_back(std::move(pattern));
     }
+
+    perfHelper.end();
+    // perfHelper.end();
 
     return shapes;
 
@@ -353,10 +399,6 @@ static void set_as_processed(const NodeTree& nt, Partition& partition, int h, st
 
     auto first_to_move = std::partition(rem.begin(), rem.end(), should_stay);
 
-    for (auto it = first_to_move; it < rem.end(); ++it) {
-        std::cout << "moving: " << *it << std::endl;
-    }
-
     move(first_to_move, rem.end(), std::back_inserter(partition.processed));
     rem.resize(distance(rem.begin(), first_to_move));
 }
@@ -402,20 +444,14 @@ static std::vector<SubtreePattern> runIdenticalSubtrees(const NodeTree& nt) {
 
     while (cur_height != max_height) {
 
-        qDebug() << "step for height: " << cur_height;
-
         partition_step(nt, partition, cur_height, height_info);
 
         /// By this point, all subtrees of height 'cur_height + 1'
         /// should have been processed
         set_as_processed(nt, partition, cur_height + 1, height_info);
 
-        qDebug() << "done with height: " << cur_height;
-        std::cerr << partition << std::endl;
         ++cur_height;
     }
-
-    std::cerr << partition << std::endl;
 
     /// Construct the result in the appropriate form
     std::vector<SubtreePattern> result;
@@ -428,14 +464,6 @@ static std::vector<SubtreePattern> runIdenticalSubtrees(const NodeTree& nt) {
 
     return result;
 }
-
-
-
-
-
-
-
-
 
 
 static vector<SubtreePattern> eliminateSubsumed(const NodeTree& tree, const vector<SubtreePattern>& patterns) {
@@ -506,7 +534,13 @@ void SimilarSubtreeWindow::analyse() {
 
     patterns = eliminateSubsumed(m_nt, patterns);
 
-    m_histogram->drawPatterns(std::move(patterns));
+    perfHelper.begin("set patterns");
+
+    m_histogram->reset();
+    m_histogram->setPatterns(std::move(patterns));
+    m_histogram->drawPatterns();
+
+    perfHelper.end();
 
     connect(m_histogram.get(), &HistogramScene::should_be_highlighted,
         this, &SimilarSubtreeWindow::should_be_highlighted);
