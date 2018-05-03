@@ -1,4 +1,5 @@
 SOURCES += \
+    $$PWD/src/cpprofiler/core.cpp \
     $$PWD/src/cpprofiler/command_line_parser.cpp \
     $$PWD/src/cpprofiler/name_map.cpp \
     $$PWD/src/cpprofiler/conductor.cpp \
@@ -40,6 +41,8 @@ SOURCES += \
     $$PWD/src/cpprofiler/analysis/histogram_scene.cpp \
     $$PWD/src/cpprofiler/analysis/pattern_rect.cpp \
     $$PWD/src/cpprofiler/tree/node_drawing.cpp \
+    $$PWD/src/cpprofiler/db_handler.cpp \
+    $$PWD/src/sqlite/sqlite3.c \
 
 HEADERS += \
     $$PWD/src/cpprofiler/config.hh \
@@ -94,6 +97,8 @@ HEADERS += \
     $$PWD/src/cpprofiler/analysis/merging/pentagon_rect.hh \
     $$PWD/src/cpprofiler/tree/node_widget.hh \
     $$PWD/src/cpprofiler/tree/node_drawing.hh \
+    $$PWD/src/cpprofiler/db_handler.hh \
+    $$PWD/src/sqlite/sqlite3.h \
 
 SOURCES += \
     $$PWD/src/cpprofiler/tests/tree_test.cpp \

@@ -65,7 +65,6 @@ public:
     }
 
     ~NodeWidget() {
-        qDebug() << "NodeWidget deleted";
     }
 
 };

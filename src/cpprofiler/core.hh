@@ -2,12 +2,28 @@
 #define CPPROFILER_GLOBAL_HH
 
 
+#include <ostream>
 #include "tree/node_id.hh"
 #include "utils/debug_mutex.hh"
 #include "utils/std_ext.hh"
 #include "utils/debug.hh"
 
-
 using cpprofiler::tree::NodeID;
+
+namespace cpprofiler { namespace tree {
+
+    enum class NodeStatus  {
+        SOLVED = 0,
+        FAILED = 1,
+        BRANCH = 2,
+        SKIPPED = 3,
+        UNDETERMINED = 4,
+        MERGED = 5
+    };
+
+    std::ostream& operator<<(std::ostream& os, const NodeStatus& ns);
+
+}}
+
 
 #endif

@@ -11,6 +11,8 @@
 #include "../execution_window.hh"
 #include "../tree/traditional_view.hh"
 
+#include "../db_handler.hh"
+
 #include <QDebug>
 #include <iostream>
 
@@ -43,59 +45,59 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto n3 =  tree.promoteNode(n1, 0, 2, tree::NodeStatus::BRANCH, "3");
         auto n4 =  tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "4");
 
-        auto n5 =  tree.promoteNode(n3, 0, 2, tree::NodeStatus::BRANCH, "7");
-        auto n6 =  tree.promoteNode(n3, 1, 2, tree::NodeStatus::BRANCH, "8");
+        auto n5 =  tree.promoteNode(n3, 0, 2, tree::NodeStatus::BRANCH, "5");
+        auto n6 =  tree.promoteNode(n3, 1, 2, tree::NodeStatus::BRANCH, "6");
 
-        tree.promoteNode(n5, 0, 0, tree::NodeStatus::SOLVED);
-        tree.promoteNode(n5, 1, 0, tree::NodeStatus::FAILED);
+        tree.promoteNode(n5, 0, 0, tree::NodeStatus::SOLVED, "7");
+        tree.promoteNode(n5, 1, 0, tree::NodeStatus::FAILED, "8");
 
-        tree.promoteNode(n6, 0, 0, tree::NodeStatus::FAILED);
-        tree.promoteNode(n6, 1, 0, tree::NodeStatus::SKIPPED);
+        tree.promoteNode(n6, 0, 0, tree::NodeStatus::FAILED, "9");
+        tree.promoteNode(n6, 1, 0, tree::NodeStatus::SKIPPED, "10");
 
-        auto n7 =  tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED);
-        auto n8 =  tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED);
+        auto n7 =  tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "11");
+        auto n8 =  tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "12");
 
-        auto n9 =  tree.promoteNode(n2, 0, 2, tree::NodeStatus::BRANCH);
-        auto n10 =  tree.promoteNode(n2, 1, 0, tree::NodeStatus::FAILED);
+        auto n9 =  tree.promoteNode(n2, 0, 2, tree::NodeStatus::BRANCH, "13");
+        auto n10 =  tree.promoteNode(n2, 1, 0, tree::NodeStatus::FAILED, "14");
 
-        auto n11 =  tree.promoteNode(n9, 0, 2, tree::NodeStatus::BRANCH);
-        auto n12 =  tree.promoteNode(n9, 1, 0, tree::NodeStatus::FAILED);
+        auto n11 =  tree.promoteNode(n9, 0, 2, tree::NodeStatus::BRANCH, "15");
+        auto n12 =  tree.promoteNode(n9, 1, 0, tree::NodeStatus::FAILED, "16");
 
-        auto n13 =  tree.promoteNode(n11, 0, 2, tree::NodeStatus::BRANCH);
-        auto n14 =  tree.promoteNode(n11, 1, 0, tree::NodeStatus::FAILED);
+        auto n13 =  tree.promoteNode(n11, 0, 2, tree::NodeStatus::BRANCH, "17");
+        auto n14 =  tree.promoteNode(n11, 1, 0, tree::NodeStatus::FAILED, "18");
 
-        auto n15 =  tree.promoteNode(n13, 0, 2, tree::NodeStatus::BRANCH);
-        auto n16 =  tree.promoteNode(n13, 1, 0, tree::NodeStatus::FAILED);
+        auto n15 =  tree.promoteNode(n13, 0, 2, tree::NodeStatus::BRANCH, "19");
+        auto n16 =  tree.promoteNode(n13, 1, 0, tree::NodeStatus::FAILED, "20");
 
-        auto n17 =  tree.promoteNode(n15, 0, 2, tree::NodeStatus::BRANCH);
-        auto n18 =  tree.promoteNode(n15, 1, 0, tree::NodeStatus::FAILED);
+        auto n17 =  tree.promoteNode(n15, 0, 2, tree::NodeStatus::BRANCH, "21");
+        auto n18 =  tree.promoteNode(n15, 1, 0, tree::NodeStatus::FAILED, "22");
 
-        auto n19 =  tree.promoteNode(n17, 0, 2, tree::NodeStatus::BRANCH);
-        auto n20 =  tree.promoteNode(n17, 1, 0, tree::NodeStatus::FAILED);
+        auto n19 =  tree.promoteNode(n17, 0, 2, tree::NodeStatus::BRANCH, "23");
+        auto n20 =  tree.promoteNode(n17, 1, 0, tree::NodeStatus::FAILED, "24");
 
-        auto n21 =  tree.promoteNode(n19, 0, 2, tree::NodeStatus::BRANCH);
-        auto n22 =  tree.promoteNode(n19, 1, 0, tree::NodeStatus::FAILED);
+        auto n21 =  tree.promoteNode(n19, 0, 2, tree::NodeStatus::BRANCH, "25");
+        auto n22 =  tree.promoteNode(n19, 1, 0, tree::NodeStatus::FAILED, "26");
 
-        auto n23 =  tree.promoteNode(n21, 0, 2, tree::NodeStatus::BRANCH);
-        auto n24 =  tree.promoteNode(n21, 1, 0, tree::NodeStatus::UNDETERMINED);
+        auto n23 =  tree.promoteNode(n21, 0, 2, tree::NodeStatus::BRANCH, "27");
+        auto n24 =  tree.promoteNode(n21, 1, 0, tree::NodeStatus::UNDETERMINED, "28");
 
-        auto n25 =  tree.promoteNode(n23, 0, 2, tree::NodeStatus::BRANCH);
-        auto n26 =  tree.promoteNode(n23, 1, 0, tree::NodeStatus::FAILED);
+        auto n25 =  tree.promoteNode(n23, 0, 2, tree::NodeStatus::BRANCH, "29");
+        auto n26 =  tree.promoteNode(n23, 1, 0, tree::NodeStatus::FAILED, "30");
 
-        auto n27 =  tree.promoteNode(n25, 0, 2, tree::NodeStatus::BRANCH);
-        auto n28 =  tree.promoteNode(n25, 1, 0, tree::NodeStatus::FAILED);
+        auto n27 =  tree.promoteNode(n25, 0, 2, tree::NodeStatus::BRANCH, "31");
+        auto n28 =  tree.promoteNode(n25, 1, 0, tree::NodeStatus::FAILED, "32");
 
-        auto n29 =  tree.promoteNode(n27, 0, 2, tree::NodeStatus::BRANCH);
-        auto n30 =  tree.promoteNode(n27, 1, 0, tree::NodeStatus::FAILED);
+        auto n29 =  tree.promoteNode(n27, 0, 2, tree::NodeStatus::BRANCH, "33");
+        auto n30 =  tree.promoteNode(n27, 1, 0, tree::NodeStatus::FAILED, "34");
 
-        auto n31 =  tree.promoteNode(n29, 0, 2, tree::NodeStatus::BRANCH);
-        auto n32 =  tree.promoteNode(n29, 1, 0, tree::NodeStatus::FAILED);
+        auto n31 =  tree.promoteNode(n29, 0, 2, tree::NodeStatus::BRANCH, "35");
+        auto n32 =  tree.promoteNode(n29, 1, 0, tree::NodeStatus::FAILED, "36");
 
-        auto n33 =  tree.promoteNode(n31, 0, 2, tree::NodeStatus::BRANCH);
-        auto n34 =  tree.promoteNode(n31, 1, 0, tree::NodeStatus::FAILED);
+        auto n33 =  tree.promoteNode(n31, 0, 2, tree::NodeStatus::BRANCH, "37");
+        auto n34 =  tree.promoteNode(n31, 1, 0, tree::NodeStatus::FAILED, "38");
 
-        auto n35 =  tree.promoteNode(n33, 0, 0, tree::NodeStatus::FAILED);
-        auto n36 =  tree.promoteNode(n33, 1, 0, tree::NodeStatus::FAILED);
+        auto n35 =  tree.promoteNode(n33, 0, 0, tree::NodeStatus::FAILED, "39");
+        auto n36 =  tree.promoteNode(n33, 1, 0, tree::NodeStatus::FAILED, "40");
 
         conductor.showTraditionalView(ex);
     }
@@ -175,23 +177,23 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto& tree = ex->tree();
 
         auto root = tree.createRoot(2);
-        auto n1 =  tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "abcde");
-        auto n2 =  tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "efghijk");
+        auto n1 =  tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "a");
+        auto n2 =  tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "b");
 
-        auto n3 =  tree.promoteNode(n1, 0, 2, tree::NodeStatus::BRANCH);
-        auto n4 =  tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH);
-        auto n11 =  tree.promoteNode(n2, 0, 0, tree::NodeStatus::FAILED);
-        auto n12 =  tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH);
+        auto n3 =  tree.promoteNode(n1, 0, 2, tree::NodeStatus::BRANCH, "c");
+        auto n4 =  tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "d");
+        auto n11 =  tree.promoteNode(n2, 0, 0, tree::NodeStatus::FAILED, "e");
+        auto n12 =  tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH, "f");
 
-        auto n5 =  tree.promoteNode(n3, 0, 0, tree::NodeStatus::FAILED);
-        auto n6 =  tree.promoteNode(n3, 1, 2, tree::NodeStatus::BRANCH);
-        auto n9 =  tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED);
-        auto n10 =  tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED);
-        auto n13 =  tree.promoteNode(n12, 0, 0, tree::NodeStatus::FAILED);
-        auto n14 =  tree.promoteNode(n12, 1, 0, tree::NodeStatus::FAILED);
+        auto n5 =  tree.promoteNode(n3, 0, 0, tree::NodeStatus::FAILED, "g");
+        auto n6 =  tree.promoteNode(n3, 1, 2, tree::NodeStatus::BRANCH, "h");
+        auto n9 =  tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "i");
+        auto n10 =  tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "j");
+        auto n13 =  tree.promoteNode(n12, 0, 0, tree::NodeStatus::FAILED, "k");
+        auto n14 =  tree.promoteNode(n12, 1, 0, tree::NodeStatus::FAILED, "l");
 
-        auto n7 =  tree.promoteNode(n6, 0, 0, tree::NodeStatus::FAILED);
-        auto n8 =  tree.promoteNode(n6, 1, 0, tree::NodeStatus::FAILED);
+        auto n7 =  tree.promoteNode(n6, 0, 0, tree::NodeStatus::FAILED, "m");
+        auto n8 =  tree.promoteNode(n6, 1, 0, tree::NodeStatus::FAILED, "n");
 
     }
 
@@ -344,9 +346,25 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     }
 
+    static void load_execution(Conductor& c, const char* path) {
+
+        DB_Handler db_handler;
+
+        auto ex = db_handler.loadExecution(path);
+
+        if (!ex) {
+            print("could not load the execution");
+        } else {
+            c.addNewExecution(ex);
+        }
+
+    }
+
     void run(Conductor& c) {
 
+        /// this one works with db
         // binary_test_1_for_identical_subtrees(c);
+
         // binary_test_2_for_identical_subtrees(c);
         // binary_tree_execution(c);
         // simple_nary_execution(c);
@@ -361,6 +379,8 @@ namespace cpprofiler { namespace tests { namespace execution {
         // tree_building(c);
 
         // restart_tree(c);
+
+        load_execution(c, "/home/maxim/dev/cp-profiler2/execution.db");
 
     }
 

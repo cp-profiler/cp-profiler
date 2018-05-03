@@ -41,6 +41,9 @@ public:
 
     Execution* addNewExecution(const std::string& ex_name, int ex_id = -1, bool restarts = false);
 
+    /// Add existing execution to the displayed list
+    void addNewExecution(std::shared_ptr<Execution> ex);
+
     void showTraditionalView(Execution* e);
 
     void mergeTrees(Execution* e1, Execution* e2);
@@ -60,6 +63,8 @@ signals:
     void readyForBuilding(Execution* e);
 
 private:
+
+    void saveExecution(Execution* e);
 
     void readSettings();
 

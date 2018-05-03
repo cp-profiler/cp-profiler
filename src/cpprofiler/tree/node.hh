@@ -12,15 +12,6 @@ struct no_child : std::exception {
     }
 };
 
-enum class NodeStatus  {
-    SOLVED = 0,
-    FAILED = 1,
-    BRANCH = 2,
-    SKIPPED = 3,
-    UNDETERMINED = 4,
-    MERGED = 5
-};
-
 QDebug&& operator<<(QDebug&& out, NodeStatus status);
 
 class Node {

@@ -37,7 +37,7 @@ NodeID NodeTree::createRoot_safe(int kids) {
     return m_structure->createRoot(kids);
 }
 
-void NodeTree::promoteNode(NodeID nid, int kids, NodeStatus status, Label label) {
+void NodeTree::promoteNode(NodeID nid, int kids, tree::NodeStatus status, Label label) {
 
     /// find parent and kid's position
     const auto pid = getParent(nid);
@@ -57,6 +57,8 @@ NodeID NodeTree::createDummyRoot() {
     m_node_info->setStatus(nid, NodeStatus::UNDETERMINED);
 
     emit structureUpdated();
+
+    return nid;
 }
 
 
@@ -108,7 +110,8 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
     }
 
     m_node_info->setStatus(nid, status);
-    setLabel(nid, label);
+    // setLabel(nid, label);
+    setLabel(nid, std::to_string(nid));
 
     if (kids > 0) {
         m_structure->addChildren(nid, kids);
@@ -149,6 +152,10 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
             // do nothing
         } break;
     }
+
+    print("{} has {} children!", nid, childrenCount(nid));
+
+    assert( childrenCount(nid) == kids );
 
     emit structureUpdated();
 

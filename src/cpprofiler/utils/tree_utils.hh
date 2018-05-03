@@ -19,7 +19,7 @@ void apply_below(const tree::NodeTree& nt, NodeID root, const NodeAction& action
 
 std::vector<NodeID> anyOrder(const tree::NodeTree& tree);
 
-std::vector<NodeID> postOrder(const tree::NodeTree& tree);
+std::vector<NodeID> preOrder(const tree::NodeTree& tree);
 
 std::vector<NodeID> postOrder(const tree::NodeTree& tree);
 

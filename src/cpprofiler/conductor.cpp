@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QDebug>
 #include <QFile>
+#include <QFileDialog>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include "../cpp-integration/message.hpp"
@@ -27,6 +28,7 @@
 #include <QProgressDialog>
 
 #include "name_map.hh"
+#include "db_handler.hh"
 
 namespace cpprofiler {
 
@@ -53,6 +55,36 @@ namespace cpprofiler {
 
             for (auto execution : m_execution_list->getSelected()) {
                 showTraditionalView(execution);
+            }
+
+        });
+
+        auto saveButton = new QPushButton("Save Execution");
+        layout->addWidget(saveButton);
+
+        /// TODO: make it clear that only the first one is saved
+        connect(saveButton, &QPushButton::clicked, [this]() {
+            for (auto e : m_execution_list->getSelected()) {
+                saveExecution(e);
+                break;
+            }
+        });
+
+        auto loadButton = new QPushButton("Load Execution");
+        layout->addWidget(loadButton);
+
+        connect(loadButton, &QPushButton::clicked, [this]() {
+
+            auto fileName = QFileDialog::getOpenFileName(this, "Open Execution").toStdString();
+
+            DB_Handler db_handler;
+
+            auto ex = db_handler.loadExecution(fileName.c_str());
+
+            if (!ex) {
+                print("could not load the execution");
+            } else {
+                addNewExecution(ex);
             }
 
         });
@@ -180,6 +212,17 @@ namespace cpprofiler {
 
     }
 
+    void Conductor::addNewExecution(std::shared_ptr<Execution> ex) {
+
+        auto ex_id = getRandomExID();
+
+        debug("force") << "EXECUTION_ID: " << ex_id << std::endl;
+
+        m_executions[ex_id] = ex;
+        m_execution_list->addExecution(*ex);
+
+    }
+
     Execution* Conductor::addNewExecution(const std::string& ex_name, int ex_id, bool restarts) {
 
         auto ex = std::make_shared<Execution>(ex_name, restarts);
@@ -193,7 +236,10 @@ namespace cpprofiler {
         m_executions[ex_id] = ex;
         m_execution_list->addExecution(*ex);
 
-        showTraditionalView(ex.get());
+        const bool auto_show = false;
+        if (auto_show) {
+            showTraditionalView(ex.get());
+        }
 
         return ex.get();
 
@@ -230,6 +276,19 @@ namespace cpprofiler {
         merger->start();
 
         window->show();
+
+    }
+
+    void Conductor::saveExecution(Execution* e) {
+
+        const auto file_path = "execution.db";
+
+        DB_Handler db_handler;
+
+        db_handler.create_db(file_path);
+        db_handler.save_execution(e);
+
+        qDebug() << "execution saved";
 
     }
 

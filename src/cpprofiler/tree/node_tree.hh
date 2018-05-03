@@ -7,6 +7,7 @@
 #include <stack>
 #include "node_id.hh"
 #include "node.hh"
+#include "../core.hh"
 
 namespace cpprofiler {
     class NameMap;
