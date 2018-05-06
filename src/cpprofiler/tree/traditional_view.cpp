@@ -133,7 +133,7 @@ void TraditionalView::navUp() {
 
     utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
 
-    auto pid = m_tree.getParent_safe(cur_nid);
+    auto pid = m_tree.getParent(cur_nid);
 
     if (pid != NodeID::NoNode) {
         m_user_data->setSelectedNode(pid);
@@ -164,16 +164,17 @@ void TraditionalView::navLeft() {
 }
 
 void TraditionalView::navRight() {
+    /// lock mutex
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
     utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
 
-    auto pid = m_tree.getParent_safe(cur_nid);
+    auto pid = m_tree.getParent(cur_nid);
 
     if (pid == NodeID::NoNode) return;
 
-    auto cur_alt = m_tree.getAlternative_safe(cur_nid);
+    auto cur_alt = m_tree.getAlternative(cur_nid);
 
     auto kids = m_tree.childrenCount(pid);
 
@@ -207,10 +208,9 @@ void TraditionalView::showLabelsDown() {
 
     auto val = !m_vis_flags->get_label_shown(cur_nid);
 
-    m_tree.preOrderApply(cur_nid, [val, this](NodeID nid) {
+    utils::pre_order_apply(m_tree, cur_nid, [val, this](NodeID nid) {
         set_label_shown(nid, val);
     });
-
 
     setLayoutOutdated();
     emit needsRedrawing();
@@ -220,7 +220,7 @@ void TraditionalView::showLabelsUp() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto pid = m_tree.getParent_safe(cur_nid);
+    auto pid = m_tree.getParent(cur_nid);
 
     /// if it is root, toggle for the root only
     if (pid == NodeID::NoNode) {
@@ -232,19 +232,23 @@ void TraditionalView::showLabelsUp() {
 
     while (cur_nid != NodeID::NoNode) {
         set_label_shown(cur_nid, val);
-        cur_nid = m_tree.getParent_safe(cur_nid);
+        cur_nid = m_tree.getParent(cur_nid);
     }
 
     setLayoutOutdated();
     emit needsRedrawing();
 }
 
+static bool is_leaf(const NodeTree& nt, NodeID nid) {
+    return nt.childrenCount(nid) == 0;
+}
+
 void TraditionalView::toggleHidden() {
     auto cur_nid = m_user_data->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    // if leaf node -> do not hide
-    if (m_tree.isLeaf(cur_nid)) return;
+    // do not hide leaf nodes
+    if (is_leaf(m_tree, cur_nid)) return;
 
     auto val = !m_vis_flags->get_hidden(cur_nid);
     m_vis_flags->set_hidden(cur_nid, val);
@@ -391,7 +395,7 @@ static int global_node_x_offset(const NodeTree& tree, const Layout& layout, Node
 
     while (nid != NodeID::NoNode) {
         x_off += layout.getOffset(nid);
-        nid = tree.getParent_safe(nid);
+        nid = tree.getParent(nid);
     }
 
     return x_off;
@@ -407,7 +411,8 @@ void TraditionalView::centerNode(NodeID nid) {
 
     const auto value_x = x_offset - bb.left;
 
-    const auto depth = m_tree.calculateDepth(nid);
+    
+    const auto depth = utils::calculate_depth(m_tree, nid);
     const auto value_y = depth * layout::dist_y;
 
     m_scroll_area->centerPoint(value_x, value_y);

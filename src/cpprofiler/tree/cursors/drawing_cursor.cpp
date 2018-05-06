@@ -5,6 +5,7 @@
 #include "../node.hh"
 #include "../shape.hh"
 #include "../../user_data.hh"
+#include "../../utils/tree_utils.hh"
 #include "../traditional_view.hh"
 
 #include "../node_drawing.hh"
@@ -131,7 +132,7 @@ namespace cpprofiler { namespace tree {
         /// NOTE: this should be consisten with the layout
         if (m_vis_flags.get_label_shown(m_cur_node)) {
 
-            auto draw_left = !m_node_tree.isRightMostChild(m_cur_node);
+            auto draw_left = !utils::is_right_most_child(m_node_tree, m_cur_node);
             // m_painter.setPen(QPen{Qt::black, 2});
             const auto& label = m_node_tree.getLabel(m_cur_node);
 

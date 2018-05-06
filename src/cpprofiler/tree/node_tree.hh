@@ -9,6 +9,8 @@
 #include "node.hh"
 #include "../core.hh"
 
+#include "node_stats.hh"
+
 namespace cpprofiler {
     class NameMap;
 }
@@ -18,81 +20,10 @@ namespace cpprofiler { namespace tree {
 class Structure;
 class NodeInfo;
 
-class NodeStats : public QObject {
-Q_OBJECT
-    int m_branch = 0;
-    int m_undetermined = 0;
-    int m_failed = 0;
-    int m_solved = 0;
-    int m_max_depth = 0;
-
-public:
-
-    int branch_count() const {
-        return m_branch;
-    }
-
-    int undetermined_count() const {
-        return m_undetermined;
-    }
-
-    int failed_count() const {
-        return m_failed;
-    }
-
-    int solved_count() const {
-        return m_solved;
-    }
-
-    int max_depth() const {
-        return m_max_depth;
-    }
-
-    void add_branch(int n) {
-        m_branch = m_branch + n;
-        emit stats_changed();
-    }
-
-    void subtract_undetermined(int n) {
-        // m_undetermined = m_undetermined - n;
-        emit stats_changed();
-    }
-
-    void add_undetermined(int n) {
-        // m_undetermined = m_undetermined + n;
-        emit stats_changed();
-    }
-
-    void add_failed(int n) {
-        m_failed = m_failed + n;
-        emit stats_changed();
-    }
-
-    void add_solved(int n) {
-        m_solved = m_solved + n;
-        emit stats_changed();
-    }
-
-    /// see if max depth needs to be updated to d
-    void inform_depth(int d) {
-        if (d > m_max_depth) {
-            m_max_depth = d;
-            emit stats_changed();
-        }
-    }
-
-signals:
-
-    void stats_changed();
-
-
-};
-
 using Label = std::string;
 static Label emptyLabel = {};
 
-/// Node tree encapsulates tree structure,
-/// node statistics (number of nodes etc.),
+/// Node tree encapsulates tree structure, node statistics (number of nodes etc.),
 /// status for nodes (m_node_info), labels
 class NodeTree : public QObject {
 Q_OBJECT
@@ -165,47 +96,40 @@ public:
     NodeID getRoot_safe() const;
     NodeID getRoot() const;
 
-    /// Total number of nodes (including undetermined)
-    int nodeCount_safe() const;
-
+    /// Get the total nuber of nodes (including undetermined)
     int nodeCount() const;
 
-    NodeStatus getStatus(NodeID nid) const;
-
+    /// Get the total nuber of siblings of `nid` including the node itself
     int getNumberOfSiblings(NodeID nid) const;
 
-    int getAlternative_safe(NodeID nid) const;
+    /// Get the position of node `nid` relative to its left-most sibling
     int getAlternative(NodeID nid) const;
 
+    /// Get the total number of children of node `pid`
     int childrenCount(NodeID nid) const;
 
+    /// Get the child of node `pid` at position `alt`
     NodeID getChild(NodeID nid, int alt) const;
 
+    /// Get the parent of node `nid` (returns NodeID::NoNode for root)
     NodeID getParent(NodeID nid) const;
-    NodeID getParent_safe(NodeID nid) const;
 
-    /// whether the node is the right-most child
-    bool isRightMostChild(NodeID nid) const;
+    /// Get the status of node `nid`
+    NodeStatus getStatus(NodeID nid) const;
 
-    bool isLeaf(NodeID) const;
-
-    /// return the depth of the node
-    int calculateDepth(NodeID nid) const;
-
+    /// Get the label of node `nid`
     const Label getLabel(NodeID nid) const;
 
+    /// Inquire if the node `nid` has solved children (ancestors?)
     bool hasSolvedChildren(NodeID nid) const;
 
+    /// Inquire if the node `nid` has open children (ancestors?)
     bool hasOpenChildren(NodeID nid) const;
 
-    /// return whether the node is open or has open children
+    /// Inquire if the node `nid` is open or has open children
     bool isOpen(NodeID nid) const;
 
     /// ********************************************************************
-
-    template<typename Callback>
-    void preOrderApply(NodeID start, Callback cb) const;
-
 
 signals:
 
@@ -217,25 +141,6 @@ signals:
     void node_stats_changed();
 
 };
-
-
-template<typename Callback>
-void NodeTree::preOrderApply(NodeID start, Callback cb) const {
-    std::stack<NodeID> stk;
-
-    stk.push(start);
-
-    while(stk.size() > 0) {
-        auto nid = stk.top(); stk.pop();
-
-        cb(nid);
-
-        for (auto i = childrenCount(nid) - 1; i >= 0; --i) {
-            auto child = getChild(nid, i);
-            stk.push(child);
-        }
-    }
-}
 
 }}
 

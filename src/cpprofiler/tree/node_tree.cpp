@@ -2,6 +2,7 @@
 
 #include "structure.hh"
 #include "node_info.hh"
+#include "../utils/tree_utils.hh"
 #include "../name_map.hh"
 #include <QDebug>
 #include <cassert>
@@ -127,7 +128,7 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
 
         m_node_stats.add_undetermined(kids);
 
-        auto cur_depth = m_structure->calculateDepth(nid);
+        auto cur_depth = utils::calculate_depth(*this, nid);
         m_node_stats.inform_depth(cur_depth + 1);
     }
 
@@ -164,16 +165,8 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
     return nid;
 }
 
-int NodeTree::nodeCount_safe() const {
-    return m_structure->nodeCount_safe();
-}
-
 int NodeTree::nodeCount() const {
     return m_structure->nodeCount();
-}
-
-NodeID NodeTree::getParent_safe(NodeID nid) const {
-    return m_structure->getParent_safe(nid);
 }
 
 NodeID NodeTree::getParent(NodeID nid) const {
@@ -210,35 +203,13 @@ int NodeTree::getNumberOfSiblings(NodeID nid) const {
 }
 
 int NodeTree::depth() const {
-    m_node_stats.max_depth();
-}
-
-int NodeTree::calculateDepth(NodeID nid) const {
-    return m_structure->calculateDepth(nid);
-}
-
-int NodeTree::getAlternative_safe(NodeID nid) const {
-    return m_structure->getAlternative_safe(nid);
+    m_node_stats.maxDepth();
 }
 
 int NodeTree::getAlternative(NodeID nid) const {
     return m_structure->getAlternative(nid);
 }
 
-bool NodeTree::isRightMostChild(NodeID nid) const {
-    auto pid = m_structure->getParent(nid);
-
-    /// root is treated as the left-most child
-    if (pid == NodeID::NoNode) return false;
-
-    auto kids = m_structure->childrenCount(pid);
-    auto alt = m_structure->getAlternative(nid);
-    if (alt == kids-1) { return true; } else { return false; }
-}
-
-bool NodeTree::isLeaf(NodeID nid) const {
-    return m_structure->childrenCount(nid) == 0;
-}
 
 int NodeTree::childrenCount(NodeID nid) const {
     return m_structure->childrenCount(nid);

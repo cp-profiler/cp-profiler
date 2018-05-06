@@ -65,11 +65,11 @@ public slots:
           done = true;
       }
 
-      depthLabel->setNum(stats.max_depth());
-      openLabel->setNum(stats.undetermined_count());
-      solvedLabel->setNum(stats.solved_count());
-      failedLabel->setNum(stats.failed_count());
-      choicesLabel->setNum(stats.branch_count());
+      depthLabel->setNum(stats.maxDepth());
+      openLabel->setNum(stats.undeterminedCount());
+      solvedLabel->setNum(stats.solvedCount());
+      failedLabel->setNum(stats.failedCount());
+      choicesLabel->setNum(stats.branchCount());
 
   }
 

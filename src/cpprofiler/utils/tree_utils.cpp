@@ -22,6 +22,15 @@ int count_descendants(const NodeTree& nt, NodeID nid) {
 
 }
 
+int calculate_depth(const NodeTree& nt, NodeID nid) {
+    int depth = 0;
+    while (nid != NodeID::NoNode) {
+        nid = nt.getParent(nid);
+        ++depth;
+    }
+    return depth;
+}
+
 void apply_below(const NodeTree& nt, NodeID nid, const NodeAction& action) {
 
     if (nid == NodeID::NoNode) {
@@ -44,7 +53,35 @@ void apply_below(const NodeTree& nt, NodeID nid, const NodeAction& action) {
     }
 }
 
-std::vector<NodeID> preOrder(const NodeTree& tree) {
+void pre_order_apply(const tree::NodeTree& nt, NodeID start, const NodeAction& action) {
+    std::stack<NodeID> stk;
+
+    stk.push(start);
+
+    while(stk.size() > 0) {
+        auto nid = stk.top(); stk.pop();
+
+        action(nid);
+
+        for (auto i = nt.childrenCount(nid) - 1; i >= 0; --i) {
+            auto child = nt.getChild(nid, i);
+            stk.push(child);
+        }
+    }
+}
+
+bool is_right_most_child(const tree::NodeTree& nt, NodeID nid) {
+    const auto pid = nt.getParent(nid);
+
+    /// root is treated as the left-most child
+    if (pid == NodeID::NoNode) return false;
+
+    const auto kids = nt.childrenCount(pid);
+    const auto alt = nt.getAlternative(nid);
+    return (alt == kids-1);
+}
+
+std::vector<NodeID> pre_order(const NodeTree& tree) {
     std::stack<NodeID> stk;
     std::vector<NodeID> result;
 
@@ -65,7 +102,7 @@ std::vector<NodeID> preOrder(const NodeTree& tree) {
     return result;
 }
 
-std::vector<NodeID> anyOrder(const NodeTree& tree) {
+std::vector<NodeID> any_order(const NodeTree& tree) {
 
     auto count = tree.nodeCount();
     std::vector<NodeID> result;
@@ -78,8 +115,8 @@ std::vector<NodeID> anyOrder(const NodeTree& tree) {
     return result;
 }
 
-std::vector<NodeID> postOrder(const NodeTree& tree) {
-    /// PO-traversal requires two stacks
+std::vector<NodeID> post_order(const NodeTree& tree) {
+    /// post-order traversal requires two stacks
     std::stack<NodeID> stk_1;
     std::vector<NodeID> result;
 

@@ -162,7 +162,7 @@ static std::vector<SubtreePattern> runSimilarShapes(const NodeTree& tree, const 
 
     std::multiset<ShapeInfo, CompareShapes> shape_set;
 
-    auto node_order = utils::anyOrder(tree);
+    auto node_order = utils::any_order(tree);
 
     for (const auto nid : node_order) {
         shape_set.insert({nid, lo.getShape(nid)});
@@ -270,7 +270,7 @@ static Partition initialPartition(const NodeTree& nt) {
     Group solution_nodes;
     Group branch_nodes;
     {
-        auto nodes = utils::anyOrder(nt);
+        auto nodes = utils::any_order(nt);
 
         for (auto nid : nodes) {
             auto status = nt.getStatus(nid);
@@ -358,7 +358,7 @@ static void partition_step(const NodeTree& nt, Partition& p, int h, std::vector<
         }
 
         const auto max_kids = std::accumulate(group.begin(), group.end(), 0, [&nt](int cur, NodeID nid) {
-            auto pid = nt.getParent_safe(nid);
+            auto pid = nt.getParent(nid);
             return std::max(cur, nt.childrenCount(pid));
         });
 
@@ -368,9 +368,9 @@ static void partition_step(const NodeTree& nt, Partition& p, int h, std::vector<
             vector<NodeID> marked;
 
             for (auto nid : group) {
-                if (nt.getAlternative_safe(nid) == alt) {
+                if (nt.getAlternative(nid) == alt) {
                     /// Mark the parent of nid to separate
-                    auto pid = nt.getParent_safe(nid);
+                    auto pid = nt.getParent(nid);
                     marked.push_back(pid);
                 }
             }

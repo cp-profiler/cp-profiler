@@ -133,7 +133,7 @@ void DB_Handler::save_execution(Execution* ex) const {
 
     auto& tree = ex->tree();
 
-    auto order = utils::preOrder(tree);
+    auto order = utils::pre_order(tree);
 
     constexpr static int TRANSACTION_SIZE = 50000;
 

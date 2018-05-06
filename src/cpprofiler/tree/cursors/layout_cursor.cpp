@@ -11,6 +11,7 @@
 #include "../structure.hh"
 #include "../shape.hh"
 #include "../../config.hh"
+#include "../../utils/tree_utils.hh"
 
 /// needed for VisualFlags
 #include "../traditional_view.hh"
@@ -153,7 +154,8 @@ namespace cpprofiler { namespace tree {
 
         /// Note that labels are shown on the left for all alt
         /// except the last one (right-most)
-        bool draw_left = nt.isRightMostChild(nid) ? false : true;
+
+        bool draw_left = !utils::is_right_most_child(nt, nid);
 
         if (draw_left) {
             result.l -= label_width;
@@ -288,7 +290,7 @@ namespace cpprofiler { namespace tree {
 
                 auto shape = ShapeUniqPtr{new Shape{2}};
                 (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, true);
-                (*shape)[1] = (*shape)[0];r
+                (*shape)[1] = (*shape)[0];
                 shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
                 m_layout.setShape(nid, std::move(shape));
             }

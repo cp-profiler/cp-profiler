@@ -74,6 +74,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/node_tree.hh \
     $$PWD/src/cpprofiler/tree/node_id.hh \
     $$PWD/src/cpprofiler/tree/node_info.hh \
+    $$PWD/src/cpprofiler/tree/node_stats.hh \
     $$PWD/src/cpprofiler/tree/visual_flags.hh \
     $$PWD/src/cpprofiler/tree/traditional_view.hh \
     $$PWD/src/cpprofiler/tree/tree_scroll_area.hh \

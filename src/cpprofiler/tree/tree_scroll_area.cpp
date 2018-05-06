@@ -132,9 +132,9 @@ namespace cpprofiler { namespace tree {
         auto node = nid;
         auto pos = QPoint{m_options.root_x, m_options.root_y};
 
-        while(node != m_tree.getRoot_safe()) {
+        while(node != m_tree.getRoot()) {
             pos += {m_layout.getOffset(node), layout::dist_y};
-            node = m_tree.getParent_safe(node);
+            node = m_tree.getParent(node);
         }
 
         return pos;
@@ -145,10 +145,10 @@ namespace cpprofiler { namespace tree {
         auto bb = layout.getBoundingBox(nid);
 
         auto node = nid;
-        while (node != tree.getRoot_safe()) {
+        while (node != tree.getRoot()) {
             bb.left += layout.getOffset(node);
             bb.right += layout.getOffset(node);
-            node = tree.getParent_safe(node);
+            node = tree.getParent(node);
         }
 
         bb.left += ds.root_x;

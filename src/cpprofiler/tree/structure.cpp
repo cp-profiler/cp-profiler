@@ -11,22 +11,22 @@ using cpprofiler::utils::Mutex;
 namespace cpprofiler { namespace tree {
 
     Structure::Structure() {
-        m_nodes.reserve(100);
+        nodes_.reserve(100);
     }
 
     Mutex& Structure::getMutex() const {
-        return m_structure_mutex;
+        return mutex_;
     }
 
     NodeID Structure::createRoot(int kids) {
-        if (m_nodes.size() > 0) {
+        if (nodes_.size() > 0) {
             throw invalid_tree();
         }
 
-        m_nodes.push_back(std::unique_ptr<Node>{new Node(NodeID::NoNode, kids)});
+        nodes_.push_back(std::unique_ptr<Node>{new Node(NodeID::NoNode, kids)});
 
         auto root_nid = getRoot();
-        /// create `kids` white nodes
+        /// create white nodes for children nodes
         for (auto i = 0; i < kids; ++i) {
             createChild(root_nid, i, 0);
         }
@@ -35,14 +35,18 @@ namespace cpprofiler { namespace tree {
     }
 
     NodeID Structure::createNode(NodeID pid, int kids) {
-        auto nid = NodeID{m_nodes.size()};
-        m_nodes.push_back(std::unique_ptr<Node>{new Node(pid, kids)});
+        const auto nid = NodeID{nodes_.size()};
+        nodes_.push_back(std::unique_ptr<Node>{new Node(pid, kids)});
         return nid;
     }
 
+    // void Structure::createNode(NodeID nid, NodeID pid, int kids) {
+    //
+    // }
+
     NodeID Structure::createChild(NodeID pid, int alt, int kids) {
         const auto nid = createNode(pid, kids);
-        m_nodes[pid]->setChild(nid, alt);
+        nodes_[pid]->setChild(nid, alt);
         return nid;
     }
 
@@ -51,16 +55,16 @@ namespace cpprofiler { namespace tree {
         const auto alt = childrenCount(pid);
 
         /// make room for another child
-        m_nodes[pid]->addChild();
+        nodes_[pid]->addChild();
 
         auto kid = createChild(pid, alt, 0);
         return kid;
     }
 
     void Structure::addChildren(NodeID nid, int kids) {
-        if (m_nodes[nid]->childrenCount() > 0) throw;
+        if (nodes_[nid]->childrenCount() > 0) throw;
 
-        m_nodes[nid]->setNumberOfChildren(kids);
+        nodes_[nid]->setNumberOfChildren(kids);
 
         for (auto i = 0; i < kids; ++i) {
             createChild(nid, i, 0);
@@ -68,20 +72,15 @@ namespace cpprofiler { namespace tree {
     }
 
     NodeID Structure::getChild(NodeID pid, int alt) const {
-        return m_nodes[pid]->getChild(alt);
+        return nodes_[pid]->getChild(alt);
     }
 
     NodeID Structure::getParent(NodeID nid) const {
-        return m_nodes[nid]->getParent();
-    }
-
-    NodeID Structure::getParent_safe(NodeID nid) const {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return getParent(nid);
+        return nodes_[nid]->getParent();
     }
 
     int Structure::childrenCount(NodeID pid) const {
-        return m_nodes[pid]->childrenCount();
+        return nodes_[pid]->childrenCount();
     }
 
     int Structure::getNumberOfSiblings(NodeID nid) const {
@@ -91,11 +90,6 @@ namespace cpprofiler { namespace tree {
 
     NodeID Structure::getRoot() const {
         return NodeID{0};
-    }
-
-    int Structure::getAlternative_safe(NodeID nid) const {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return getAlternative(nid);
     }
 
     int Structure::getAlternative(NodeID nid) const {
@@ -112,22 +106,8 @@ namespace cpprofiler { namespace tree {
         return -1;
     }
 
-    int Structure::nodeCount_safe() const {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return nodeCount();
-    }
-
     int Structure::nodeCount() const {
-        return m_nodes.size();
-    }
-
-    int Structure::calculateDepth(NodeID nid) const {
-        int depth = 0;
-        while (nid != NodeID::NoNode) {
-            nid = getParent(nid);
-            ++depth;
-        }
-        return depth;
+        return nodes_.size();
     }
 
 }}
