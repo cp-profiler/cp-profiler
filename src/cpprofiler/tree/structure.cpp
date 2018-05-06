@@ -71,11 +71,6 @@ namespace cpprofiler { namespace tree {
         return m_nodes[pid]->getChild(alt);
     }
 
-    NodeID Structure::getChild_safe(NodeID pid, int alt) const {
-        utils::MutexLocker locker(&m_structure_mutex);
-        return getChild(pid, alt);;
-    }
-
     NodeID Structure::getParent(NodeID nid) const {
         return m_nodes[nid]->getParent();
     }

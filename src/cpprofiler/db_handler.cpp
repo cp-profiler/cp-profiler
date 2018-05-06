@@ -5,6 +5,7 @@
 #include "../sqlite/sqlite3.h"
 #include "execution.hh"
 #include "utils/tree_utils.hh"
+#include "utils/perf_helper.hh"
 
 namespace cpprofiler {
 
@@ -125,7 +126,10 @@ std::shared_ptr<Execution> DB_Handler::loadExecution(const char* path) {
     return ex;
 }
 
+/// this takes under 2 sec for a ~1.5M nodes (golomb 10)
 void DB_Handler::save_execution(Execution* ex) const {
+
+    perfHelper.begin("save execution");
 
     auto& tree = ex->tree();
 
@@ -145,11 +149,12 @@ void DB_Handler::save_execution(Execution* ex) const {
 
         if (i % TRANSACTION_SIZE == TRANSACTION_SIZE - 1) {
             executeQuery("END;");
+            executeQuery("BEGIN;");
         }
     }
+    executeQuery("END;");
 
-
-
+    perfHelper.end();
 
 }
 

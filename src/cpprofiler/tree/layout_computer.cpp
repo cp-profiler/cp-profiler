@@ -66,7 +66,7 @@ bool LayoutComputer::compute() {
     utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
     utils::DebugMutexLocker layout_lock(&m_layout.getMutex());
 
-    /// ensure memory is allocated for every node's shape
+    /// Ensures that sufficient memory is allocated for every node's shape
     m_layout.growDataStructures(m_tree.nodeCount());
 
     // perfHelper.begin("layout");

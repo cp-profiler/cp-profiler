@@ -100,13 +100,15 @@ namespace cpprofiler {
 
         int exec_id = -1;
 
+        debug("msg:command") << "message:start";
+
         if (msg.has_info()) {
 
             auto info_bytes = QByteArray::fromStdString(msg.info());
             auto json_doc = QJsonDocument::fromJson(info_bytes);
 
             if (json_doc.isNull() || json_doc.isArray()) {
-                std::cerr << "Can't parse json in info\n";
+                debug("msg:command") << " (info invalid or empty)";
             } else {
                 QJsonObject json_obj = json_doc.object();
 
@@ -114,28 +116,27 @@ namespace cpprofiler {
 
                 if (name_val.isString()) {
                     execution_name = name_val.toString().toStdString();
+                    debug("msg:command") <<  format(" (name: {})", execution_name);
                 }
 
                 auto restarts_val = json_obj.value("has_restarts");
 
                 if (restarts_val.isBool()) {
                     has_restarts = restarts_val.toBool();
+                    debug("msg:command") << " (restarts: " << (has_restarts ? "true" : "false") << ")";
                 }
 
                 {
                     auto e_id_val = json_obj.value("execution_id");
                     exec_id = e_id_val.toInt();
+                    debug("msg:command") << " (ex_id: " << exec_id << ")";
                 }
 
 
             }
 
-
+            debug("msg:command") << "\n";
         }
-
-        std::cerr << "execution id: " << exec_id << std::endl;
-        std::cerr << "execution name: " << execution_name << std::endl;
-        std::cerr << "has restarts: " << (has_restarts ? "true" : "false") << std::endl;
 
         /// Conductor will take the ownership of the new Execution
         // auto execution = new Execution{execution_name, has_restarts};
@@ -171,13 +172,13 @@ namespace cpprofiler {
             break;
             case cpprofiler::MsgType::DONE:
                 emit doneReceiving();
-                debug("done") << "Done receiving\n";
+                debug("msg:command") << "message:done\n";
             break;
             case cpprofiler::MsgType::RESTART:
-                std::cerr << "RESTART\n";
+                debug("msg:command") << "message:restart\n";
             break;
             default:
-                std::cerr << "unknown type\n";
+                debug("msg:command") << "(!) message:unknown\n";
         }
 
     }

@@ -366,6 +366,8 @@ namespace cpprofiler { namespace tests { namespace execution {
         // binary_test_1_for_identical_subtrees(c);
 
         // binary_test_2_for_identical_subtrees(c);
+
+
         // binary_tree_execution(c);
         // simple_nary_execution(c);
         // nary_execution(c);
@@ -380,7 +382,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         // restart_tree(c);
 
-        load_execution(c, "/home/maxim/dev/cp-profiler2/execution.db");
+        // load_execution(c, "/home/maxim/dev/cp-profiler2/execution.db");
 
     }
 

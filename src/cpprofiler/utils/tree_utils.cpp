@@ -57,7 +57,7 @@ std::vector<NodeID> preOrder(const NodeTree& tree) {
         result.push_back(nid);
 
         for (auto i = tree.childrenCount(nid) - 1; i >= 0 ; --i) {
-            auto child = tree.getChild_safe(nid, i);
+            auto child = tree.getChild(nid, i);
             stk.push(child);
         }
     }

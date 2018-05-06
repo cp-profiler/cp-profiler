@@ -109,6 +109,8 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
         nid = m_structure->getChild(parent_id, alt);
     }
 
+    print("children before: {}", childrenCount(nid));
+
     m_node_info->setStatus(nid, status);
     // setLabel(nid, label);
     setLabel(nid, std::to_string(nid));
@@ -153,7 +155,7 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
         } break;
     }
 
-    print("{} has {} children!", nid, childrenCount(nid));
+    print("children after: {}", childrenCount(nid));
 
     assert( childrenCount(nid) == kids );
 
@@ -185,10 +187,6 @@ NodeID NodeTree::getRoot_safe() const {
 
 NodeID NodeTree::getRoot() const {
     return m_structure->getRoot();
-}
-
-NodeID NodeTree::getChild_safe(NodeID nid, int alt) const {
-    return m_structure->getChild_safe(nid, alt);
 }
 
 NodeID NodeTree::getChild(NodeID nid, int alt) const {

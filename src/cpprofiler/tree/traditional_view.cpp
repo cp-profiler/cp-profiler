@@ -105,8 +105,24 @@ void TraditionalView::navDown() {
 
     if (kids == 0 || m_vis_flags->get_hidden(cur_nid)) return;
 
-    auto first_kid = m_tree.getChild_safe(cur_nid, 0);
+    auto first_kid = m_tree.getChild(cur_nid, 0);
     m_user_data->setSelectedNode(first_kid);
+    centerCurrentNode();
+    emit needsRedrawing();
+}
+
+void TraditionalView::navDownAlt() {
+    auto cur_nid = m_user_data->getSelectedNode();
+    if (cur_nid == NodeID::NoNode) return;
+
+    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
+
+    const auto kids = m_tree.childrenCount(cur_nid);
+
+    if (kids == 0 || m_vis_flags->get_hidden(cur_nid)) return;
+
+    auto last_kid = m_tree.getChild(cur_nid, kids-1);
+    m_user_data->setSelectedNode(last_kid);
     centerCurrentNode();
     emit needsRedrawing();
 }
@@ -162,7 +178,7 @@ void TraditionalView::navRight() {
     auto kids = m_tree.childrenCount(pid);
 
     if (cur_alt + 1 < kids) {
-        m_user_data->setSelectedNode(m_tree.getChild_safe(pid, cur_alt + 1));
+        m_user_data->setSelectedNode(m_tree.getChild(pid, cur_alt + 1));
         centerCurrentNode();
     }
 
@@ -292,6 +308,9 @@ void TraditionalView::handleDoubleClick() {
     } else if (status == NodeStatus::MERGED) {
         toggleCollapsePentagon(cur_nid);
     }
+
+    /// should this happen automatically whenever the layout is changed?
+    centerCurrentNode();
 }
 
 void TraditionalView::toggleCollapsePentagon(NodeID nid) {
@@ -340,6 +359,8 @@ void TraditionalView::unhideAll() {
         setLayoutOutdated();
         emit needsRedrawing();
     }
+
+    centerCurrentNode();
 }
 
 void TraditionalView::toggleHighlighted() {
@@ -409,7 +430,7 @@ void TraditionalView::forceComputeLayout() {
 void TraditionalView::computeLayout() {
 
     static int counter = 0;
-    // debug("layout") << "compute Layout:" << ++counter;
+    debug("layout") << "compute Layout:" << ++counter << "\n";
     auto changed = m_layout_computer->compute();
     m_layout_stale = false;
     if (changed) {

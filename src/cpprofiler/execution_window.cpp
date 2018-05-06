@@ -96,15 +96,25 @@ namespace cpprofiler {
             {
                 auto nodeMenu = menuBar->addMenu("&Node");
 
+                auto centerNode = new QAction{"Center current node", this};
+                centerNode->setShortcut(QKeySequence("C"));
+                nodeMenu->addAction(centerNode);
+                connect(centerNode, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::centerCurrentNode);
+
                 auto navRoot = new QAction{"Go to the root", this};
                 navRoot->setShortcut(QKeySequence("R"));
                 nodeMenu->addAction(navRoot);
                 connect(navRoot, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navRoot);
 
-                auto navDown = new QAction{"Go down the tree", this};
+                auto navDown = new QAction{"Go to the left-most child", this};
                 navDown->setShortcut(QKeySequence("Down"));
                 nodeMenu->addAction(navDown);
                 connect(navDown, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navDown);
+
+                auto navDownAlt = new QAction{"Go to the left-most child", this};
+                navDownAlt->setShortcut(QKeySequence("Alt+Down"));
+                nodeMenu->addAction(navDownAlt);
+                connect(navDownAlt, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navDownAlt);
 
                 auto navUp = new QAction{"Go up the tree", this};
                 navUp->setShortcut(QKeySequence("Up"));

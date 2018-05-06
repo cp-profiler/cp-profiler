@@ -79,6 +79,7 @@ public slots:
 
     void navUp();
     void navDown();
+    void navDownAlt();
     void navLeft();
     void navRight();
 

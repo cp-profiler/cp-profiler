@@ -288,7 +288,7 @@ namespace cpprofiler { namespace tree {
 
                 auto shape = ShapeUniqPtr{new Shape{2}};
                 (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, true);
-                (*shape)[1] = (*shape)[0];
+                (*shape)[1] = (*shape)[0];r
                 shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
                 m_layout.setShape(nid, std::move(shape));
             }

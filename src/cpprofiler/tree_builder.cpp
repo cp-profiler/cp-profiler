@@ -61,10 +61,9 @@ void TreeBuilder::handleNode(Message* node) {
         done = true;
     }
 
-    // qDebug() << "handle node";
 
     std::unique_ptr<Message> node_msg{node};
-    // std::cerr << *node << std::endl;
+    debug("msg:node") << *node << std::endl;
 
     auto n_uid = node->nodeUID();
     auto p_uid = node->parentUID();

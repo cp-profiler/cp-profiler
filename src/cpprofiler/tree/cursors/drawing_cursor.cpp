@@ -102,6 +102,12 @@ namespace cpprofiler { namespace tree {
         painter.setBrush(old_brush);
     }
 
+    static void drawBoundingBox(QPainter& painter, int x, int y, NodeID nid, const Layout& layout) {
+        auto bb = layout.getBoundingBox(nid);
+        auto height = layout.getDepth(nid) * layout::dist_y;
+        painter.drawRect(x + bb.left, y, bb.right - bb.left, height);
+    }
+
     void DrawingCursor::processCurrentNode() {
 
         using namespace traditional;
@@ -156,11 +162,10 @@ namespace cpprofiler { namespace tree {
                 /// draw bounding box and shape
         if (m_user_data.getSelectedNode() == m_cur_node) {
             m_painter.setBrush(QColor{0, 0, 0, 20});
-            auto bb = m_layout.getBoundingBox(m_cur_node);
 
-            auto height = m_layout.getDepth(m_cur_node) * layout::dist_y;
-            m_painter.drawRect(cur_x + bb.left, cur_y, bb.right - bb.left, height);
-            // drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
+            // drawBoundingBox(m_painter, cur_x, cur_y, m_cur_node, m_layout);
+
+            drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
         }
 
 

@@ -179,7 +179,6 @@ public:
 
     int childrenCount(NodeID nid) const;
 
-    NodeID getChild_safe(NodeID nid, int alt) const;
     NodeID getChild(NodeID nid, int alt) const;
 
     NodeID getParent(NodeID nid) const;
@@ -232,7 +231,7 @@ void NodeTree::preOrderApply(NodeID start, Callback cb) const {
         cb(nid);
 
         for (auto i = childrenCount(nid) - 1; i >= 0; --i) {
-            auto child = getChild_safe(nid, i);
+            auto child = getChild(nid, i);
             stk.push(child);
         }
     }

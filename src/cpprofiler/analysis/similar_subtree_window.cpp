@@ -415,7 +415,7 @@ static int calculateHeightOf(NodeID nid, const NodeTree& nt, std::vector<int>& h
         cur_max = 1;
     } else {
         for (auto alt = 0; alt < nt.childrenCount(nid); ++alt) {
-            auto child = nt.getChild_safe(nid, alt);
+            auto child = nt.getChild(nid, alt);
             cur_max = std::max(cur_max, calculateHeightOf(child, nt, height_info) + 1);
         }
     }
@@ -431,9 +431,9 @@ static std::vector<SubtreePattern> runIdenticalSubtrees(const NodeTree& nt) {
 
     auto label_opt = LabelOption::IGNORE_LABEL;
 
-    std::vector<int> height_info(nt.nodeCount_safe());
+    std::vector<int> height_info(nt.nodeCount());
 
-    auto max_height = calculateHeightOf(nt.getRoot_safe(), nt, height_info);
+    auto max_height = calculateHeightOf(nt.getRoot(), nt, height_info);
 
     auto max_depth = nt.depth();
 
@@ -475,7 +475,7 @@ static vector<SubtreePattern> eliminateSubsumed(const NodeTree& tree, const vect
 
             const auto kids = tree.childrenCount(nid);
             for (auto alt = 0; alt < kids; ++alt) {
-                auto kid = tree.getChild_safe(nid, alt);
+                auto kid = tree.getChild(nid, alt);
                 marked.insert(kid);
             }
 

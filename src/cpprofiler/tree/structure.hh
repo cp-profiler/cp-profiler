@@ -40,7 +40,6 @@ public:
     NodeID getParent_safe(NodeID nid) const;
 
     NodeID getChild(NodeID pid, int alt) const;
-    NodeID getChild_safe(NodeID pid, int alt) const;
 
     /// which alternative the current node is relative to its parent
     int getAlternative(NodeID nid) const;

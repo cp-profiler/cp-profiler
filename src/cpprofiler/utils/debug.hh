@@ -4,6 +4,7 @@
 #include <vector>
 #include <QString>
 #include <QDebug>
+#include <sstream>
 
 namespace cpprofiler {
 
@@ -24,21 +25,29 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
     return os << vec.back() << "]";
 }
 
-inline void print(const char* temp) {
-    std::cerr << temp << std::endl;
+inline std::string format(const char* temp) {
+    return temp;
 }
 
 template<typename T, typename ... Types>
-void print(const char* temp, T value, Types ... args) {
+std::string format(const char* temp, T value, Types ... args) {
+    std::ostringstream oss;
     for (;*temp != '\0'; ++temp) {
 
         if (*temp == '{') {
-            std::cerr << value;
-            print(temp+2, args...);
-            return;
+            oss << value;
+            oss << format(temp+2, args...);
+            break;
         }
-        std::cerr << *temp;
+        oss << *temp;
     }
+
+    return oss.str();
+}
+
+template<typename ...Types>
+void print(const char* temp, Types ... args) {
+    std::cerr << format(temp, args...) << std::endl;
 }
 
 

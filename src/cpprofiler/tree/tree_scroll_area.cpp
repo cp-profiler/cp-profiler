@@ -210,7 +210,7 @@ namespace cpprofiler { namespace tree {
                 auto kids = m_tree.childrenCount(node);
 
                 for (auto i = 0; i < kids; ++i) {
-                    auto kid = m_tree.getChild_safe(node, i);
+                    auto kid = m_tree.getChild(node, i);
 
                     auto pair = getRealBB(kid, m_tree, m_layout, m_options);
                     if (pair.first <= x && pair.second >= x) {
