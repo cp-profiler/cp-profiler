@@ -10,8 +10,8 @@
 namespace cpprofiler { namespace tree {
 
 
-NodeTree::NodeTree() : m_structure{new Structure()}, m_node_info(new NodeInfo) {
-    // connect(&m_node_stats, &NodeStats::stats_changed, this, &NodeTree::node_stats_changed);
+NodeTree::NodeTree() : structure_{new Structure()}, node_info_(new NodeInfo) {
+
 }
 
 NodeTree::~NodeTree() = default;
@@ -21,21 +21,16 @@ void NodeTree::setNameMap(std::shared_ptr<const NameMap> nm) {
 }
 
 void NodeTree::addEntry(NodeID nid) {
-    m_node_info->addEntry(nid);
-    m_labels.push_back({});
+    node_info_->addEntry(nid);
+    labels_.push_back({});
 }
 
 const NodeInfo& NodeTree::node_info() const {
-    return *m_node_info;
+    return *node_info_;
 }
 
 NodeInfo& NodeTree::node_info() {
-    return *m_node_info;
-}
-
-NodeID NodeTree::createRoot_safe(int kids) {
-    utils::MutexLocker locker(&treeMutex(), "create root");
-    return m_structure->createRoot(kids);
+    return *node_info_;
 }
 
 void NodeTree::promoteNode(NodeID nid, int kids, tree::NodeStatus status, Label label) {
@@ -47,41 +42,25 @@ void NodeTree::promoteNode(NodeID nid, int kids, tree::NodeStatus status, Label 
     promoteNode(pid, alt, kids, status, label);
 }
 
-/// create undet root that can be later transformed into a branch node
-NodeID NodeTree::createDummyRoot() {
-    auto nid = m_structure->createRoot(0);
-    addEntry(nid);
-
-    m_node_stats.inform_depth(1);
-    m_node_stats.add_undetermined(1);
-
-    m_node_info->setStatus(nid, NodeStatus::UNDETERMINED);
-
-    emit structureUpdated();
-
-    return nid;
-}
-
-
 NodeID NodeTree::createRoot(int kids, Label label) {
-    auto nid = m_structure->createRoot(kids);
+    auto nid = structure_->createRoot(kids);
     addEntry(nid);
     setLabel(nid, label);
 
     auto depth = kids > 0 ? 2 : 1;
 
-    m_node_stats.inform_depth(depth);
-    m_node_stats.add_branch(1);
+    node_stats_.inform_depth(depth);
+    node_stats_.add_branch(1);
 
-    m_node_info->setStatus(nid, NodeStatus::BRANCH);
+    node_info_->setStatus(nid, NodeStatus::BRANCH);
 
     for (auto i = 0; i < kids; ++i) {
-        auto child_nid = m_structure->getChild(nid, i);
+        auto child_nid = structure_->getChild(nid, i);
         addEntry(child_nid);
-        m_node_info->setStatus(child_nid, NodeStatus::UNDETERMINED);
+        node_info_->setStatus(child_nid, NodeStatus::UNDETERMINED);
     }
 
-    m_node_stats.add_undetermined(kids);
+    node_stats_.add_undetermined(kids);
 
     emit structureUpdated();
 
@@ -89,11 +68,11 @@ NodeID NodeTree::createRoot(int kids, Label label) {
 }
 
 void NodeTree::addExtraChild(NodeID pid) {
-    const auto nid = m_structure->addExtraChild(pid);
+    const auto nid = structure_->addExtraChild(pid);
     addEntry(nid);
 
-    m_node_info->setStatus(nid, NodeStatus::UNDETERMINED);
-    m_node_stats.add_undetermined(1);
+    node_info_->setStatus(nid, NodeStatus::UNDETERMINED);
+    node_stats_.add_undetermined(1);
 
     emit structureUpdated();
 }
@@ -105,46 +84,44 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
     if (parent_id == NodeID::NoNode) {
         /// This makes it possible to transform an undet root node into a branch node,
         /// necessary, for example, in merging
-        nid = m_structure->getRoot();
+        nid = structure_->getRoot();
     } else {
-        nid = m_structure->getChild(parent_id, alt);
+        nid = structure_->getChild(parent_id, alt);
     }
 
-    print("children before: {}", childrenCount(nid));
-
-    m_node_info->setStatus(nid, status);
+    node_info_->setStatus(nid, status);
     // setLabel(nid, label);
     setLabel(nid, std::to_string(nid));
 
     if (kids > 0) {
-        m_structure->addChildren(nid, kids);
-        emit childrenStructureChanged(parent_id); /// updates dirty status for nodes
+        structure_->addChildren(nid, kids);
+        emit childrenStructureChanged(nid); /// updates dirty status for nodes
 
         for (auto i = 0; i < kids; ++i) {
-            auto child_nid = m_structure->getChild(nid, i);
+            auto child_nid = structure_->getChild(nid, i);
             addEntry(child_nid);
-            m_node_info->setStatus(child_nid, NodeStatus::UNDETERMINED);
+            node_info_->setStatus(child_nid, NodeStatus::UNDETERMINED);
         }
 
-        m_node_stats.add_undetermined(kids);
+        node_stats_.add_undetermined(kids);
 
         auto cur_depth = utils::calculate_depth(*this, nid);
-        m_node_stats.inform_depth(cur_depth + 1);
+        node_stats_.inform_depth(cur_depth + 1);
     }
 
     switch (status) {
         case NodeStatus::BRANCH: {
-            m_node_stats.subtract_undetermined(1);
-            m_node_stats.add_branch(1);
+            node_stats_.subtract_undetermined(1);
+            node_stats_.add_branch(1);
         } break;
         case NodeStatus::FAILED: {
-            m_node_stats.subtract_undetermined(1);
-            m_node_stats.add_failed(1);
+            node_stats_.subtract_undetermined(1);
+            node_stats_.add_failed(1);
             closeNode(nid);
         } break;
         case NodeStatus::SOLVED: {
-            m_node_stats.subtract_undetermined(1);
-            m_node_stats.add_solved(1);
+            node_stats_.subtract_undetermined(1);
+            node_stats_.add_solved(1);
             notifyAncestors(nid);
             closeNode(nid);
         } break;
@@ -156,8 +133,6 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
         } break;
     }
 
-    print("children after: {}", childrenCount(nid));
-
     assert( childrenCount(nid) == kids );
 
     emit structureUpdated();
@@ -166,68 +141,63 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
 }
 
 int NodeTree::nodeCount() const {
-    return m_structure->nodeCount();
+    return structure_->nodeCount();
 }
 
 NodeID NodeTree::getParent(NodeID nid) const {
-    return m_structure->getParent(nid);
-}
-
-NodeID NodeTree::getRoot_safe() const {
-    utils::MutexLocker locker(&treeMutex(), "get root");
-    return m_structure->getRoot();
+    return structure_->getParent(nid);
 }
 
 NodeID NodeTree::getRoot() const {
-    return m_structure->getRoot();
+    return structure_->getRoot();
 }
 
 NodeID NodeTree::getChild(NodeID nid, int alt) const {
-    return m_structure->getChild(nid, alt);
+    return structure_->getChild(nid, alt);
 }
 
 const NodeStats& NodeTree::node_stats() const {
-    return m_node_stats;
+    return node_stats_;
 }
 
 utils::Mutex& NodeTree::treeMutex() const {
-    return m_structure->getMutex();
+    return structure_->getMutex();
 }
 
 NodeStatus NodeTree::getStatus(NodeID nid) const {
-    m_node_info->getStatus(nid);
+    node_info_->getStatus(nid);
 }
 
 int NodeTree::getNumberOfSiblings(NodeID nid) const {
-    return m_structure->getNumberOfSiblings(nid);
+    return structure_->getNumberOfSiblings(nid);
 }
 
 int NodeTree::depth() const {
-    m_node_stats.maxDepth();
+    node_stats_.maxDepth();
 }
 
 int NodeTree::getAlternative(NodeID nid) const {
-    return m_structure->getAlternative(nid);
+    return structure_->getAlternative(nid);
 }
 
 
 int NodeTree::childrenCount(NodeID nid) const {
-    return m_structure->childrenCount(nid);
+    return structure_->childrenCount(nid);
 }
 
 void NodeTree::notifyAncestors(NodeID nid) {
     while(nid != NodeID::NoNode) {
-        m_node_info->setHasSolvedChildren(nid, true);
+        node_info_->setHasSolvedChildren(nid, true);
         nid = getParent(nid);
     }
 }
 
 void NodeTree::setHasOpenChildren(NodeID nid, bool val) {
-    m_node_info->setHasOpenChildren(nid, val);
+    node_info_->setHasOpenChildren(nid, val);
 }
 
 const Label NodeTree::getLabel(NodeID nid) const {
-    auto& orig = m_labels.at(nid);
+    auto& orig = labels_.at(nid);
     if (name_map_) {
         return name_map_->replaceNames(orig);
     }
@@ -235,11 +205,11 @@ const Label NodeTree::getLabel(NodeID nid) const {
 }
 
 bool NodeTree::hasSolvedChildren(NodeID nid) const {
-    return m_node_info->hasSolvedChildren(nid);
+    return node_info_->hasSolvedChildren(nid);
 }
 
 bool NodeTree::hasOpenChildren(NodeID nid) const {
-    return m_node_info->hasOpenChildren(nid);
+    return node_info_->hasOpenChildren(nid);
 }
 
 bool NodeTree::isOpen(NodeID nid) const {
@@ -272,11 +242,7 @@ void NodeTree::closeNode(NodeID nid) {
 }
 
 void NodeTree::setLabel(NodeID nid, const Label& label) {
-    m_labels[nid] = label;
-}
-
-void NodeTree::setStatus(NodeID nid, NodeStatus status) {
-    m_node_info->setStatus(nid, status);
+    labels_[nid] = label;
 }
 
 

@@ -63,17 +63,10 @@ class SolverData {
 
     IdMap m_id_map;
 
-    std::unordered_map<tree::NodeID, std::string> m_labels;
-
-    static const std::string no_label;
-
 public:
 
     tree::NodeID getNodeId(SolverID sid) const;
     void setNodeId(SolverID sid, tree::NodeID nid);
-
-    void setLabel(tree::NodeID, const std::string& label);
-    const std::string& getLabel(tree::NodeID) const;
 
 };
 

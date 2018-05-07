@@ -288,8 +288,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         auto& tree = ex->tree();
 
-        // auto root = tree.createRoot(2, "root");
-        auto root = tree.createDummyRoot();
+        auto root = tree.createRoot(0);
 
         auto n1 = tree.promoteNode(NodeID::NoNode, -1, 0, tree::NodeStatus::FAILED, "1");
     //     auto n2 = tree.promoteNode(root, 1, 0, tree::NodeStatus::FAILED, "2");

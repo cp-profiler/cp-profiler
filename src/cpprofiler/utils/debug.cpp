@@ -17,7 +17,7 @@ std::ostream& debug(std::string type) {
         ,"done"
         ,"error"
         ,"perf"
-        ,"layout"
+        // ,"layout"
         ,"msg:command"
         // ,"msg:node"
     };

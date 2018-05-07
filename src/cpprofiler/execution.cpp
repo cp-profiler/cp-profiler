@@ -84,8 +84,6 @@ namespace cpprofiler {
 
 namespace cpprofiler {
 
-    const std::string SolverData::no_label = "";
-
     tree::NodeID SolverData::getNodeId(SolverID sid) const {
         return m_id_map.get(sid);
     }
@@ -94,15 +92,5 @@ namespace cpprofiler {
         m_id_map.addPair(sid, nid);
     }
 
-    void SolverData::setLabel(tree::NodeID nid, const std::string& label) {
-        m_labels[nid] = label;
-    }
-
-    const std::string& SolverData::getLabel(tree::NodeID nid) const {
-        if (m_labels.find(nid) != m_labels.end()) {
-            return m_labels.at(nid);
-        }
-        return no_label;
-    }
 
 }

@@ -54,8 +54,6 @@ namespace cpprofiler { namespace tree {
 
         painter.scale(m_options.scale,m_options.scale);
 
-        // auto root_nid = m_tree.getRoot_safe();
-
         if (!m_layout.getLayoutDone(m_start_node)) { return; }
 
         auto bb = m_layout.getBoundingBox(m_start_node);
@@ -182,7 +180,7 @@ namespace cpprofiler { namespace tree {
         std::queue<NodeID> queue;
 
 
-        auto root = m_tree.getRoot_safe();
+        auto root = m_tree.getRoot();
 
         if (root == NodeID::NoNode) { return NodeID::NoNode; }
 

@@ -24,29 +24,30 @@ using Label = std::string;
 static Label emptyLabel = {};
 
 /// Node tree encapsulates tree structure, node statistics (number of nodes etc.),
-/// status for nodes (m_node_info), labels
+/// status for nodes (node_info_), labels
 class NodeTree : public QObject {
 Q_OBJECT
-    std::unique_ptr<Structure> m_structure;
-
-    std::unique_ptr<NodeInfo> m_node_info;
-
+    /// Tree structural information
+    std::unique_ptr<Structure> structure_;
+    /// Nodes' statuses and flags (has solved/open children etc.)
+    std::unique_ptr<NodeInfo> node_info_;
+    /// Mapping from ugly to nice names (if present, owned by Execution)
     std::shared_ptr<const NameMap> name_map_;
-
-    std::vector<Label> m_labels;
-
-    NodeStats m_node_stats;
+    /// Nodes' labels
+    std::vector<Label> labels_;
+    /// Count of different types of nodes, tree depth
+    NodeStats node_stats_;
 
     /// Ensure all relevant data structures contain this node
     void addEntry(NodeID nid);
 
-    /// notify ancestor nodes of a solution
+    /// Notify ancestor nodes of a solution
     void notifyAncestors(NodeID nid);
 
-    /// notify ancestor nodes that of whether they contain open nodes
+    /// Notify ancestor nodes that of whether they contain open nodes
     void onChildClosed(NodeID nid);
 
-    /// set closed and notify ancestors
+    /// Set closed and notify ancestors
     void closeNode(NodeID nid);
 
 public:
@@ -67,10 +68,6 @@ public:
 
     NodeID createRoot(int kids, Label label = emptyLabel);
 
-    NodeID createRoot_safe(int kids);
-
-    NodeID createDummyRoot();
-
     /// turn a white node into some other node
     void promoteNode(NodeID nid, int kids, NodeStatus status, Label = emptyLabel);
 
@@ -85,15 +82,12 @@ public:
 
     void setLabel(NodeID nid, const Label& label);
 
-    void setStatus(NodeID nid, NodeStatus status);
-
     /// ********************************************************************
     /// *************************** Tree Queries ***************************
 
     /// return the depth of the tree
     int depth() const;
 
-    NodeID getRoot_safe() const;
     NodeID getRoot() const;
 
     /// Get the total nuber of nodes (including undetermined)
@@ -120,25 +114,26 @@ public:
     /// Get the label of node `nid`
     const Label getLabel(NodeID nid) const;
 
-    /// Inquire if the node `nid` has solved children (ancestors?)
+    /// Check if the node `nid` has solved children (ancestors?)
     bool hasSolvedChildren(NodeID nid) const;
 
-    /// Inquire if the node `nid` has open children (ancestors?)
+    /// Check if the node `nid` has open children (ancestors?)
     bool hasOpenChildren(NodeID nid) const;
 
-    /// Inquire if the node `nid` is open or has open children
+    /// Check if the node `nid` is open or has open children
     bool isOpen(NodeID nid) const;
 
     /// ********************************************************************
 
 signals:
 
+    /// Notifies that the strucutre of the tree changed in general
+    /// and triggeres layout update 
     void structureUpdated();
 
-    /// sets immediate children and nodes up the tree as dirty
+    /// Notifies that the structure underneath the node has changed
+    /// and requires layout update
     void childrenStructureChanged(NodeID nid);
-
-    void node_stats_changed();
 
 };
 

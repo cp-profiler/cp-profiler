@@ -25,7 +25,7 @@ class NodeInfoEntry {
 
 private:
 
-    std::bitset<32> m_bitset;
+    std::bitset<4> m_bitset;
 
 public:
 

@@ -36,14 +36,11 @@ TraditionalView::TraditionalView(const NodeTree& tree)
   m_vis_flags(utils::make_unique<VisualFlags>()),
   m_layout_computer(utils::make_unique<LayoutComputer>(tree, *m_layout, *m_vis_flags))
 {
+    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
 
-    auto root_node = m_tree.getRoot_safe();
-
-    m_scroll_area.reset(new TreeScrollArea(root_node, m_tree, *m_user_data, *m_layout, *m_vis_flags));
+    m_scroll_area.reset(new TreeScrollArea(m_tree.getRoot(), m_tree, *m_user_data, *m_layout, *m_vis_flags));
 
     // std::cerr << "traditional view thread:" << std::this_thread::get_id() << std::endl;
-
-    // m_scroll_area
 
     connect(m_scroll_area.get(), &TreeScrollArea::nodeClicked, this, &TraditionalView::selectNode);
     connect(m_scroll_area.get(), &TreeScrollArea::nodeDoubleClicked, this, &TraditionalView::handleDoubleClick);
@@ -51,15 +48,7 @@ TraditionalView::TraditionalView(const NodeTree& tree)
     connect(this, &TraditionalView::needsRedrawing, this, &TraditionalView::redraw);
 
     connect(&tree, &NodeTree::childrenStructureChanged, [this](NodeID nid) {
-
         if (nid == NodeID::NoNode) { return; }
-
-        auto nkids = m_tree.childrenCount(nid);
-
-        for (auto i = 0; i < nkids; ++i) {
-            auto kid = m_tree.getChild(nid, i);
-            m_layout_computer->setDirty(kid);
-        }
         m_layout_computer->dirtyUp(nid);
     });
 
@@ -69,8 +58,6 @@ TraditionalView::TraditionalView(const NodeTree& tree)
     connect(autoHideTimer, &QTimer::timeout, this, &TraditionalView::autoUpdate);
 
     autoHideTimer->start(30);
-
-    qDebug() << "TraditionalView() finished";
 
 }
 
@@ -406,7 +393,7 @@ void TraditionalView::centerNode(NodeID nid) {
 
     const auto x_offset = global_node_x_offset(m_tree, *m_layout, nid);
 
-    const auto root_nid = m_tree.getRoot_safe();
+    const auto root_nid = m_tree.getRoot();
     const auto bb = m_layout->getBoundingBox(root_nid);
 
     const auto value_x = x_offset - bb.left;

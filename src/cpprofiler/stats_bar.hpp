@@ -73,13 +73,6 @@ public slots:
 
   }
 
-//   void display(const Statistics& stats) {
-//     depthLabel->setNum(stats.maxDepth);
-//     solvedLabel->setNum(stats.solutions);
-//     failedLabel->setNum(stats.failures);
-//     choicesLabel->setNum(stats.choices);
-//     openLabel->setNum(stats.undetermined);
-//   }
 };
 
 

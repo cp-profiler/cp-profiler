@@ -236,7 +236,7 @@ namespace cpprofiler {
         m_executions[ex_id] = ex;
         m_execution_list->addExecution(*ex);
 
-        const bool auto_show = false;
+        const bool auto_show = true;
         if (auto_show) {
             showTraditionalView(ex.get());
         }

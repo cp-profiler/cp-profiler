@@ -17,13 +17,13 @@ namespace cpprofiler { namespace tree {
     void NodeInfoEntry::setNumericFlag(NumFlagLoc loc, int value) {
         uint32_t mask = (1 << loc.len) - 1;
         uint32_t clearmask = ~(mask << loc.pos);
-        m_bitset &= std::bitset<32>(clearmask);
+        m_bitset &= std::bitset<4>(clearmask);
         m_bitset |= (value & mask) << loc.pos;
     }
 
     int NodeInfoEntry::getNumericFlag(NumFlagLoc loc) const {
         uint32_t mask = (1 << loc.len) - 1;
-        return ((m_bitset >> loc.pos) & std::bitset<32>(mask)).to_ulong();
+        return ((m_bitset >> loc.pos) & std::bitset<4>(mask)).to_ulong();
     }
 
 }}

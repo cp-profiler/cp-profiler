@@ -66,22 +66,11 @@ namespace cpprofiler {
             connect(&m_execution.tree(), &tree::NodeTree::structureUpdated,
                     m_traditional_view.get(), &tree::TraditionalView::setLayoutOutdated);
 
-            connect(&m_execution.tree(), &tree::NodeTree::node_stats_changed,
-                stats_bar, &NodeStatsBar::update);
-
-            connect(&m_execution.tree(), &tree::NodeTree::node_stats_changed,
-                []() {
-                    static int counter = 0;
-                    counter++;
-                    qDebug() << "updated node stats times: " << counter;
-                });
-
             {
                 auto statsUpdateTimer = new QTimer(this);
                 connect(statsUpdateTimer, &QTimer::timeout, stats_bar, &NodeStatsBar::update);
                 statsUpdateTimer->start(16);
             }
-
 
         }
 
