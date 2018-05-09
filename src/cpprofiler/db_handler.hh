@@ -31,6 +31,8 @@ void insertNode(NodeData data) const;
 
 void readNodes(Execution& ex) const;
 
+int countNodes() const;
+
 void executeQuery(const char *sql, SQL_Callback cb = nullptr, void * arg = nullptr) const;
 
 public:

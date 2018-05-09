@@ -356,7 +356,19 @@ namespace cpprofiler { namespace tests { namespace execution {
         } else {
             c.addNewExecution(ex);
         }
+    }
 
+    static void db_create_tree(Conductor& c) {
+
+        auto ex = c.addNewExecution("Created as in DB");
+        auto& tree = ex->tree();
+
+        tree.db_initialize(100);
+
+        tree.db_createRoot(NodeID{0});
+
+        tree.db_addChild(NodeID{1}, NodeID{0}, 0, tree::NodeStatus::BRANCH, "a");
+        tree.db_addChild(NodeID{2}, NodeID{0}, 1, tree::NodeStatus::BRANCH, "b");
     }
 
     void run(Conductor& c) {
@@ -382,6 +394,8 @@ namespace cpprofiler { namespace tests { namespace execution {
         // restart_tree(c);
 
         // load_execution(c, "/home/maxim/dev/cp-profiler2/execution.db");
+
+        // db_create_tree(c);
 
     }
 

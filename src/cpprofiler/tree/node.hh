@@ -58,7 +58,7 @@ public:
     void addChild();
 
     /// Get the identifier of the child at position alt
-    NodeID getChild(int alt);
+    NodeID getChild(int alt) const;
 
     /// Get the identifier of the parent
     NodeID getParent() const;

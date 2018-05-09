@@ -3,65 +3,60 @@
 namespace cpprofiler { namespace tree {
 
     void VisualFlags::ensure_id_exists(NodeID nid) {
-        auto id = static_cast<int>(nid);
-        if (m_label_shown.size() < id + 1) {
-            m_label_shown.resize(id + 1);
-            m_node_hidden.resize(id + 1);
-            m_shape_highlighted.resize(id + 1);
+        const auto id = static_cast<int>(nid);
+        if (label_shown_.size() < id + 1) {
+            label_shown_.resize(id + 1);
+            node_hidden_.resize(id + 1);
+            shape_highlighted_.resize(id + 1);
         }
     }
 
-
-    void VisualFlags::set_label_shown(NodeID nid, bool val) {
+    void VisualFlags::setLabelShown(NodeID nid, bool val) {
         ensure_id_exists(nid);
-        m_label_shown[nid] = val;
+        label_shown_[nid] = val;
     }
 
-    bool VisualFlags::get_label_shown(NodeID nid) const {
+    bool VisualFlags::isLabelShown(NodeID nid) const {
 
-        // return false; // TODO
-        // ensure_id_exists(nid);
-
-        if (m_label_shown.size() <= nid) return false;
-
-        return m_label_shown.at(nid);
+        if (label_shown_.size() <= nid) return false;
+        return label_shown_.at(nid);
     }
 
-    void VisualFlags::set_hidden(NodeID nid, bool val) {
+    void VisualFlags::setHidden(NodeID nid, bool val) {
         ensure_id_exists(nid);
-        m_node_hidden[nid] = val;
+        node_hidden_[nid] = val;
     }
 
-    bool VisualFlags::get_hidden(NodeID nid) const {
-        if (m_node_hidden.size() <= nid) return false;
-        return m_node_hidden.at(nid);
+    bool VisualFlags::isHidden(NodeID nid) const {
+        if (node_hidden_.size() <= nid) return false;
+        return node_hidden_.at(nid);
     }
 
-    void VisualFlags::set_highlighted(NodeID nid, bool val) {
+    void VisualFlags::setHighlighted(NodeID nid, bool val) {
         ensure_id_exists(nid);
 
         if (val) {
-            m_highlighted_shapes.insert(nid);
+            highlighted_shapes_.insert(nid);
         } else {
-            m_highlighted_shapes.erase(nid);
+            highlighted_shapes_.erase(nid);
         }
-        m_shape_highlighted[nid] = val;
+        shape_highlighted_[nid] = val;
     }
 
-    bool VisualFlags::get_highlighted(NodeID nid) const {
+    bool VisualFlags::isHighlighted(NodeID nid) const {
 
-        if (m_shape_highlighted.size() <= nid) {
+        if (shape_highlighted_.size() <= nid) {
             return false;
         }
-        return m_shape_highlighted[nid];
+        return shape_highlighted_[nid];
     }
 
-    void VisualFlags::unhighlight_all() {
-        for (auto nid : m_highlighted_shapes) {
-            m_shape_highlighted[nid] = false;
+    void VisualFlags::unhighlightAll() {
+        for (auto nid : highlighted_shapes_) {
+            shape_highlighted_[nid] = false;
         }
 
-        m_highlighted_shapes.clear();
+        highlighted_shapes_.clear();
     }
 
 }}

@@ -17,12 +17,7 @@ namespace cpprofiler {
     Execution::Execution(const std::string& name, bool restarts)
         : m_name{name}, m_tree{new tree::NodeTree()}, m_is_restarts(restarts)
     {
-
-
-
         /// need to create a dummy root node
-        // TODO: make number of children dynamic
-
         if (restarts) {
             m_tree->createRoot(0, "root");
         }

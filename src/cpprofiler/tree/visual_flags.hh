@@ -7,29 +7,29 @@ namespace cpprofiler { namespace tree {
 
 class VisualFlags {
 
-    std::vector<bool> m_label_shown;
+    std::vector<bool> label_shown_;
 
-    std::vector<bool> m_node_hidden;
+    std::vector<bool> node_hidden_;
 
-    std::vector<bool> m_shape_highlighted;
+    std::vector<bool> shape_highlighted_;
 
-    /// This is somewhat redundant given m_shape_highlighted, but
-    /// it is more suitable for unhighlighting previously highlighted
-    std::set<NodeID> m_highlighted_shapes;
+    /// Somewhat redundant given m_shape_highlighted, but it is
+    /// more efficient for unhighlighting previously highlighted subtrees
+    std::set<NodeID> highlighted_shapes_;
 
     void ensure_id_exists(NodeID id);
 
 public:
-    void set_label_shown(NodeID nid, bool val);
-    bool get_label_shown(NodeID nid) const;
+    void setLabelShown(NodeID nid, bool val);
+    bool isLabelShown(NodeID nid) const;
 
-    void set_hidden(NodeID nid, bool val);
-    bool get_hidden(NodeID nid) const;
+    void setHidden(NodeID nid, bool val);
+    bool isHidden(NodeID nid) const;
 
-    void set_highlighted(NodeID nid, bool val);
-    bool get_highlighted(NodeID nid) const;
+    void setHighlighted(NodeID nid, bool val);
+    bool isHighlighted(NodeID nid) const;
 
-    void unhighlight_all();
+    void unhighlightAll();
 };
 
 

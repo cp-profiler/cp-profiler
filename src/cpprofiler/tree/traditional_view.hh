@@ -26,18 +26,18 @@ class TreeScrollArea;
 class TraditionalView : public QObject {
     Q_OBJECT
 
-    const NodeTree& m_tree;
-    std::unique_ptr<UserData> m_user_data;
+    const NodeTree& tree_;
+    std::unique_ptr<UserData> user_data_;
 
     /// TODO: make sure node flags is thread-safe?
-    std::unique_ptr<VisualFlags> m_vis_flags;
-    std::unique_ptr<Layout> m_layout;
+    std::unique_ptr<VisualFlags> vis_flags_;
+    std::unique_ptr<Layout> layout_;
 
-    std::unique_ptr<LayoutComputer> m_layout_computer;
-    std::unique_ptr<TreeScrollArea> m_scroll_area;
+    std::unique_ptr<LayoutComputer> layout_computer_;
+    std::unique_ptr<TreeScrollArea> scroll_area_;
 
     /// only update layout if it is stale
-    bool m_layout_stale = true;
+    bool layout_stale_ = true;
 
     /// returns currently selected node; can be NodeID::NoNode
     NodeID node() const;
@@ -52,22 +52,28 @@ public:
 
     QWidget* widget();
 
-    void set_label_shown(NodeID nid, bool val);
+    /// Show the label for node `nid` causing layout update
+    void setLabelShown(NodeID nid, bool val);
+
+    /// Exposes layout info (i.e. shapes needed for shape analysis)
     const Layout& layout() const;
 
+    /// Collapse/uncollapse a pentagon node based on its current state
     void toggleCollapsePentagon(NodeID nid);
 
+    /// Set `nid` and its predecessors as requiring re-layout
     void dirtyUp(NodeID nid);
 
 signals:
-    // void nodeClicked(NodeID nid);
-
+    /// Triggers a redraw that updates scrollarea's viewport (perhaps a direct call would suffice)
     void needsRedrawing();
 
 public slots:
 
+    /// Updates the tree at 60hz (layout etc.)
     void autoUpdate();
 
+    /// Handle double-click on a node
     void handleDoubleClick();
 
     void setScale(int scale);
@@ -113,7 +119,7 @@ public slots:
 
     void dirtyCurrentNodeUp();
 
-    void highlight_subtrees(const std::vector<NodeID>& nodes);
+    void highlightSubtrees(const std::vector<NodeID>& nodes);
 
 
 };

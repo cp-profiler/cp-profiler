@@ -130,7 +130,7 @@ namespace cpprofiler { namespace tree {
         auto selected = (m_user_data.getSelectedNode() == m_cur_node) ? true : false;
 
         /// NOTE: this should be consisten with the layout
-        if (m_vis_flags.get_label_shown(m_cur_node)) {
+        if (m_vis_flags.isLabelShown(m_cur_node)) {
 
             auto draw_left = !utils::is_right_most_child(m_node_tree, m_cur_node);
             // m_painter.setPen(QPen{Qt::black, 2});
@@ -156,7 +156,7 @@ namespace cpprofiler { namespace tree {
             m_painter.drawText(QPoint{label_x, cur_y}, label.c_str());
         }
 
-        if (m_vis_flags.get_highlighted(m_cur_node)) {
+        if (m_vis_flags.isHighlighted(m_cur_node)) {
             drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
         }
 
@@ -172,7 +172,7 @@ namespace cpprofiler { namespace tree {
 
         /// see if the node is hidden
 
-        auto hidden = m_vis_flags.get_hidden(m_cur_node);
+        auto hidden = m_vis_flags.isHidden(m_cur_node);
 
         if (hidden) {
 
@@ -238,7 +238,7 @@ namespace cpprofiler { namespace tree {
     bool DrawingCursor::mayMoveDownwards() {
         /// TODO: this should be about children?
         return NodeCursor::mayMoveDownwards() &&
-               !m_vis_flags.get_hidden(m_cur_node) &&
+               !m_vis_flags.isHidden(m_cur_node) &&
                m_layout.getLayoutDone(m_cur_node) &&
                !isClipped();
     }

@@ -95,7 +95,7 @@ namespace cpprofiler { namespace tree {
 
     }
 
-    NodeID Node::getChild(int alt) {
+    NodeID Node::getChild(int alt) const {
         const auto kids = childrenCount();
 
         if (kids <= 0) {

@@ -66,6 +66,27 @@ static sqlite3_stmt* prepare_select(sqlite3* db) {
     return select_stmt;
 }
 
+int DB_Handler::countNodes() const {
+
+    const auto query = "select count (*) from Nodes;";
+
+    int count = 0;
+
+    executeQuery(query, [](void* count, int ncols, char** cols, char**) -> int {
+        int* val = reinterpret_cast<int*>(count);
+
+        if (ncols == 1) {
+            const auto str_val = cols[0];
+            /// Note that atoi returns zero on error
+            *val = atoi(str_val);
+        }
+        /// sqlite requires the return value of 0 to go on with the query
+        return 0;
+    }, reinterpret_cast<void*>(&count));
+
+    return count;
+}
+
 void DB_Handler::readNodes(Execution& ex) const {
 
     const auto query = "select * from Nodes";
@@ -73,6 +94,10 @@ void DB_Handler::readNodes(Execution& ex) const {
     auto select_stmt = prepare_select(db_handle_);
 
     auto& tree = ex.tree();
+
+    const auto total_nodes = countNodes();
+
+    tree.db_initialize(total_nodes);
 
     while(true) {
 
@@ -96,10 +121,12 @@ void DB_Handler::readNodes(Execution& ex) const {
         const auto label = (const char*)sqlite3_column_text(select_stmt, 5);
 
         if (pid == NodeID::NoNode) {
-            tree.createRoot(kids, label);
+            // tree.createRoot(kids, label);
+            tree.db_createRoot(nid, label);
         } else {
-            print("promote node, nid: {}, pid: {}, alt: {}, kids: {}, status: {}, label: {}", nid, pid, alt, kids, status, label);
-            tree.promoteNode(pid, alt, kids, status, label);
+            // print("promote node, nid: {}, pid: {}, alt: {}, kids: {}, status: {}, label: {}", nid, pid, alt, kids, status, label);
+            tree.db_addChild(nid, pid, alt, status, label);
+            // tree.promoteNode(pid, alt, kids, status, label);
             // tree.promoteNode(nid, kids, status, label);
         }
 

@@ -116,7 +116,7 @@ namespace cpprofiler { namespace tree {
 
         // drawGrid(painter, {std::max(tree_width, displayed_width), std::max(tree_height, displayed_height)});
 
-        utils::DebugMutexLocker layout_locker(&m_layout.getMutex());
+        utils::DebugMutexLocker tree_locker(&m_tree.treeMutex());
 
         // perfHelper.begin("tree drawing");
 
@@ -194,7 +194,7 @@ namespace cpprofiler { namespace tree {
             // if node hidden -> different area
             
             QRect node_area;
-            if (m_vis_flags.get_hidden(node)) {
+            if (m_vis_flags.isHidden(node)) {
                 auto node_pos_tl = node_pos - QPoint{HALF_COLLAPSED_WIDTH, 0};
                 node_area = QRect(node_pos_tl, QSize{COLLAPSED_WIDTH, COLLAPSED_DEPTH});
             } else {

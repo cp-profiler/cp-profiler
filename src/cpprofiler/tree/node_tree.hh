@@ -123,6 +123,14 @@ public:
     /// Check if the node `nid` is open or has open children
     bool isOpen(NodeID nid) const;
 
+    /// ************ Building a tree from a database ************
+
+    void db_initialize(int size);
+
+    void db_createRoot(NodeID nid, Label label = emptyLabel);
+
+    void db_addChild(NodeID nid, NodeID pid, int alt, NodeStatus status, Label = emptyLabel);
+
     /// ********************************************************************
 
 signals:

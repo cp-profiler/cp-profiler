@@ -18,7 +18,7 @@ bool HideFailedCursor::mayMoveDownwards() const {
     bool ok = NodeCursor::mayMoveDownwards() &&
            (!m_onlyDirty || m_lc.isDirty(m_cur_node)) &&
            (m_tree.hasSolvedChildren(m_cur_node) || m_tree.hasOpenChildren(m_cur_node)) &&
-           !m_vf.get_hidden(m_cur_node);
+           !m_vf.isHidden(m_cur_node);
 
     return ok;
 }
@@ -27,14 +27,14 @@ inline static bool should_hide(const NodeTree& nt, const VisualFlags& vf, NodeID
     return !nt.hasSolvedChildren(n) && // does not have solution children
            !nt.hasOpenChildren(n) &&   // does not have open children
             nt.childrenCount(n) > 0 &&  // not a leaf node
-           !vf.get_hidden(n);            // the node is not already hidden
+           !vf.isHidden(n);            // the node is not already hidden
 }
 
 void HideFailedCursor::processCurrentNode() {
 
     if (should_hide(m_tree, m_vf, m_cur_node)) {
         modified = true;
-        m_vf.set_hidden(m_cur_node, true);
+        m_vf.setHidden(m_cur_node, true);
         m_lc.dirtyUp(m_cur_node);
     }
 }

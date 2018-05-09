@@ -25,7 +25,7 @@ namespace cpprofiler { namespace tree {
 
     bool LayoutCursor::mayMoveDownwards() {
         return NodeCursor::mayMoveDownwards() &&
-               !m_vis_flags.get_hidden(m_cur_node) &&
+               !m_vis_flags.isHidden(m_cur_node) &&
                m_layout.isDirty(m_cur_node);
     }
 
@@ -278,8 +278,8 @@ namespace cpprofiler { namespace tree {
     /// Computes layout for nid (shape, bounding box, offsets for its children)
     void LayoutCursor::computeForNode(NodeID nid) {
 
-        const bool hidden = m_vis_flags.get_hidden(nid);
-        const bool label_shown = m_vis_flags.get_label_shown(nid);
+        const bool hidden = m_vis_flags.isHidden(nid);
+        const bool label_shown = m_vis_flags.isLabelShown(nid);
 
         /// Check if the node is hidden:
         if (hidden) {
@@ -300,7 +300,7 @@ namespace cpprofiler { namespace tree {
             auto nkids = tree_.childrenCount(nid);
 
             if (nkids == 0) {
-                if (!m_vis_flags.get_label_shown(nid)) {
+                if (!m_vis_flags.isLabelShown(nid)) {
                     m_layout.setShape(nid, ShapeUniqPtr(&Shape::leaf));
                 } else {
                     auto shape = ShapeUniqPtr{new Shape{1}};

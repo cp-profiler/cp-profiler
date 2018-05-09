@@ -36,6 +36,8 @@ class Structure {
     /// Create a new node with `kids` kids and add set it as the `alt`th kid of `pid`
     NodeID createChild(NodeID pid, int alt, int kids);
 
+    void db_createNode(NodeID nid, NodeID pid, int kids);
+
 public:
 
     Structure();
@@ -74,6 +76,17 @@ public:
 
     /// Add `kids` children to an open node
     void addChildren(NodeID nid, int kids);
+
+
+/// ************ Building a tree from a database ************
+
+    void db_initialize(int size);
+
+    void db_createRoot(NodeID nid);
+
+    void db_createChild(NodeID nid, NodeID pid, int alt);
+
+    void db_addChild(NodeID nid, NodeID pid, int alt);
 
 };
 

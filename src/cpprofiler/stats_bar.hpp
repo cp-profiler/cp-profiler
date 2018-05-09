@@ -17,6 +17,8 @@ class NodeStatsBar : public QWidget {
   QLabel* solvedLabel;
   /// Status bar label for number of failures
   QLabel* failedLabel;
+  /// Status bar label for number of skipped nodes
+  QLabel* skippedLabel;
   /// Status bar label for number of choices
   QLabel* choicesLabel;
   /// Status bar label for number of open nodes
@@ -43,12 +45,15 @@ public:
     hbl->addWidget(new NodeWidget(NodeStatus::FAILED));
     hbl->addWidget(failedLabel);
 
+    skippedLabel = new QLabel("0");
+    hbl->addWidget(new NodeWidget(NodeStatus::SKIPPED));
+    hbl->addWidget(skippedLabel);
+
 
     choicesLabel = new QLabel("0");
     hbl->addWidget(new NodeWidget(NodeStatus::BRANCH));
     hbl->addWidget(choicesLabel);
 
-    // hbl->addWidget(new NodeWidget(UNDETERMINED));
     openLabel = new QLabel("0");
     hbl->addWidget(new NodeWidget(NodeStatus::UNDETERMINED));
     hbl->addWidget(openLabel);
@@ -69,6 +74,7 @@ public slots:
       openLabel->setNum(stats.undeterminedCount());
       solvedLabel->setNum(stats.solvedCount());
       failedLabel->setNum(stats.failedCount());
+      skippedLabel->setNum(stats.skippedCount());
       choicesLabel->setNum(stats.branchCount());
 
   }

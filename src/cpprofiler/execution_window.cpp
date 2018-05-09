@@ -178,7 +178,7 @@ namespace cpprofiler {
                     ssw->show();
 
                     connect(ssw, &analysis::SimilarSubtreeWindow::should_be_highlighted,
-                        m_traditional_view.get(), &tree::TraditionalView::highlight_subtrees);
+                        m_traditional_view.get(), &tree::TraditionalView::highlightSubtrees);
                 });
             }
 

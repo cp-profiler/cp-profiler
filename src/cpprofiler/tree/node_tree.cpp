@@ -51,7 +51,6 @@ NodeID NodeTree::createRoot(int kids, Label label) {
 
     node_stats_.inform_depth(depth);
     node_stats_.add_branch(1);
-
     node_info_->setStatus(nid, NodeStatus::BRANCH);
 
     for (auto i = 0; i < kids; ++i) {
@@ -65,6 +64,45 @@ NodeID NodeTree::createRoot(int kids, Label label) {
     emit structureUpdated();
 
     return nid;
+}
+
+/// Note that this form does not create children
+void NodeTree::db_createRoot(NodeID nid, Label label) {
+
+    structure_->db_createRoot(nid);
+    addEntry(nid);
+    setLabel(nid, label);
+
+    node_stats_.inform_depth(1);
+    node_stats_.add_branch(1);
+    node_info_->setStatus(nid, NodeStatus::BRANCH);
+}
+
+static bool is_closing(NodeStatus status) {
+    return (status == NodeStatus::FAILED) ||
+           (status == NodeStatus::SOLVED) ||
+           (status == NodeStatus::SKIPPED);
+}
+
+/// Note: alt is unnecessary here
+void NodeTree::db_addChild(NodeID nid, NodeID pid, int alt, NodeStatus status, Label label) {
+    structure_->db_addChild(nid, pid, alt);
+    addEntry(nid);
+
+    node_info_->setStatus(nid, status);
+    setLabel(nid, label);
+
+    emit childrenStructureChanged(pid);
+
+    auto cur_depth = utils::calculate_depth(*this, nid);
+    node_stats_.inform_depth(cur_depth);
+
+    node_stats_.addNode(status);
+
+    if (is_closing(status)) closeNode(nid);
+    if (status == NodeStatus::SOLVED) notifyAncestors(nid);
+
+    emit structureUpdated();
 }
 
 void NodeTree::addExtraChild(NodeID pid) {
@@ -109,29 +147,11 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
         node_stats_.inform_depth(cur_depth + 1);
     }
 
-    switch (status) {
-        case NodeStatus::BRANCH: {
-            node_stats_.subtract_undetermined(1);
-            node_stats_.add_branch(1);
-        } break;
-        case NodeStatus::FAILED: {
-            node_stats_.subtract_undetermined(1);
-            node_stats_.add_failed(1);
-            closeNode(nid);
-        } break;
-        case NodeStatus::SOLVED: {
-            node_stats_.subtract_undetermined(1);
-            node_stats_.add_solved(1);
-            notifyAncestors(nid);
-            closeNode(nid);
-        } break;
-        case NodeStatus::SKIPPED: {
-            closeNode(nid);
-        }
-        case NodeStatus::UNDETERMINED: {
-            // do nothing
-        } break;
-    }
+    node_stats_.subtract_undetermined(1);
+    node_stats_.addNode(status);
+
+    if (is_closing(status)) closeNode(nid);
+    if (status == NodeStatus::SOLVED) notifyAncestors(nid);
 
     assert( childrenCount(nid) == kids );
 
@@ -243,6 +263,10 @@ void NodeTree::closeNode(NodeID nid) {
 
 void NodeTree::setLabel(NodeID nid, const Label& label) {
     labels_[nid] = label;
+}
+
+void NodeTree::db_initialize(int size) {
+    structure_->db_initialize(size);
 }
 
 

@@ -23,9 +23,8 @@ namespace cpprofiler { namespace tree {
             throw invalid_tree();
         }
 
-        nodes_.push_back(std::unique_ptr<Node>{new Node(NodeID::NoNode, kids)});
+        const auto root_nid = createNode(NodeID::NoNode, kids);
 
-        auto root_nid = getRoot();
         /// create white nodes for children nodes
         for (auto i = 0; i < kids; ++i) {
             createChild(root_nid, i, 0);
@@ -40,9 +39,9 @@ namespace cpprofiler { namespace tree {
         return nid;
     }
 
-    // void Structure::createNode(NodeID nid, NodeID pid, int kids) {
-    //
-    // }
+    void Structure::db_createNode(NodeID nid, NodeID pid, int kids) {
+        nodes_[nid] = std::unique_ptr<Node>{new Node(pid, kids)};
+    }
 
     NodeID Structure::createChild(NodeID pid, int alt, int kids) {
         const auto nid = createNode(pid, kids);
@@ -108,6 +107,24 @@ namespace cpprofiler { namespace tree {
 
     int Structure::nodeCount() const {
         return nodes_.size();
+    }
+
+    void Structure::db_initialize(int size) {
+        nodes_.resize(size);
+    }
+
+    void Structure::db_createRoot(NodeID nid) {
+        db_createNode(nid, NodeID::NoNode, 0);
+    }
+
+    void Structure::db_createChild(NodeID nid, NodeID pid, int alt) {
+        db_createNode(nid, pid, 0);
+        nodes_[pid]->setChild(nid, alt);
+    }
+
+    void Structure::db_addChild(NodeID nid, NodeID pid, int alt) {
+        nodes_[pid]->addChild();
+        db_createChild(nid, pid, alt);
     }
 
 }}

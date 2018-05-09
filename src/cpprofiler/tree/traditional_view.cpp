@@ -30,26 +30,26 @@
 namespace cpprofiler { namespace tree {
 
 TraditionalView::TraditionalView(const NodeTree& tree)
-: m_tree(tree),
-  m_user_data(utils::make_unique<UserData>()),
-  m_layout(utils::make_unique<Layout>()),
-  m_vis_flags(utils::make_unique<VisualFlags>()),
-  m_layout_computer(utils::make_unique<LayoutComputer>(tree, *m_layout, *m_vis_flags))
+: tree_(tree),
+  user_data_(utils::make_unique<UserData>()),
+  layout_(utils::make_unique<Layout>()),
+  vis_flags_(utils::make_unique<VisualFlags>()),
+  layout_computer_(utils::make_unique<LayoutComputer>(tree, *layout_, *vis_flags_))
 {
-    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
+    utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
 
-    m_scroll_area.reset(new TreeScrollArea(m_tree.getRoot(), m_tree, *m_user_data, *m_layout, *m_vis_flags));
+    scroll_area_.reset(new TreeScrollArea(tree_.getRoot(), tree_, *user_data_, *layout_, *vis_flags_));
 
     // std::cerr << "traditional view thread:" << std::this_thread::get_id() << std::endl;
 
-    connect(m_scroll_area.get(), &TreeScrollArea::nodeClicked, this, &TraditionalView::selectNode);
-    connect(m_scroll_area.get(), &TreeScrollArea::nodeDoubleClicked, this, &TraditionalView::handleDoubleClick);
+    connect(scroll_area_.get(), &TreeScrollArea::nodeClicked, this, &TraditionalView::selectNode);
+    connect(scroll_area_.get(), &TreeScrollArea::nodeDoubleClicked, this, &TraditionalView::handleDoubleClick);
 
     connect(this, &TraditionalView::needsRedrawing, this, &TraditionalView::redraw);
 
     connect(&tree, &NodeTree::childrenStructureChanged, [this](NodeID nid) {
         if (nid == NodeID::NoNode) { return; }
-        m_layout_computer->dirtyUp(nid);
+        layout_computer_->dirtyUp(nid);
     });
 
 
@@ -65,85 +65,83 @@ TraditionalView::~TraditionalView() = default;
 
 
 
-/// Drawing needs the layout mutex only?
 void TraditionalView::redraw() {
-
-    m_scroll_area->viewport()->update();
+    scroll_area_->viewport()->update();
 }
 
 NodeID TraditionalView::node() const {
-    return m_user_data->getSelectedNode();
+    return user_data_->getSelectedNode();
 }
 
 void TraditionalView::navRoot() {
-    auto root = m_tree.getRoot();
-    m_user_data->setSelectedNode(root);
+    auto root = tree_.getRoot();
+    user_data_->setSelectedNode(root);
     centerCurrentNode();
     emit needsRedrawing();
 }
 
 void TraditionalView::navDown() {
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
+    utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
 
-    const auto kids = m_tree.childrenCount(cur_nid);
+    const auto kids = tree_.childrenCount(cur_nid);
 
-    if (kids == 0 || m_vis_flags->get_hidden(cur_nid)) return;
+    if (kids == 0 || vis_flags_->isHidden(cur_nid)) return;
 
-    auto first_kid = m_tree.getChild(cur_nid, 0);
-    m_user_data->setSelectedNode(first_kid);
+    auto first_kid = tree_.getChild(cur_nid, 0);
+    user_data_->setSelectedNode(first_kid);
     centerCurrentNode();
     emit needsRedrawing();
 }
 
 void TraditionalView::navDownAlt() {
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
+    utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
 
-    const auto kids = m_tree.childrenCount(cur_nid);
+    const auto kids = tree_.childrenCount(cur_nid);
 
-    if (kids == 0 || m_vis_flags->get_hidden(cur_nid)) return;
+    if (kids == 0 || vis_flags_->isHidden(cur_nid)) return;
 
-    auto last_kid = m_tree.getChild(cur_nid, kids-1);
-    m_user_data->setSelectedNode(last_kid);
+    auto last_kid = tree_.getChild(cur_nid, kids-1);
+    user_data_->setSelectedNode(last_kid);
     centerCurrentNode();
     emit needsRedrawing();
 }
 
 void TraditionalView::navUp() {
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
+    utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
 
-    auto pid = m_tree.getParent(cur_nid);
+    auto pid = tree_.getParent(cur_nid);
 
     if (pid != NodeID::NoNode) {
-        m_user_data->setSelectedNode(pid);
+        user_data_->setSelectedNode(pid);
         centerCurrentNode();
     }
     emit needsRedrawing();
 }
 
 void TraditionalView::navLeft() {
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
+    utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
 
-    auto pid = m_tree.getParent(cur_nid);
+    auto pid = tree_.getParent(cur_nid);
     if (pid == NodeID::NoNode) return;
 
-    auto cur_alt = m_tree.getAlternative(cur_nid);
+    auto cur_alt = tree_.getAlternative(cur_nid);
 
-    auto kids = m_tree.childrenCount(pid);
+    auto kids = tree_.childrenCount(pid);
 
     if (cur_alt > 0) {
-        m_user_data->setSelectedNode(m_tree.getChild(pid, cur_alt - 1));
+        user_data_->setSelectedNode(tree_.getChild(pid, cur_alt - 1));
         centerCurrentNode();
     }
 
@@ -152,51 +150,51 @@ void TraditionalView::navLeft() {
 
 void TraditionalView::navRight() {
     /// lock mutex
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
+    utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
 
-    auto pid = m_tree.getParent(cur_nid);
+    auto pid = tree_.getParent(cur_nid);
 
     if (pid == NodeID::NoNode) return;
 
-    auto cur_alt = m_tree.getAlternative(cur_nid);
+    auto cur_alt = tree_.getAlternative(cur_nid);
 
-    auto kids = m_tree.childrenCount(pid);
+    auto kids = tree_.childrenCount(pid);
 
     if (cur_alt + 1 < kids) {
-        m_user_data->setSelectedNode(m_tree.getChild(pid, cur_alt + 1));
+        user_data_->setSelectedNode(tree_.getChild(pid, cur_alt + 1));
         centerCurrentNode();
     }
 
     emit needsRedrawing();
 }
 
-void TraditionalView::set_label_shown(NodeID nid, bool val) {
-    m_vis_flags->set_label_shown(nid, val);
-    m_layout_computer->dirtyUp(nid);
+void TraditionalView::setLabelShown(NodeID nid, bool val) {
+    vis_flags_->setLabelShown(nid, val);
+    layout_computer_->dirtyUp(nid);
 }
 
 void TraditionalView::toggleShowLabel() {
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto val = !m_vis_flags->get_label_shown(cur_nid);
-    set_label_shown(cur_nid, val);
+    auto val = !vis_flags_->isLabelShown(cur_nid);
+    setLabelShown(cur_nid, val);
     emit needsRedrawing();
 
     /// TODO: needs re-layout as well
 }
 
 void TraditionalView::showLabelsDown() {
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto val = !m_vis_flags->get_label_shown(cur_nid);
+    auto val = !vis_flags_->isLabelShown(cur_nid);
 
-    utils::pre_order_apply(m_tree, cur_nid, [val, this](NodeID nid) {
-        set_label_shown(nid, val);
+    utils::pre_order_apply(tree_, cur_nid, [val, this](NodeID nid) {
+        setLabelShown(nid, val);
     });
 
     setLayoutOutdated();
@@ -204,10 +202,10 @@ void TraditionalView::showLabelsDown() {
 }
 
 void TraditionalView::showLabelsUp() {
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto pid = m_tree.getParent(cur_nid);
+    auto pid = tree_.getParent(cur_nid);
 
     /// if it is root, toggle for the root only
     if (pid == NodeID::NoNode) {
@@ -215,11 +213,11 @@ void TraditionalView::showLabelsUp() {
         return;
     }
 
-    auto val = !m_vis_flags->get_label_shown(pid);
+    auto val = !vis_flags_->isLabelShown(pid);
 
     while (cur_nid != NodeID::NoNode) {
-        set_label_shown(cur_nid, val);
-        cur_nid = m_tree.getParent(cur_nid);
+        setLabelShown(cur_nid, val);
+        cur_nid = tree_.getParent(cur_nid);
     }
 
     setLayoutOutdated();
@@ -231,14 +229,14 @@ static bool is_leaf(const NodeTree& nt, NodeID nid) {
 }
 
 void TraditionalView::toggleHidden() {
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
     // do not hide leaf nodes
-    if (is_leaf(m_tree, cur_nid)) return;
+    if (is_leaf(tree_, cur_nid)) return;
 
-    auto val = !m_vis_flags->get_hidden(cur_nid);
-    m_vis_flags->set_hidden(cur_nid, val);
+    auto val = !vis_flags_->isHidden(cur_nid);
+    vis_flags_->setHidden(cur_nid, val);
 
     dirtyUp(cur_nid);
 
@@ -248,11 +246,11 @@ void TraditionalView::toggleHidden() {
 
 void TraditionalView::hideFailedAt(NodeID n, bool onlyDirty) {
     /// Do nothing if there is no tree
-    if (m_tree.nodeCount() == 0) return;
+    if (tree_.nodeCount() == 0) return;
 
     bool modified = false;
 
-    HideFailedCursor hfc(n, m_tree, *m_vis_flags, *m_layout_computer, onlyDirty, modified);
+    HideFailedCursor hfc(n, tree_, *vis_flags_, *layout_computer_, onlyDirty, modified);
     PostorderNodeVisitor<HideFailedCursor>(hfc).run();
 
     if (modified) {
@@ -263,7 +261,7 @@ void TraditionalView::hideFailedAt(NodeID n, bool onlyDirty) {
 }
 
 void TraditionalView::hideFailed() {
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
     hideFailedAt(cur_nid);
@@ -273,15 +271,15 @@ void TraditionalView::autoUpdate() {
 
     // {
     // //     perfHelper.begin("hide failed");
-    //     utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
-    //     auto root = m_tree.getRoot();
+    //     utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
+    //     auto root = tree_.getRoot();
     //     hideFailedAt(root, true);
     // //     perfHelper.end();
     // }
 
     
 
-    if (m_layout_stale) {
+    if (layout_stale_) {
         computeLayout();
     }
 
@@ -289,10 +287,10 @@ void TraditionalView::autoUpdate() {
 
 void TraditionalView::handleDoubleClick() {
 
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
-    auto status = m_tree.getStatus(cur_nid);
+    auto status = tree_.getStatus(cur_nid);
 
     if (status == NodeStatus::BRANCH) {
         unhideNode(cur_nid);
@@ -305,9 +303,9 @@ void TraditionalView::handleDoubleClick() {
 }
 
 void TraditionalView::toggleCollapsePentagon(NodeID nid) {
-    /// Use the same 'hideden' flag for now
-    auto val = !m_vis_flags->get_hidden(nid);
-    m_vis_flags->set_hidden(nid, val);
+    /// Use the same 'hidden' flag for now
+    auto val = !vis_flags_->isHidden(nid);
+    vis_flags_->setHidden(nid, val);
     dirtyUp(nid);
     setLayoutOutdated();
     emit needsRedrawing();
@@ -316,10 +314,10 @@ void TraditionalView::toggleCollapsePentagon(NodeID nid) {
 
 void TraditionalView::unhideNode(NodeID nid) {
 
-    auto hidden = m_vis_flags->get_hidden(nid);
+    auto hidden = vis_flags_->isHidden(nid);
     if (hidden) {
-        m_vis_flags->set_hidden(nid, false);
-        m_layout->setLayoutDone(nid, false);
+        vis_flags_->setHidden(nid, false);
+        layout_->setLayoutDone(nid, false);
         dirtyUp(nid);
         setLayoutOutdated();
         emit needsRedrawing();
@@ -328,7 +326,9 @@ void TraditionalView::unhideNode(NodeID nid) {
 
 void TraditionalView::unhideAll() {
 
-    auto nid = m_user_data->getSelectedNode();
+    perfHelper.begin("unhide_all");
+
+    auto nid = user_data_->getSelectedNode();
     if (nid == NodeID::NoNode) return;
 
     /// indicates if any change was made
@@ -336,15 +336,15 @@ void TraditionalView::unhideAll() {
 
     const auto action = [&](NodeID n) {
 
-        if (m_vis_flags->get_hidden(n)) {
-            m_vis_flags->set_hidden(n, false);
+        if (vis_flags_->isHidden(n)) {
+            vis_flags_->setHidden(n, false);
             dirtyUp(n);
             modified = true;
         }
 
     };
 
-    utils::apply_below(m_tree, nid, action);
+    utils::apply_below(tree_, nid, action);
 
     if (modified) {
         setLayoutOutdated();
@@ -352,28 +352,30 @@ void TraditionalView::unhideAll() {
     }
 
     centerCurrentNode();
+
+    perfHelper.end();
 }
 
 void TraditionalView::toggleHighlighted() {
-    auto nid = m_user_data->getSelectedNode();
+    auto nid = user_data_->getSelectedNode();
     if (nid == NodeID::NoNode) return;
 
-    auto val = !m_vis_flags->get_highlighted(nid);
-    m_vis_flags->set_highlighted(nid, val);
+    auto val = !vis_flags_->isHighlighted(nid);
+    vis_flags_->setHighlighted(nid, val);
 
     emit needsRedrawing();
 }
 
 QWidget* TraditionalView::widget() {
-    return m_scroll_area.get();
+    return scroll_area_.get();
 }
 
 const Layout& TraditionalView::layout() const {
-    return *m_layout;
+    return *layout_;
 }
 
 void TraditionalView::setScale(int val) {
-    m_scroll_area->setScale(val);
+    scroll_area_->setScale(val);
 }
 
 /// relative to the root
@@ -391,27 +393,27 @@ static int global_node_x_offset(const NodeTree& tree, const Layout& layout, Node
 /// Does this need any locking?
 void TraditionalView::centerNode(NodeID nid) {
 
-    const auto x_offset = global_node_x_offset(m_tree, *m_layout, nid);
+    const auto x_offset = global_node_x_offset(tree_, *layout_, nid);
 
-    const auto root_nid = m_tree.getRoot();
-    const auto bb = m_layout->getBoundingBox(root_nid);
+    const auto root_nid = tree_.getRoot();
+    const auto bb = layout_->getBoundingBox(root_nid);
 
     const auto value_x = x_offset - bb.left;
 
     
-    const auto depth = utils::calculate_depth(m_tree, nid);
+    const auto depth = utils::calculate_depth(tree_, nid);
     const auto value_y = depth * layout::dist_y;
 
-    m_scroll_area->centerPoint(value_x, value_y);
+    scroll_area_->centerPoint(value_x, value_y);
 }
 
 void TraditionalView::centerCurrentNode() {
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     centerNode(cur_nid);
 }
 
 void TraditionalView::selectNode(NodeID nid) {
-    m_user_data->setSelectedNode(nid);
+    user_data_->setSelectedNode(nid);
     emit needsRedrawing();
 }
 
@@ -423,8 +425,8 @@ void TraditionalView::computeLayout() {
 
     static int counter = 0;
     debug("layout") << "compute Layout:" << ++counter << "\n";
-    auto changed = m_layout_computer->compute();
-    m_layout_stale = false;
+    auto changed = layout_computer_->compute();
+    layout_stale_ = false;
     if (changed) {
         emit needsRedrawing();
     }
@@ -432,41 +434,40 @@ void TraditionalView::computeLayout() {
 
 void TraditionalView::setLayoutOutdated() {
     debug("layout") << "set layout stale\n";
-    m_layout_stale = true;
+    layout_stale_ = true;
 }
 
 void TraditionalView::dirtyUp(NodeID nid) {
-
-    m_layout_computer->dirtyUp(nid);
+    layout_computer_->dirtyUp(nid);
 }
 
 void TraditionalView::dirtyCurrentNodeUp() {
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
     dirtyUp(cur_nid);
 }
 
 void TraditionalView::printNodeInfo() {
-    auto cur_nid = m_user_data->getSelectedNode();
+    auto cur_nid = user_data_->getSelectedNode();
     if (cur_nid == NodeID::NoNode) return;
 
     qDebug() << "---- Node Info:" << cur_nid << "----";
-    qDebug() << "offset:" << m_layout->getOffset(cur_nid);
-    auto bb = m_layout->getBoundingBox(cur_nid);
+    qDebug() << "offset:" << layout_->getOffset(cur_nid);
+    auto bb = layout_->getBoundingBox(cur_nid);
     qDebug() << "bb:[" << bb.left << "," << bb.right << "]";
-    qDebug() << "dirty:" << m_layout->isDirty(cur_nid);
-    qDebug() << "hidden:" << m_vis_flags->get_hidden(cur_nid);
-    qDebug() << "has solved kids:" << m_tree.hasSolvedChildren(cur_nid);
-    qDebug() << "has open kids:" << m_tree.hasOpenChildren(cur_nid);
+    qDebug() << "dirty:" << layout_->isDirty(cur_nid);
+    qDebug() << "hidden:" << vis_flags_->isHidden(cur_nid);
+    qDebug() << "has solved kids:" << tree_.hasSolvedChildren(cur_nid);
+    qDebug() << "has open kids:" << tree_.hasOpenChildren(cur_nid);
 }
 
-void TraditionalView::highlight_subtrees(const std::vector<NodeID>& nodes) {
+void TraditionalView::highlightSubtrees(const std::vector<NodeID>& nodes) {
 
-    m_vis_flags->unhighlight_all();
+    vis_flags_->unhighlightAll();
 
     for (auto nid : nodes) {
-        m_vis_flags->set_highlighted(nid, true);
+        vis_flags_->setHighlighted(nid, true);
     }
 
     emit needsRedrawing();

@@ -36,6 +36,11 @@ protected:
                 auto cx = cy + HALF_FAILED_WIDTH;
                 draw::failure(painter, cx, cy, false);
             } break;
+            case NodeStatus::SKIPPED: {
+                auto cy = (WIDTH - SKIPPED_WIDTH)/2;
+                auto cx = cy + HALF_SKIPPED_WIDTH;
+                draw::skipped(painter, cx, cy, false);
+            } break;
             case NodeStatus::BRANCH: {
                 auto cy = (WIDTH - BRANCH_WIDTH)/2;
                 auto cx = cy + HALF_BRANCH_W;

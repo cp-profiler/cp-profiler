@@ -39,8 +39,6 @@ void LayoutComputer::dirtyUp(NodeID nid) {
     /// Is it necessary to have a tree mutex here?
     utils::DebugMutexLocker layout_lock(&m_layout.getMutex());
 
-    // m_layout.growDataStructures(m_tree.nodeCount());
-
     while (nid != NodeID::NoNode && !m_layout.isDirty(nid)) {
         m_layout.setDirty(nid, true);
         nid = m_tree.getParent(nid);
