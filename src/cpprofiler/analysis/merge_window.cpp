@@ -69,6 +69,16 @@ namespace cpprofiler { namespace analysis {
         {
             auto nodeMenu = menuBar->addMenu("&Node");
 
+            auto centerNode = new QAction{"Center current node", this};
+            centerNode->setShortcut(QKeySequence("C"));
+            nodeMenu->addAction(centerNode);
+            connect(centerNode, &QAction::triggered, m_view.get(), &tree::TraditionalView::centerCurrentNode);
+
+            auto navRoot = new QAction{"Go to the root", this};
+            navRoot->setShortcut(QKeySequence("R"));
+            nodeMenu->addAction(navRoot);
+            connect(navRoot, &QAction::triggered, m_view.get(), &tree::TraditionalView::navRoot);
+
             auto navDown = new QAction{"Go down the tree", this};
             navDown->setShortcut(QKeySequence("Down"));
             nodeMenu->addAction(navDown);

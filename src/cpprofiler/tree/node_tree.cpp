@@ -11,7 +11,7 @@ namespace cpprofiler { namespace tree {
 
 
 NodeTree::NodeTree() : structure_{new Structure()}, node_info_(new NodeInfo) {
-
+    print("NodeTree()");
 }
 
 NodeTree::~NodeTree() = default;

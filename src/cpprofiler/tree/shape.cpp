@@ -63,7 +63,8 @@ namespace cpprofiler { namespace tree {
 
     using namespace traditional;
 
-    Shape Shape::leaf({{-HALF_MAX_NODE_W, HALF_MAX_NODE_W}}, BoundingBox{-HALF_MAX_NODE_W, HALF_MAX_NODE_W});
+    Shape Shape::leaf({{-HALF_MAX_NODE_W, HALF_MAX_NODE_W}},
+                        BoundingBox{-HALF_MAX_NODE_W, HALF_MAX_NODE_W});
 
     Shape Shape::hidden({ {-HALF_MAX_NODE_W, HALF_MAX_NODE_W},{-MAX_NODE_W, MAX_NODE_W} },
                         BoundingBox{-MAX_NODE_W, MAX_NODE_W});

@@ -59,6 +59,20 @@ namespace cpprofiler {
 
         });
 
+        auto mergeButton = new QPushButton("Merge Trees");
+        layout->addWidget(mergeButton);
+
+        connect(mergeButton, &QPushButton::clicked, [this]() {
+
+            const auto selected = m_execution_list->getSelected();
+
+            if (selected.size() == 2) {
+                mergeTrees(selected[0], selected[1]);
+            } else {
+                print("select exactly two executions");
+            }
+        });
+
         auto saveButton = new QPushButton("Save Execution");
         layout->addWidget(saveButton);
 

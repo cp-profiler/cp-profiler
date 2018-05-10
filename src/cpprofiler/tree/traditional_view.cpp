@@ -59,6 +59,8 @@ TraditionalView::TraditionalView(const NodeTree& tree)
 
     autoHideTimer->start(30);
 
+    print("TraditionalView()");
+
 }
 
 TraditionalView::~TraditionalView() = default;

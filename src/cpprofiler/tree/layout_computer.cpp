@@ -78,9 +78,7 @@ bool LayoutComputer::compute() {
 
 
     static int counter = 0;
-    if (++counter % 1 == 0) {
-        // std::cerr << "computed layout " << counter * 1  << " times\n";
-    }
+    // std::cerr << "computed layout " << ++counter   << " times\n";
 
     return true;
 

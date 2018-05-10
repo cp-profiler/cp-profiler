@@ -138,13 +138,10 @@ void TreeMerger::run() {
 
     qDebug() << "Merging: running...";
 
-    /// Must hold mutexes of both node trees
-    auto& mutex_l = tree_l.treeMutex();
-    auto& mutex_r = tree_r.treeMutex();
-
-    /// Can this dead-lock?
-    utils::MutexLocker locker_l(&mutex_l);
-    utils::MutexLocker locker_r(&mutex_r);
+    /// It is quite unlikely, but this can dead-lock (needs consistent ordering)
+    utils::MutexLocker locker_l(&tree_l.treeMutex());
+    utils::MutexLocker locker_r(&tree_r.treeMutex());
+    utils::MutexLocker locker_res(&res_tree.treeMutex());
 
     QStack<NodeID> stack_l, stack_r, stack;
 

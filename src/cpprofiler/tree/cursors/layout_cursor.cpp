@@ -295,13 +295,14 @@ namespace cpprofiler { namespace tree {
                 m_layout.setShape(nid, std::move(shape));
             }
 
-
         } else {
             auto nkids = tree_.childrenCount(nid);
 
             if (nkids == 0) {
                 if (!m_vis_flags.isLabelShown(nid)) {
-                    m_layout.setShape(nid, ShapeUniqPtr(&Shape::leaf));
+                    auto other = ShapeUniqPtr(&Shape::leaf);
+                    // m_layout.setShape(nid, ShapeUniqPtr(&Shape::leaf));
+                    m_layout.setShape(nid, std::move(other));
                 } else {
                     auto shape = ShapeUniqPtr{new Shape{1}};
                     (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, false);

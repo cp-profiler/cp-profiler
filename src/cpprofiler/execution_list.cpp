@@ -21,6 +21,7 @@ namespace cpprofiler {
     ExecutionList::ExecutionList() {
         m_tree_view.setHeaderHidden(true);
         m_tree_view.setModel(&m_execution_tree_model);
+        m_tree_view.setSelectionMode(QAbstractItemView::MultiSelection);
     }
 
     void ExecutionList::addExecution(Execution& e) {

@@ -7,6 +7,7 @@
 #include "../execution.hh"
 #include "../tree/structure.hh"
 #include "../utils/array.hh"
+#include "../utils/utils.hh"
 #include "../tree/node_info.hh"
 #include "../execution_window.hh"
 #include "../tree/traditional_view.hh"
@@ -281,6 +282,21 @@ namespace cpprofiler { namespace tests { namespace execution {
         c.mergeTrees(ex1, ex2);
     }
 
+    void comparison2(Conductor& c) {
+
+        const auto path = "/home/maxim/dev/cp-profiler2/golomb8.db";
+
+        DB_Handler db1;
+        auto ex1 = db1.loadExecution(path);
+        if (ex1) c.addNewExecution(ex1);
+
+        DB_Handler db2;
+        auto ex2 = db2.loadExecution(path);
+        if (ex2) c.addNewExecution(ex2);
+
+        c.mergeTrees(ex1.get(), ex2.get());
+    }
+
     void tree_building(Conductor& c) {
 
         /// create a dummy root node
@@ -388,6 +404,8 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         // comparison(c);
 
+        // comparison2(c);
+
 
         // tree_building(c);
 
@@ -396,6 +414,9 @@ namespace cpprofiler { namespace tests { namespace execution {
         // load_execution(c, "/home/maxim/dev/cp-profiler2/execution.db");
 
         // db_create_tree(c);
+
+
+        // TODO: copmarison of two golomb rulers 8 (same) results in a wierd memory error
 
     }
 

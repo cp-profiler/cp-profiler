@@ -39,7 +39,7 @@ public:
 
     void handleStart(ReceiverThread* receiver, const std::string& ex_name, int ex_id, bool restarts);
 
-    Execution* addNewExecution(const std::string& ex_name, int ex_id = -1, bool restarts = false);
+    Execution* addNewExecution(const std::string& ex_name, int ex_id = 0, bool restarts = false);
 
     /// Add existing execution to the displayed list
     void addNewExecution(std::shared_ptr<Execution> ex);
