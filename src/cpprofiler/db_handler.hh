@@ -29,24 +29,31 @@ sqlite3_stmt* insert_stmt_ = nullptr;
 
 void insertNode(NodeData data) const;
 
-void readNodes(Execution& ex) const;
-
 int countNodes() const;
 
-void executeQuery(const char *sql, SQL_Callback cb = nullptr, void * arg = nullptr) const;
+/// Execute `sql` query; return true on success
+bool executeQuery(const char *sql, SQL_Callback cb = nullptr, void * arg = nullptr) const;
+
+/// Prepare an sql statement for insterting nodes; returns `true` on success
+bool prepareInsert();
+
+/// Create a file at `path` (or overwrite it) and associate it with `db_handle_`
+bool createDB(const char* path);
+
+/// Reads all nodes from a database and creates a tree; returns `true` on success
+bool readNodes(Execution& ex) const;
+
+/// Opens a database file returing `true` (and initializing db_handle_) on success 
+bool openDB(const char* path);
+
+DB_Handler();
+~DB_Handler();
 
 public:
-    DB_Handler();
-    ~DB_Handler();
 
-    void create_db(const char* path);
+    static void save_execution(Execution* ex, const char* path);
 
-    /// Opens a database file initializing db_handle_ on success
-    void open_db(const char* path);
-
-    void save_execution(Execution* ex) const;
-
-    std::shared_ptr<Execution> loadExecution(const char* path);
+    static std::shared_ptr<Execution> load_execution(const char* path);
 
 
 };

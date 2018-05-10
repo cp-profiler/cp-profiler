@@ -40,16 +40,20 @@ static int nodeCallback(void*,int ncolumns,char** columns,char** col_names) {
 }
 
 
-void DB_Handler::executeQuery(const char *sql, SQL_Callback cb, void * arg) const
+bool DB_Handler::executeQuery(const char *sql, SQL_Callback cb, void * arg) const
 {
     char *zErrMsg = 0;
+
+    bool success = true;
 
     auto rc = sqlite3_exec(db_handle_, sql, cb, arg, &zErrMsg);
     if (rc != SQLITE_OK) {
         debug("error") << "SQL error: " << zErrMsg << '\n';
+        success = false;
     }
 
     sqlite3_free(zErrMsg);
+    return success;
 }
 
 /// returns a nullptr on failure
@@ -72,7 +76,7 @@ int DB_Handler::countNodes() const {
 
     int count = 0;
 
-    executeQuery(query, [](void* count, int ncols, char** cols, char**) -> int {
+    const auto success = executeQuery(query, [](void* count, int ncols, char** cols, char**) -> int {
         int* val = reinterpret_cast<int*>(count);
 
         if (ncols == 1) {
@@ -84,10 +88,13 @@ int DB_Handler::countNodes() const {
         return 0;
     }, reinterpret_cast<void*>(&count));
 
+    /// For now return zero on any error
+    if (!success) count = 0;
+
     return count;
 }
 
-void DB_Handler::readNodes(Execution& ex) const {
+bool DB_Handler::readNodes(Execution& ex) const {
 
     const auto query = "select * from Nodes";
 
@@ -99,12 +106,15 @@ void DB_Handler::readNodes(Execution& ex) const {
 
     tree.db_initialize(total_nodes);
 
+    bool success = false;
+
     while(true) {
 
         int res = sqlite3_step(select_stmt);
 
         if (res == SQLITE_DONE) {
             print("sqlite done");
+            success = true;
             break;
         }
 
@@ -121,13 +131,9 @@ void DB_Handler::readNodes(Execution& ex) const {
         const auto label = (const char*)sqlite3_column_text(select_stmt, 5);
 
         if (pid == NodeID::NoNode) {
-            // tree.createRoot(kids, label);
             tree.db_createRoot(nid, label);
         } else {
-            // print("promote node, nid: {}, pid: {}, alt: {}, kids: {}, status: {}, label: {}", nid, pid, alt, kids, status, label);
             tree.db_addChild(nid, pid, alt, status, label);
-            // tree.promoteNode(pid, alt, kids, status, label);
-            // tree.promoteNode(nid, kids, status, label);
         }
 
         if (res != SQLITE_ROW) break;
@@ -137,34 +143,40 @@ void DB_Handler::readNodes(Execution& ex) const {
         debug("error") << "could not finalize a statement in db\n";
     }
 
-    // executeQuery(query, nodeCallback);
+    return success;
 }
 
-std::shared_ptr<Execution> DB_Handler::loadExecution(const char* path) {
+std::shared_ptr<Execution> DB_Handler::load_execution(const char* path) {
 
-    open_db(path);
+    DB_Handler db;
 
-    if (!db_handle_) return nullptr;
+    if (!db.openDB(path)) return nullptr;
 
     auto ex = std::make_shared<Execution>(path);
 
-    readNodes(*ex);
+    db.readNodes(*ex);
 
     return ex;
 }
 
 /// this takes under 2 sec for a ~1.5M nodes (golomb 10)
-void DB_Handler::save_execution(Execution* ex) const {
+void DB_Handler::save_execution(Execution* ex, const char* path) {
 
     perfHelper.begin("save execution");
 
-    auto& tree = ex->tree();
+    DB_Handler db;
 
-    auto order = utils::pre_order(tree);
+    db.createDB(path);
+    db.prepareInsert();
+
+    const auto& tree = ex->tree();
+    const auto order = utils::pre_order(tree);
 
     constexpr static int TRANSACTION_SIZE = 50000;
 
-    executeQuery("BEGIN;");
+    bool success = 0;
+
+    db.executeQuery("BEGIN;");
     for (auto i = 0u; i < order.size(); ++i) {
         const auto nid = order[i];
         const auto pid = tree.getParent(nid);
@@ -172,14 +184,14 @@ void DB_Handler::save_execution(Execution* ex) const {
         const auto kids = tree.childrenCount(nid);
         const auto status = tree.getStatus(nid);
         const auto label = tree.getLabel(nid);
-        insertNode({nid, pid, alt, kids, status, label});
+        db.insertNode({nid, pid, alt, kids, status, label});
 
         if (i % TRANSACTION_SIZE == TRANSACTION_SIZE - 1) {
-            executeQuery("END;");
-            executeQuery("BEGIN;");
+            db.executeQuery("END;");
+            db.executeQuery("BEGIN;");
         }
     }
-    executeQuery("END;");
+    db.executeQuery("END;");
 
     perfHelper.end();
 
@@ -220,7 +232,22 @@ static sqlite3_stmt* prepareInsert(sqlite3* db) {
     return insert_stmt;
 }
 
-void DB_Handler::create_db(const char* path) {
+bool DB_Handler::prepareInsert() {
+    const char *pzTest;
+    const char* query = "INSERT INTO Nodes \
+                         (NodeID, ParentID, Alternative, NKids, Status, Label) \
+                         VALUES (?,?,?,?,?,?);";
+
+    int rc = sqlite3_prepare_v2(db_handle_, query, strlen(query) + 1, &insert_stmt_, &pzTest);
+    if (rc != SQLITE_OK) {
+        debug("error") << "SQL error: " << pzTest << '\n';
+        return false;
+    }
+
+    return true;
+}
+
+bool DB_Handler::createDB(const char* path) {
     /// clear the file
 
     debug("force") << "creating file: " << path << std::endl;
@@ -230,10 +257,10 @@ void DB_Handler::create_db(const char* path) {
     int res = sqlite3_open(path, &db_handle_);
     if (res !=  SQLITE_OK) {
         debug("error") << "error opening a DB file\n";
-        return;
+        return false;
     }
 
-    executeQuery("CREATE TABLE Nodes( \
+    const auto success = executeQuery("CREATE TABLE Nodes( \
       NodeID INTEGER PRIMARY KEY, \
       ParentID int NOT NULL, \
       Alternative int NOT NULL, \
@@ -243,11 +270,11 @@ void DB_Handler::create_db(const char* path) {
       );"
     );
 
-    insert_stmt_ = prepareInsert(db_handle_);
+    return success;
 }
 
-void DB_Handler::open_db(const char* path) {
-    debug("force") << path << std::endl;
+bool DB_Handler::openDB(const char* path) {
+    print("openDB: {}", path);
     int res = sqlite3_open_v2(path, &db_handle_, SQLITE_OPEN_READONLY, nullptr);
     if (res !=  SQLITE_OK) {
         debug("error") << "error opening a DB file\n";
@@ -258,7 +285,10 @@ void DB_Handler::open_db(const char* path) {
         }
 
         db_handle_ = nullptr;
+        return false;
     }
+
+    return true;
 }
 
 

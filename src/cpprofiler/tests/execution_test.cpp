@@ -286,15 +286,26 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         const auto path = "/home/maxim/dev/cp-profiler2/golomb8.db";
 
-        DB_Handler db1;
-        auto ex1 = db1.loadExecution(path);
+        auto ex1 = DB_Handler::load_execution(path);
         if (ex1) c.addNewExecution(ex1);
 
-        DB_Handler db2;
-        auto ex2 = db2.loadExecution(path);
+        auto ex2 = DB_Handler::load_execution(path);
         if (ex2) c.addNewExecution(ex2);
 
         c.mergeTrees(ex1.get(), ex2.get());
+    }
+
+    void save_and_load(Conductor& c) {
+
+        auto ex1 = c.addNewExecution("created");
+        build_for_comparison_a(ex1->tree());
+
+        const auto path = "/home/maxim/dev/cp-profiler2/temp.db";
+
+        DB_Handler::save_execution(ex1, path);
+
+        auto ex2 = DB_Handler::load_execution(path);
+        if (ex2) c.addNewExecution(ex2);
     }
 
     void tree_building(Conductor& c) {
@@ -363,9 +374,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     static void load_execution(Conductor& c, const char* path) {
 
-        DB_Handler db_handler;
-
-        auto ex = db_handler.loadExecution(path);
+        auto ex = DB_Handler::load_execution(path);
 
         if (!ex) {
             print("could not load the execution");
@@ -406,12 +415,13 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         // comparison2(c);
 
+        // save_and_load(c);
 
         // tree_building(c);
 
         // restart_tree(c);
 
-        // load_execution(c, "/home/maxim/dev/cp-profiler2/execution.db");
+        // load_execution(c, "/home/maxim/dev/cp-profiler2/golomb8.db");
 
         // db_create_tree(c);
 
