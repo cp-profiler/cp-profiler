@@ -8,6 +8,7 @@ namespace cpprofiler {
 namespace cl_options {
     extern QCommandLineOption paths;
     extern QCommandLineOption mzn;
+    extern QCommandLineOption save_search;
 }
 
 class CommandLineParser {

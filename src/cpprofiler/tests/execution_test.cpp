@@ -396,6 +396,15 @@ namespace cpprofiler { namespace tests { namespace execution {
         tree.db_addChild(NodeID{2}, NodeID{0}, 1, tree::NodeStatus::BRANCH, "b");
     }
 
+    static void save_search(Conductor& c) {
+
+        auto ex1 = c.addNewExecution("simple execution");
+        build_for_comparison_a(ex1->tree());
+
+        c.saveSearch(ex1, "test.search");
+
+    }
+
     void run(Conductor& c) {
 
         /// this one works with db
@@ -424,6 +433,8 @@ namespace cpprofiler { namespace tests { namespace execution {
         // load_execution(c, "/home/maxim/dev/cp-profiler2/golomb8.db");
 
         // db_create_tree(c);
+
+        // save_search(c);
 
 
         // TODO: copmarison of two golomb rulers 8 (same) results in a wierd memory error

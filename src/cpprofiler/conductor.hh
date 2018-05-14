@@ -48,6 +48,9 @@ public:
 
     void mergeTrees(Execution* e1, Execution* e2);
 
+    void saveSearch(Execution* e, const char* path) const;
+    void saveSearch(Execution* e) const;
+
     ExecutionWindow& getExecutionWindow(Execution* e);
 
     int getListenPort() const;
@@ -67,6 +70,8 @@ private:
     void saveExecution(Execution* e);
 
     void readSettings();
+
+    void onExecutionDone(Execution* e) const;
 
     // void getSelectedExecutions
 

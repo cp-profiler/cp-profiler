@@ -32,6 +32,10 @@ public slots:
 
     void print_log(const std::string& str);
 
+signals:
+
+    void needToSaveSearch(Execution* e);
+
 };
 
 

@@ -22,6 +22,10 @@ public:
 
     void handleNode(Message* node);
 
+signals:
+
+    void buildingDone();
+
 
 
 };

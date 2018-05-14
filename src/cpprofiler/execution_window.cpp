@@ -180,6 +180,10 @@ namespace cpprofiler {
                     connect(ssw, &analysis::SimilarSubtreeWindow::should_be_highlighted,
                         m_traditional_view.get(), &tree::TraditionalView::highlightSubtrees);
                 });
+
+                auto saveSearch = new QAction{"Save Search (for replaying)", this};
+                analysisMenu->addAction(saveSearch);
+                connect(saveSearch, &QAction::triggered, [this]() { emit needToSaveSearch(&m_execution); });
             }
 
             // auto debugText = new QTextEdit{this};

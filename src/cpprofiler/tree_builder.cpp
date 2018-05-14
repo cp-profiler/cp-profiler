@@ -50,6 +50,7 @@ void TreeBuilder::startBuilding() {
 void TreeBuilder::finishBuilding() {
     perfHelper.end();
     debug("done") << "  Builder: done building\n";
+    emit buildingDone();
 }
 
 void TreeBuilder::handleNode(Message* node) {
@@ -65,8 +66,8 @@ void TreeBuilder::handleNode(Message* node) {
     std::unique_ptr<Message> node_msg{node};
     debug("msg:node") << *node << std::endl;
 
-    auto n_uid = node->nodeUID();
-    auto p_uid = node->parentUID();
+    const auto n_uid = node->nodeUID();
+    const auto p_uid = node->parentUID();
 
     auto& tree = m_execution.tree();
 

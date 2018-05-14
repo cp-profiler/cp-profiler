@@ -11,6 +11,7 @@
 #include <QFileDialog>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QApplication>
 #include "../cpp-integration/message.hpp"
 
 #include "execution.hh"
@@ -22,6 +23,7 @@
 #include "analysis/tree_merger.hh"
 
 #include "utils/std_ext.hh"
+#include "utils/tree_utils.hh"
 
 #include <random>
 
@@ -141,6 +143,18 @@ namespace cpprofiler {
         return dist(rng);
     }
 
+    void Conductor::onExecutionDone(Execution* e) const {
+
+        print("on execution done");
+
+        if (m_options.save_search_path != "") {
+            print("saving search to: {}", m_options.save_search_path);
+            saveSearch(e, m_options.save_search_path.c_str());
+            QApplication::quit();
+        }
+
+    }
+
     int Conductor::getNextExecId() const {
         int eid=0;
         while(m_executions.find(eid) != m_executions.end()) {
@@ -206,8 +220,13 @@ namespace cpprofiler {
             m_builders[ex_id] = builder;
             builder->moveToThread(builderThread);
 
+            connect(builder, &TreeBuilder::buildingDone, [this, ex]() {
+                onExecutionDone(ex);
+            });
+
             /// is this the right time to delete the builder thread?
             connect(builderThread, &QThread::finished, builderThread, &QObject::deleteLater);
+
             builderThread->start();
         }
 
@@ -249,7 +268,7 @@ namespace cpprofiler {
         m_execution_list->addExecution(*ex);
 
         const bool auto_show = true;
-        if (auto_show) {
+        if (auto_show && m_options.save_search_path != "") {
             showTraditionalView(ex.get());
         }
 
@@ -264,6 +283,12 @@ namespace cpprofiler {
         if (maybe_view == m_execution_windows.end()) {
 
             m_execution_windows[e] = utils::make_unique<ExecutionWindow>(*e);
+
+            const auto ex_window = m_execution_windows[e].get();
+
+            connect(ex_window, &ExecutionWindow::needToSaveSearch, [this, e]() {
+                saveSearch(e);
+            });
         }
 
         return *m_execution_windows.at(e);
@@ -291,9 +316,68 @@ namespace cpprofiler {
 
     }
 
+    void Conductor::saveSearch(Execution* e, const char* path) const {
+
+        const auto& nt = e->tree();
+
+        const auto order = utils::pre_order(nt);
+
+        QFile file(path);
+        if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
+            print("Error: could not open \"{}\" to save search, path");
+            return;
+        }
+
+        QTextStream file_stream(&file);
+
+        for (auto nid : order) {
+
+            // Note: not every child is logged (SKIPPED and UNDET are not)
+            int kids_logged = 0;
+
+            /// Note: this temporary stream is used so that children can be
+            /// traversed first, counted, but logged after their parent
+            std::stringstream children_stream;
+
+            const auto kids = nt.childrenCount(nid);
+
+            for (auto alt = 0; alt < kids; alt++) {
+
+                const auto kid = nt.getChild(nid, alt);
+                const auto status = nt.getStatus(kid);
+
+                if (status == tree::NodeStatus::SKIPPED || status == tree::NodeStatus::UNDETERMINED) continue;
+
+                ++kids_logged;
+                /// TODO: use original names in labels
+                const auto label = nt.getLabel(kid);
+
+                children_stream << " " << kid << " " << label;
+            }
+
+            file_stream << nid << " " << kids_logged;
+
+            /// Unexplored node on the left branch (search timed out)
+            if ((kids == 0) && (nt.getStatus(nid) == tree::NodeStatus::BRANCH)) {
+                file_stream << " stop";
+            }
+
+            file_stream << children_stream.str().c_str() << '\n';
+        }
+
+    }
+
+    void Conductor::saveSearch(Execution* e) const {
+
+        const auto file_path = QFileDialog::getSaveFileName(nullptr, "Save Search To a File").toStdString();
+
+        saveSearch(e, file_path.c_str());
+
+    }
+
     void Conductor::saveExecution(Execution* e) {
 
-        const auto file_path = QFileDialog::getOpenFileName(this, "Open Execution").toStdString();
+        const auto file_path = QFileDialog::getOpenFileName(nullptr, "Open Execution").toStdString();
 
         DB_Handler::save_execution(e, file_path.c_str());
 

@@ -41,6 +41,11 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    if (cl_parser.isSet(cl_options::save_search)) {
+      const auto path = cl_parser.value(cl_options::save_search).toStdString();
+      options.save_search_path = path;
+    }
+
     Conductor conductor(std::move(options));
 
     conductor.show();

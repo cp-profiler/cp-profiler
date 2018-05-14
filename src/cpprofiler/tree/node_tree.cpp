@@ -128,8 +128,8 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
     }
 
     node_info_->setStatus(nid, status);
-    // setLabel(nid, label);
-    setLabel(nid, std::to_string(nid));
+    setLabel(nid, label);
+    // setLabel(nid, std::to_string(nid));
 
     if (kids > 0) {
         structure_->addChildren(nid, kids);
