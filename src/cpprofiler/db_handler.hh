@@ -27,12 +27,7 @@ sqlite3* db_handle_ = nullptr;
 sqlite3_stmt* insert_stmt_ = nullptr;
 
 
-void insertNode(NodeData data) const;
-
 int countNodes() const;
-
-/// Execute `sql` query; return true on success
-bool executeQuery(const char *sql, SQL_Callback cb = nullptr, void * arg = nullptr) const;
 
 /// Prepare an sql statement for insterting nodes; returns `true` on success
 bool prepareInsert();
@@ -51,7 +46,12 @@ DB_Handler();
 
 public:
 
-    static void save_execution(Execution* ex, const char* path);
+    /// Execute `sql` query; return true on success
+    bool executeQuery(const char *sql, SQL_Callback cb = nullptr, void * arg = nullptr) const;
+
+    void insertNode(NodeData data) const;
+
+    static void save_execution(const Execution* ex, const char* path);
 
     static std::shared_ptr<Execution> load_execution(const char* path);
 

@@ -383,6 +383,23 @@ namespace cpprofiler { namespace tests { namespace execution {
         }
     }
 
+    static void save_and_load(Conductor& c, const char* path) {
+
+
+        auto ex1 = c.addNewExecution("simple execution");
+        build_for_comparison_a(ex1->tree());
+
+        DB_Handler::save_execution(ex1, path);
+
+        auto ex = DB_Handler::load_execution(path);
+        if (!ex) {
+            print("could not load the execution");
+        } else {
+            c.addNewExecution(ex);
+        }
+
+    }
+
     static void db_create_tree(Conductor& c) {
 
         auto ex = c.addNewExecution("Created as in DB");
@@ -431,6 +448,8 @@ namespace cpprofiler { namespace tests { namespace execution {
         // restart_tree(c);
 
         // load_execution(c, "/home/maxim/dev/cp-profiler2/golomb8.db");
+
+        // save_and_load(c, "/home/maxim/dev/cp-profiler2/test.db");
 
         // db_create_tree(c);
 

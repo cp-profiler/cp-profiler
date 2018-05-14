@@ -159,15 +159,7 @@ std::shared_ptr<Execution> DB_Handler::load_execution(const char* path) {
     return ex;
 }
 
-/// this takes under 2 sec for a ~1.5M nodes (golomb 10)
-void DB_Handler::save_execution(Execution* ex, const char* path) {
-
-    perfHelper.begin("save execution");
-
-    DB_Handler db;
-
-    db.createDB(path);
-    db.prepareInsert();
+static void save_nodes(const DB_Handler& db, const Execution* ex) {
 
     const auto& tree = ex->tree();
     const auto order = utils::pre_order(tree);
@@ -192,6 +184,28 @@ void DB_Handler::save_execution(Execution* ex, const char* path) {
         }
     }
     db.executeQuery("END;");
+
+}
+
+static void save_user_data(const DB_Handler& db, const Execution* ex) {
+
+    /// TODO
+
+}
+
+/// this takes under 2 sec for a ~1.5M nodes (golomb 10)
+void DB_Handler::save_execution(const Execution* ex, const char* path) {
+
+    perfHelper.begin("save execution");
+
+    DB_Handler db;
+
+    db.createDB(path);
+    db.prepareInsert();
+
+    save_nodes(db, ex);
+
+    save_user_data(db, ex);
 
     perfHelper.end();
 
@@ -260,7 +274,7 @@ bool DB_Handler::createDB(const char* path) {
         return false;
     }
 
-    const auto success = executeQuery("CREATE TABLE Nodes( \
+    const auto success1 = executeQuery("CREATE TABLE Nodes( \
       NodeID INTEGER PRIMARY KEY, \
       ParentID int NOT NULL, \
       Alternative int NOT NULL, \
@@ -270,7 +284,13 @@ bool DB_Handler::createDB(const char* path) {
       );"
     );
 
-    return success;
+    const auto success2 = executeQuery("Create TABLE Bookmarks( \
+        NodeID INTEGER PRIMARY KEY, \
+        Bookmark varchar(16) \
+        );"
+    );
+
+    return success1 && success2;
 }
 
 bool DB_Handler::openDB(const char* path) {

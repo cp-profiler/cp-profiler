@@ -10,5 +10,21 @@ namespace cpprofiler {
         return m_selected_node;
     }
 
+    void UserData::setBookmark(tree::NodeID nid, const std::string& text) {
+        bookmarks_.insert({nid, text});
+    }
+
+    const std::string& UserData::getBookmark(tree::NodeID nid) const {
+        return bookmarks_.at(nid);
+    }
+
+    bool UserData::isBookmarked(tree::NodeID nid) const {
+        return bookmarks_.find(nid) != bookmarks_.end();
+    }
+
+    void UserData::clearBookmark(NodeID nid) {
+        bookmarks_.erase(nid);
+    }
+
 
 }

@@ -96,6 +96,9 @@ public slots:
     void toggleHidden();
     void unhideNode(NodeID nid);
 
+    /// Mark a node and attach a note to it
+    void bookmarkCurrentNode();
+
     void hideFailedAt(NodeID nid, bool onlyDirty = false);
 
     /// hide all failed descendants of the current node

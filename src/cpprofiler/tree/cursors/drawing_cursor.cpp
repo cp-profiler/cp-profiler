@@ -211,6 +211,11 @@ namespace cpprofiler { namespace tree {
             } break;
         }
 
+        if (m_user_data.isBookmarked(m_cur_node)) {
+            m_painter.setBrush(Qt::black);
+            m_painter.drawEllipse(cur_x-10, cur_y, 10.0, 10.0);
+        }
+
     }
 
     void DrawingCursor::moveUpwards() {

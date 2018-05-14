@@ -25,6 +25,9 @@ public:
 
     tree::TraditionalView& traditional_view();
 
+    /// Show a window with all bookmarks
+    void showBookmarks() const;
+
     ExecutionWindow(Execution& ex);
     ~ExecutionWindow();
 

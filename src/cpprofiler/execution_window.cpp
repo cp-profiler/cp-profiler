@@ -5,6 +5,9 @@
 #include "user_data.hh"
 
 #include <QGridLayout>
+#include <QTableView>
+#include <QHeaderView>
+#include <QStandardItemModel>
 #include <QSlider>
 #include <QDebug>
 #include <QMenuBar>
@@ -90,36 +93,6 @@ namespace cpprofiler {
                 nodeMenu->addAction(centerNode);
                 connect(centerNode, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::centerCurrentNode);
 
-                auto navRoot = new QAction{"Go to the root", this};
-                navRoot->setShortcut(QKeySequence("R"));
-                nodeMenu->addAction(navRoot);
-                connect(navRoot, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navRoot);
-
-                auto navDown = new QAction{"Go to the left-most child", this};
-                navDown->setShortcut(QKeySequence("Down"));
-                nodeMenu->addAction(navDown);
-                connect(navDown, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navDown);
-
-                auto navDownAlt = new QAction{"Go to the left-most child", this};
-                navDownAlt->setShortcut(QKeySequence("Alt+Down"));
-                nodeMenu->addAction(navDownAlt);
-                connect(navDownAlt, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navDownAlt);
-
-                auto navUp = new QAction{"Go up the tree", this};
-                navUp->setShortcut(QKeySequence("Up"));
-                nodeMenu->addAction(navUp);
-                connect(navUp, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navUp);
-
-                auto navLeft = new QAction{"Go left the tree", this};
-                navLeft->setShortcut(QKeySequence("Left"));
-                nodeMenu->addAction(navLeft);
-                connect(navLeft, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navLeft);
-
-                auto navRight = new QAction{"Go right the tree", this};
-                navRight->setShortcut(QKeySequence("Right"));
-                nodeMenu->addAction(navRight);
-                connect(navRight, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navRight);
-
                 auto toggleShowLabel = new QAction{"Show labels down", this};
                 toggleShowLabel->setShortcut(QKeySequence("L"));
                 nodeMenu->addAction(toggleShowLabel);
@@ -145,11 +118,51 @@ namespace cpprofiler {
                 nodeMenu->addAction(toggleHighlighted);
                 connect(toggleHighlighted, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::toggleHighlighted);
 
+                auto bookmarkNode = new  QAction{"Add/remove bookmark", this};
+                bookmarkNode->setShortcut(QKeySequence("Shift+B"));
+                nodeMenu->addAction(bookmarkNode);
+                connect(bookmarkNode, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::bookmarkCurrentNode);
+
+            }
+
+            {
+
+                auto navMenu = menuBar->addMenu("Na&vigation");
+
+                auto navRoot = new QAction{"Go to the root", this};
+                navRoot->setShortcut(QKeySequence("R"));
+                navMenu->addAction(navRoot);
+                connect(navRoot, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navRoot);
+
+                auto navDown = new QAction{"Go to the left-most child", this};
+                navDown->setShortcut(QKeySequence("Down"));
+                navMenu->addAction(navDown);
+                connect(navDown, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navDown);
+
+                auto navDownAlt = new QAction{"Go to the right-most child", this};
+                navDownAlt->setShortcut(QKeySequence("Alt+Down"));
+                navMenu->addAction(navDownAlt);
+                connect(navDownAlt, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navDownAlt);
+
+                auto navUp = new QAction{"Go up", this};
+                navUp->setShortcut(QKeySequence("Up"));
+                navMenu->addAction(navUp);
+                connect(navUp, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navUp);
+
+                auto navLeft = new QAction{"Go left", this};
+                navLeft->setShortcut(QKeySequence("Left"));
+                navMenu->addAction(navLeft);
+                connect(navLeft, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navLeft);
+
+                auto navRight = new QAction{"Go right", this};
+                navRight->setShortcut(QKeySequence("Right"));
+                navMenu->addAction(navRight);
+                connect(navRight, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navRight);
             }
 
 
             {
-                auto debugMenu = menuBar->addMenu("&Debug");
+                auto debugMenu = menuBar->addMenu("Debu&g");
 
                 auto computeLayout = new QAction{"Compute layout", this};
                 debugMenu->addAction(computeLayout);
@@ -163,6 +176,14 @@ namespace cpprofiler {
                 getNodeInfo->setShortcut(QKeySequence("I"));
                 debugMenu->addAction(getNodeInfo);
                 connect(getNodeInfo, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::printNodeInfo);
+            }
+
+            {
+                auto dataMenu = menuBar->addMenu("&Data");
+
+                auto showBookmarks = new QAction{"Show bookmarks", this};
+                dataMenu->addAction(showBookmarks);
+                connect(showBookmarks, &QAction::triggered, this, &ExecutionWindow::showBookmarks);
             }
 
             {
@@ -199,6 +220,35 @@ namespace cpprofiler {
 
     tree::TraditionalView& ExecutionWindow::traditional_view() {
         return *m_traditional_view;
+    }
+
+    void ExecutionWindow::showBookmarks() const {
+
+        /// is this deleted?
+        auto b_window = new QDialog();
+        b_window->setAttribute(Qt::WA_DeleteOnClose);
+
+        auto lo = new QVBoxLayout(b_window);
+
+        auto bm_table = new QTableView();
+
+        auto bm_model = new QStandardItemModel(0, 2);
+        QStringList headers{"NodeID", "Bookmark Text"};
+        bm_model->setHorizontalHeaderLabels(headers);
+        bm_table->horizontalHeader()->setStretchLastSection(true);
+
+        bm_table->setModel(bm_model);
+
+        auto nid_item = new QStandardItem("-1");
+        auto text_item = new QStandardItem("Test Bookmark");
+        bm_model->appendRow({nid_item, text_item});
+
+        lo->addWidget(bm_table);
+
+        b_window->show();
+
+        // QTableView
+
     }
 
     static void writeToFile(const QString& path, const QString& str) {

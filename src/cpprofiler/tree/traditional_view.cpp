@@ -13,6 +13,8 @@
 #include <QTimer>
 #include <QScrollBar>
 #include <QMouseEvent>
+#include <QInputDialog>
+#include <QLineEdit>
 
 #include "cursors/nodevisitor.hh"
 #include "cursors/hide_failed_cursor.hh"
@@ -324,6 +326,24 @@ void TraditionalView::unhideNode(NodeID nid) {
         setLayoutOutdated();
         emit needsRedrawing();
     }
+}
+
+void TraditionalView::bookmarkCurrentNode() {
+    auto nid = node();
+
+    if (!user_data_->isBookmarked(nid)) {
+        /// Add bookmark
+        bool accepted;
+        auto text = QInputDialog::getText(nullptr, "Add bookmark", "Name:", QLineEdit::Normal, "", &accepted);
+        if (!accepted) return;
+
+        user_data_->setBookmark(nid, text.toStdString());
+    } else {
+        /// Remove bookmark
+        user_data_->clearBookmark(nid);
+    }
+
+    emit needsRedrawing();
 }
 
 void TraditionalView::unhideAll() {
