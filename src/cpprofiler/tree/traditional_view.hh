@@ -27,7 +27,9 @@ class TraditionalView : public QObject {
     Q_OBJECT
 
     const NodeTree& tree_;
-    std::unique_ptr<UserData> user_data_;
+
+    /// User data (bookmarks etc.), possibly null
+    UserData& user_data_;
 
     /// TODO: make sure node flags is thread-safe?
     std::unique_ptr<VisualFlags> vis_flags_;
@@ -39,15 +41,18 @@ class TraditionalView : public QObject {
     /// only update layout if it is stale
     bool layout_stale_ = true;
 
-    /// returns currently selected node; can be NodeID::NoNode
+    /// Returns currently selected node; can be NodeID::NoNode
     NodeID node() const;
+
+    /// Sets nid as the currently selected node
+    void setNode(NodeID nid);
 
 private slots:
 
     void redraw();
 public:
 
-    TraditionalView(const NodeTree& tree);
+    TraditionalView(const NodeTree& tree, UserData& ud);
     ~TraditionalView();
 
     QWidget* widget();
@@ -68,6 +73,9 @@ signals:
     /// Triggers a redraw that updates scrollarea's viewport (perhaps a direct call would suffice)
     void needsRedrawing();
 
+    /// A signal that notifies execution to change its current node with that of this view
+    void curNodeChanged(NodeID nid);
+
 public slots:
 
     /// Updates the tree at 60hz (layout etc.)
@@ -80,6 +88,9 @@ public slots:
 
     void centerNode(NodeID nid);
     void centerCurrentNode();
+
+    /// Set current node to nid
+    void setCurrentNode(NodeID nid);
 
     void navRoot();
 
@@ -108,8 +119,6 @@ public slots:
     void unhideAll();
 
     void toggleHighlighted();
-
-    void selectNode(NodeID nid);
 
     void forceComputeLayout();
 

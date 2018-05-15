@@ -41,7 +41,7 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto n1 =  tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
         auto n2 =  tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
 
-        conductor.getExecutionWindow(ex).traditional_view().selectNode(n1);
+        ex->userData().setSelectedNode(n1);
 
         auto n3 =  tree.promoteNode(n1, 0, 2, tree::NodeStatus::BRANCH, "3");
         auto n4 =  tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "4");
@@ -286,26 +286,13 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         const auto path = "/home/maxim/dev/cp-profiler2/golomb8.db";
 
-        auto ex1 = DB_Handler::load_execution(path);
+        auto ex1 = db_handler::load_execution(path);
         if (ex1) c.addNewExecution(ex1);
 
-        auto ex2 = DB_Handler::load_execution(path);
+        auto ex2 = db_handler::load_execution(path);
         if (ex2) c.addNewExecution(ex2);
 
         c.mergeTrees(ex1.get(), ex2.get());
-    }
-
-    void save_and_load(Conductor& c) {
-
-        auto ex1 = c.addNewExecution("created");
-        build_for_comparison_a(ex1->tree());
-
-        const auto path = "/home/maxim/dev/cp-profiler2/temp.db";
-
-        DB_Handler::save_execution(ex1, path);
-
-        auto ex2 = DB_Handler::load_execution(path);
-        if (ex2) c.addNewExecution(ex2);
     }
 
     void tree_building(Conductor& c) {
@@ -374,7 +361,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     static void load_execution(Conductor& c, const char* path) {
 
-        auto ex = DB_Handler::load_execution(path);
+        auto ex = db_handler::load_execution(path);
 
         if (!ex) {
             print("could not load the execution");
@@ -389,9 +376,11 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto ex1 = c.addNewExecution("simple execution");
         build_for_comparison_a(ex1->tree());
 
-        DB_Handler::save_execution(ex1, path);
+        ex1->userData().setBookmark(NodeID{2}, "Test Bookmark");
 
-        auto ex = DB_Handler::load_execution(path);
+        db_handler::save_execution(ex1, path);
+
+        auto ex = db_handler::load_execution(path);
         if (!ex) {
             print("could not load the execution");
         } else {
@@ -441,15 +430,13 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         // comparison2(c);
 
-        // save_and_load(c);
-
         // tree_building(c);
 
         // restart_tree(c);
 
         // load_execution(c, "/home/maxim/dev/cp-profiler2/golomb8.db");
 
-        // save_and_load(c, "/home/maxim/dev/cp-profiler2/test.db");
+        save_and_load(c, "/home/maxim/dev/cp-profiler2/test.db");
 
         // db_create_tree(c);
 

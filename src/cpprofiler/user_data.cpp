@@ -26,5 +26,15 @@ namespace cpprofiler {
         bookmarks_.erase(nid);
     }
 
+    std::vector<tree::NodeID> UserData::bookmarkedNodes() const {
+
+        std::vector<tree::NodeID> res;
+        for (const auto& item : bookmarks_) {
+            res.push_back(item.first);
+        }
+
+        return res;
+    }
+
 
 }

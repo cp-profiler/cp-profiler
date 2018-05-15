@@ -15,7 +15,7 @@ namespace cpprofiler { namespace tree {
 class SubtreeView : public QWidget {
 Q_OBJECT
 
-    std::unique_ptr<UserData> m_user_data;
+    std::unique_ptr<UserData> user_data_;
     std::unique_ptr<Layout> m_layout;
     std::unique_ptr<TreeScrollArea> m_scroll_area;
 
@@ -26,13 +26,13 @@ Q_OBJECT
 
 public:
     SubtreeView(const NodeTree& nt)
-    :   m_user_data(utils::make_unique<UserData>())
+    :   user_data_(utils::make_unique<UserData>())
     ,   m_layout(utils::make_unique<Layout>())
     {
         auto layout_computer = LayoutComputer(nt, *m_layout, node_flags);
         layout_computer.compute();
 
-        m_scroll_area.reset(new TreeScrollArea(m_cur_node, nt, *m_user_data, *m_layout, node_flags));
+        m_scroll_area.reset(new TreeScrollArea(m_cur_node, nt, *user_data_, *m_layout, node_flags));
         m_scroll_area->setScale(50);
         m_scroll_area->viewport()->update();
     }

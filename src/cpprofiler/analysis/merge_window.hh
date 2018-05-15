@@ -5,9 +5,13 @@
 #include "merging/merge_result.hh"
 
 
-namespace cpprofiler { namespace tree {
-    class TraditionalView;
-}}
+namespace cpprofiler {
+    namespace tree {
+        class TraditionalView;
+    }
+
+    class UserData;
+}
 
 namespace cpprofiler { namespace analysis {
 
@@ -19,7 +23,9 @@ Q_OBJECT
 
     tree::NodeTree m_nt;
 
+    std::unique_ptr<UserData> user_data_;
     std::unique_ptr<tree::TraditionalView> m_view;
+
 
     MergeResult m_merge_result;
 

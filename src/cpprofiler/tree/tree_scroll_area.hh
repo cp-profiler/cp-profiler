@@ -25,7 +25,9 @@ struct DisplayState {
 class TreeScrollArea : public QAbstractScrollArea {
 Q_OBJECT
     const NodeTree& m_tree;
-    const UserData& m_user_data;
+
+    /// Current node in the traditional view
+    const UserData& user_data_;
     const Layout& m_layout;
 
     DisplayState m_options;
@@ -48,7 +50,7 @@ public:
 
     TreeScrollArea(NodeID start,
                    const NodeTree&,
-                   const UserData&,
+                   const UserData& user_data,
                    const Layout&,
                    const VisualFlags&);
 

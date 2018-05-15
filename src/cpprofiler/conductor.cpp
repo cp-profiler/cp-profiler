@@ -93,7 +93,7 @@ namespace cpprofiler {
 
             const auto fileName = QFileDialog::getOpenFileName(this, "Open Execution").toStdString();
 
-            auto ex = DB_Handler::load_execution(fileName.c_str());
+            auto ex = db_handler::load_execution(fileName.c_str());
 
             if (!ex) {
                 print("could not load the execution");
@@ -379,7 +379,7 @@ namespace cpprofiler {
 
         const auto file_path = QFileDialog::getOpenFileName(nullptr, "Open Execution").toStdString();
 
-        DB_Handler::save_execution(e, file_path.c_str());
+        db_handler::save_execution(e, file_path.c_str());
 
         qDebug() << "execution saved";
 

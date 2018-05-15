@@ -15,7 +15,10 @@ namespace cpprofiler {
     }
 
     Execution::Execution(const std::string& name, bool restarts)
-        : m_name{name}, m_tree{new tree::NodeTree()}, m_is_restarts(restarts)
+        : m_name{name},
+          m_tree{new tree::NodeTree()},
+          user_data_(utils::make_unique<UserData>()),
+          m_is_restarts(restarts)
     {
         /// need to create a dummy root node
         if (restarts) {
@@ -42,14 +45,6 @@ namespace cpprofiler {
         return m_solver_data;
     }
 
-    const tree::NodeInfo& Execution::node_info() const {
-        return m_tree->node_info();
-    }
-
-    tree::NodeInfo& Execution::node_info() {
-        return m_tree->node_info();
-    }
-
     tree::NodeTree& Execution::tree() {
         return *m_tree;
     }
@@ -61,6 +56,7 @@ namespace cpprofiler {
     bool Execution::doesRestarts() const {
         return m_is_restarts;
     }
+
 }
 
 namespace cpprofiler {

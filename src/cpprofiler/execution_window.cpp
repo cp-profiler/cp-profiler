@@ -27,14 +27,14 @@ namespace cpprofiler {
     ExecutionWindow::ExecutionWindow(Execution& ex)
     : m_execution(ex)
     {
-        auto& node_tree = ex.tree();
-        m_traditional_view.reset(new tree::TraditionalView(node_tree));
+        const auto& tree = ex.tree();
+        m_traditional_view.reset(new tree::TraditionalView(tree, ex.userData()));
 
         auto layout = new QGridLayout();
 
         statusBar()->showMessage("Ready");
 
-        auto stats_bar = new NodeStatsBar(this, node_tree.node_stats());
+        auto stats_bar = new NodeStatsBar(this, tree.node_stats());
         statusBar()->addPermanentWidget(stats_bar);
 
         resize(500,700);
@@ -76,6 +76,7 @@ namespace cpprofiler {
             }
 
         }
+
 
         {
             auto menuBar = new QMenuBar(0);
@@ -224,7 +225,6 @@ namespace cpprofiler {
 
     void ExecutionWindow::showBookmarks() const {
 
-        /// is this deleted?
         auto b_window = new QDialog();
         b_window->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -239,9 +239,19 @@ namespace cpprofiler {
 
         bm_table->setModel(bm_model);
 
-        auto nid_item = new QStandardItem("-1");
-        auto text_item = new QStandardItem("Test Bookmark");
-        bm_model->appendRow({nid_item, text_item});
+        {
+            const auto& ud = m_execution.userData();
+
+            const auto nodes = ud.bookmarkedNodes();
+
+            for (const auto n : nodes) {
+                auto nid_item = new QStandardItem(QString::number(n));
+                auto text = ud.getBookmark(n);
+                auto text_item = new QStandardItem(text.c_str());
+                bm_model->appendRow({nid_item, text_item});
+            }
+        }
+
 
         lo->addWidget(bm_table);
 

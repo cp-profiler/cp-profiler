@@ -73,7 +73,6 @@ void TreeBuilder::handleNode(Message* node) {
 
     tree::NodeID pid = tree::NodeID::NoNode;
 
-    /// who else has access to solver_data?
     if (p_uid.nid != -1) {
         pid = m_execution.solver_data().getNodeId({p_uid.nid, p_uid.rid, p_uid.tid});
     }

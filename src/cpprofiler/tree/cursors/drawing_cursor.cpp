@@ -44,7 +44,14 @@ namespace cpprofiler { namespace tree {
 
     DrawingCursor::DrawingCursor(NodeID start, const NodeTree& tree,
         const Layout& layout, const UserData& user_data, const VisualFlags& flags, QPainter& painter, QPoint start_pos, const QRect& clip)
-    : NodeCursor(start, tree), m_node_tree(tree), m_layout(layout), m_user_data(user_data), m_vis_flags(flags), m_painter(painter), clippingRect(clip) {
+    : NodeCursor(start, tree),
+      m_node_tree(tree),
+      m_layout(layout),
+      user_data_(user_data),
+      m_vis_flags(flags),
+      m_painter(painter),
+      clippingRect(clip)
+    {
         cur_x = start_pos.x(); cur_y = start_pos.y();
     }
 
@@ -127,8 +134,6 @@ namespace cpprofiler { namespace tree {
 
         auto status = m_node_info.getStatus(m_cur_node);
 
-        auto selected = (m_user_data.getSelectedNode() == m_cur_node) ? true : false;
-
         /// NOTE: this should be consisten with the layout
         if (m_vis_flags.isLabelShown(m_cur_node)) {
 
@@ -160,8 +165,10 @@ namespace cpprofiler { namespace tree {
             drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
         }
 
-                /// draw bounding box and shape
-        if (m_user_data.getSelectedNode() == m_cur_node) {
+        const auto sel_node = user_data_.getSelectedNode();
+        const auto selected = (sel_node == m_cur_node) ? true : false;
+
+        if (selected) {
             m_painter.setBrush(QColor{0, 0, 0, 20});
 
             // drawBoundingBox(m_painter, cur_x, cur_y, m_cur_node, m_layout);
@@ -211,7 +218,7 @@ namespace cpprofiler { namespace tree {
             } break;
         }
 
-        if (m_user_data.isBookmarked(m_cur_node)) {
+        if (user_data_.isBookmarked(m_cur_node)) {
             m_painter.setBrush(Qt::black);
             m_painter.drawEllipse(cur_x-10, cur_y, 10.0, 10.0);
         }

@@ -31,20 +31,20 @@
 
 namespace cpprofiler { namespace tree {
 
-TraditionalView::TraditionalView(const NodeTree& tree)
+TraditionalView::TraditionalView(const NodeTree& tree, UserData& ud)
 : tree_(tree),
-  user_data_(utils::make_unique<UserData>()),
-  layout_(utils::make_unique<Layout>()),
+  user_data_(ud),
   vis_flags_(utils::make_unique<VisualFlags>()),
+  layout_(utils::make_unique<Layout>()),
   layout_computer_(utils::make_unique<LayoutComputer>(tree, *layout_, *vis_flags_))
 {
     utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
 
-    scroll_area_.reset(new TreeScrollArea(tree_.getRoot(), tree_, *user_data_, *layout_, *vis_flags_));
+    scroll_area_.reset(new TreeScrollArea(tree_.getRoot(), tree_, user_data_, *layout_, *vis_flags_));
 
     // std::cerr << "traditional view thread:" << std::this_thread::get_id() << std::endl;
 
-    connect(scroll_area_.get(), &TreeScrollArea::nodeClicked, this, &TraditionalView::selectNode);
+    connect(scroll_area_.get(), &TreeScrollArea::nodeClicked, this, &TraditionalView::setCurrentNode);
     connect(scroll_area_.get(), &TreeScrollArea::nodeDoubleClicked, this, &TraditionalView::handleDoubleClick);
 
     connect(this, &TraditionalView::needsRedrawing, this, &TraditionalView::redraw);
@@ -74,78 +74,84 @@ void TraditionalView::redraw() {
 }
 
 NodeID TraditionalView::node() const {
-    return user_data_->getSelectedNode();
+    return user_data_.getSelectedNode();
+}
+
+void TraditionalView::setNode(NodeID nid) {
+    user_data_.setSelectedNode(nid);
 }
 
 void TraditionalView::navRoot() {
     auto root = tree_.getRoot();
-    user_data_->setSelectedNode(root);
-    centerCurrentNode();
+    setNode(root);
+    centerCurrentNode(); /// TODO: this should be needed
     emit needsRedrawing();
 }
 
 void TraditionalView::navDown() {
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+
+    const auto nid = node();
+
+    if (nid == NodeID::NoNode) return;
 
     utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
 
-    const auto kids = tree_.childrenCount(cur_nid);
+    const auto kids = tree_.childrenCount(nid);
 
-    if (kids == 0 || vis_flags_->isHidden(cur_nid)) return;
+    if (kids == 0 || vis_flags_->isHidden(nid)) return;
 
-    auto first_kid = tree_.getChild(cur_nid, 0);
-    user_data_->setSelectedNode(first_kid);
+    auto first_kid = tree_.getChild(nid, 0);
+    setNode(first_kid);
     centerCurrentNode();
     emit needsRedrawing();
 }
 
 void TraditionalView::navDownAlt() {
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+    const auto nid = node();
+    if (nid == NodeID::NoNode) return;
 
     utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
 
-    const auto kids = tree_.childrenCount(cur_nid);
+    const auto kids = tree_.childrenCount(nid);
 
-    if (kids == 0 || vis_flags_->isHidden(cur_nid)) return;
+    if (kids == 0 || vis_flags_->isHidden(nid)) return;
 
-    auto last_kid = tree_.getChild(cur_nid, kids-1);
-    user_data_->setSelectedNode(last_kid);
+    auto last_kid = tree_.getChild(nid, kids-1);
+    setNode(last_kid);
     centerCurrentNode();
     emit needsRedrawing();
 }
 
 void TraditionalView::navUp() {
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+    auto nid = node();
+    if (nid == NodeID::NoNode) return;
 
     utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
 
-    auto pid = tree_.getParent(cur_nid);
+    auto pid = tree_.getParent(nid);
 
     if (pid != NodeID::NoNode) {
-        user_data_->setSelectedNode(pid);
+        setNode(pid);
         centerCurrentNode();
     }
     emit needsRedrawing();
 }
 
 void TraditionalView::navLeft() {
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+    auto nid = node();
+    if (nid == NodeID::NoNode) return;
 
     utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
 
-    auto pid = tree_.getParent(cur_nid);
+    auto pid = tree_.getParent(nid);
     if (pid == NodeID::NoNode) return;
 
-    auto cur_alt = tree_.getAlternative(cur_nid);
+    auto cur_alt = tree_.getAlternative(nid);
 
     auto kids = tree_.childrenCount(pid);
 
     if (cur_alt > 0) {
-        user_data_->setSelectedNode(tree_.getChild(pid, cur_alt - 1));
+        auto kid = tree_.getChild(pid, cur_alt - 1);
         centerCurrentNode();
     }
 
@@ -154,21 +160,22 @@ void TraditionalView::navLeft() {
 
 void TraditionalView::navRight() {
     /// lock mutex
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+    auto nid = node();
+    if (nid == NodeID::NoNode) return;
 
     utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
 
-    auto pid = tree_.getParent(cur_nid);
+    auto pid = tree_.getParent(nid);
 
     if (pid == NodeID::NoNode) return;
 
-    auto cur_alt = tree_.getAlternative(cur_nid);
+    auto cur_alt = tree_.getAlternative(nid);
 
     auto kids = tree_.childrenCount(pid);
 
     if (cur_alt + 1 < kids) {
-        user_data_->setSelectedNode(tree_.getChild(pid, cur_alt + 1));
+        const auto kid = tree_.getChild(pid, cur_alt + 1);
+        setNode(kid);
         centerCurrentNode();
     }
 
@@ -181,23 +188,23 @@ void TraditionalView::setLabelShown(NodeID nid, bool val) {
 }
 
 void TraditionalView::toggleShowLabel() {
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+    auto nid = node();
+    if (nid == NodeID::NoNode) return;
 
-    auto val = !vis_flags_->isLabelShown(cur_nid);
-    setLabelShown(cur_nid, val);
+    auto val = !vis_flags_->isLabelShown(nid);
+    setLabelShown(nid, val);
     emit needsRedrawing();
 
     /// TODO: needs re-layout as well
 }
 
 void TraditionalView::showLabelsDown() {
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+    auto nid = node();
+    if (nid == NodeID::NoNode) return;
 
-    auto val = !vis_flags_->isLabelShown(cur_nid);
+    auto val = !vis_flags_->isLabelShown(nid);
 
-    utils::pre_order_apply(tree_, cur_nid, [val, this](NodeID nid) {
+    utils::pre_order_apply(tree_, nid, [val, this](NodeID nid) {
         setLabelShown(nid, val);
     });
 
@@ -206,10 +213,10 @@ void TraditionalView::showLabelsDown() {
 }
 
 void TraditionalView::showLabelsUp() {
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+    auto nid = node();
+    if (nid == NodeID::NoNode) return;
 
-    auto pid = tree_.getParent(cur_nid);
+    auto pid = tree_.getParent(nid);
 
     /// if it is root, toggle for the root only
     if (pid == NodeID::NoNode) {
@@ -219,9 +226,9 @@ void TraditionalView::showLabelsUp() {
 
     auto val = !vis_flags_->isLabelShown(pid);
 
-    while (cur_nid != NodeID::NoNode) {
-        setLabelShown(cur_nid, val);
-        cur_nid = tree_.getParent(cur_nid);
+    while (nid != NodeID::NoNode) {
+        setLabelShown(nid, val);
+        nid = tree_.getParent(nid);
     }
 
     setLayoutOutdated();
@@ -233,16 +240,16 @@ static bool is_leaf(const NodeTree& nt, NodeID nid) {
 }
 
 void TraditionalView::toggleHidden() {
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+    auto nid = node();
+    if (nid == NodeID::NoNode) return;
 
     // do not hide leaf nodes
-    if (is_leaf(tree_, cur_nid)) return;
+    if (is_leaf(tree_, nid)) return;
 
-    auto val = !vis_flags_->isHidden(cur_nid);
-    vis_flags_->setHidden(cur_nid, val);
+    auto val = !vis_flags_->isHidden(nid);
+    vis_flags_->setHidden(nid, val);
 
-    dirtyUp(cur_nid);
+    dirtyUp(nid);
 
     setLayoutOutdated();
     emit needsRedrawing();
@@ -265,10 +272,10 @@ void TraditionalView::hideFailedAt(NodeID n, bool onlyDirty) {
 }
 
 void TraditionalView::hideFailed() {
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+    auto nid = node();
+    if (nid == NodeID::NoNode) return;
 
-    hideFailedAt(cur_nid);
+    hideFailedAt(nid);
 }
 
 void TraditionalView::autoUpdate() {
@@ -291,15 +298,15 @@ void TraditionalView::autoUpdate() {
 
 void TraditionalView::handleDoubleClick() {
 
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+    auto nid = node();
+    if (nid == NodeID::NoNode) return;
 
-    auto status = tree_.getStatus(cur_nid);
+    auto status = tree_.getStatus(nid);
 
     if (status == NodeStatus::BRANCH) {
-        unhideNode(cur_nid);
+        unhideNode(nid);
     } else if (status == NodeStatus::MERGED) {
-        toggleCollapsePentagon(cur_nid);
+        toggleCollapsePentagon(nid);
     }
 
     /// should this happen automatically whenever the layout is changed?
@@ -331,16 +338,16 @@ void TraditionalView::unhideNode(NodeID nid) {
 void TraditionalView::bookmarkCurrentNode() {
     auto nid = node();
 
-    if (!user_data_->isBookmarked(nid)) {
+    if (!user_data_.isBookmarked(nid)) {
         /// Add bookmark
         bool accepted;
         auto text = QInputDialog::getText(nullptr, "Add bookmark", "Name:", QLineEdit::Normal, "", &accepted);
         if (!accepted) return;
 
-        user_data_->setBookmark(nid, text.toStdString());
+        user_data_.setBookmark(nid, text.toStdString());
     } else {
         /// Remove bookmark
-        user_data_->clearBookmark(nid);
+        user_data_.clearBookmark(nid);
     }
 
     emit needsRedrawing();
@@ -350,7 +357,7 @@ void TraditionalView::unhideAll() {
 
     perfHelper.begin("unhide_all");
 
-    auto nid = user_data_->getSelectedNode();
+    auto nid = node();
     if (nid == NodeID::NoNode) return;
 
     /// indicates if any change was made
@@ -379,7 +386,7 @@ void TraditionalView::unhideAll() {
 }
 
 void TraditionalView::toggleHighlighted() {
-    auto nid = user_data_->getSelectedNode();
+    auto nid = node();
     if (nid == NodeID::NoNode) return;
 
     auto val = !vis_flags_->isHighlighted(nid);
@@ -430,12 +437,11 @@ void TraditionalView::centerNode(NodeID nid) {
 }
 
 void TraditionalView::centerCurrentNode() {
-    auto cur_nid = user_data_->getSelectedNode();
-    centerNode(cur_nid);
+    centerNode(node());
 }
 
-void TraditionalView::selectNode(NodeID nid) {
-    user_data_->setSelectedNode(nid);
+void TraditionalView::setCurrentNode(NodeID nid) {
+    user_data_.setSelectedNode(nid);
     emit needsRedrawing();
 }
 
@@ -464,24 +470,24 @@ void TraditionalView::dirtyUp(NodeID nid) {
 }
 
 void TraditionalView::dirtyCurrentNodeUp() {
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+    const auto nid = node();
+    if (nid == NodeID::NoNode) return;
 
-    dirtyUp(cur_nid);
+    dirtyUp(nid);
 }
 
 void TraditionalView::printNodeInfo() {
-    auto cur_nid = user_data_->getSelectedNode();
-    if (cur_nid == NodeID::NoNode) return;
+    const auto nid = node();
+    if (nid == NodeID::NoNode) return;
 
-    qDebug() << "---- Node Info:" << cur_nid << "----";
-    qDebug() << "offset:" << layout_->getOffset(cur_nid);
-    auto bb = layout_->getBoundingBox(cur_nid);
+    qDebug() << "---- Node Info:" << nid << "----";
+    qDebug() << "offset:" << layout_->getOffset(nid);
+    auto bb = layout_->getBoundingBox(nid);
     qDebug() << "bb:[" << bb.left << "," << bb.right << "]";
-    qDebug() << "dirty:" << layout_->isDirty(cur_nid);
-    qDebug() << "hidden:" << vis_flags_->isHidden(cur_nid);
-    qDebug() << "has solved kids:" << tree_.hasSolvedChildren(cur_nid);
-    qDebug() << "has open kids:" << tree_.hasOpenChildren(cur_nid);
+    qDebug() << "dirty:" << layout_->isDirty(nid);
+    qDebug() << "hidden:" << vis_flags_->isHidden(nid);
+    qDebug() << "has solved kids:" << tree_.hasSolvedChildren(nid);
+    qDebug() << "has open kids:" << tree_.hasOpenChildren(nid);
 }
 
 void TraditionalView::highlightSubtrees(const std::vector<NodeID>& nodes) {

@@ -28,7 +28,7 @@ class DrawingCursor : public NodeCursor {
 
     const NodeTree& m_node_tree;
 
-    const UserData& m_user_data;
+    const UserData& user_data_;
 
     const VisualFlags& m_vis_flags;
 

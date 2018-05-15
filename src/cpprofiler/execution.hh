@@ -8,6 +8,7 @@
 #include <QReadWriteLock>
 #include "tree/node_tree.hh"
 #include "tree/node.hh"
+#include "user_data.hh"
 
 namespace cpprofiler {
 
@@ -75,10 +76,12 @@ class Execution {
 
     std::unique_ptr<tree::NodeTree> m_tree;
 
-    /// UID to NodeID map and labels (needs mutex protection?)
+    /// UID to NodeID map (needs mutex protection?)
     SolverData m_solver_data;
 
     std::shared_ptr<const NameMap> name_map_;
+
+    std::unique_ptr<UserData> user_data_;
 
     /// Whether the execution contains restarts
     bool m_is_restarts;
@@ -94,8 +97,8 @@ public:
     SolverData& solver_data();
     const SolverData& solver_data() const;
 
-    tree::NodeInfo& node_info();
-    const tree::NodeInfo& node_info() const;
+    inline UserData& userData() { return *user_data_; }
+    inline const UserData& userData() const { return *user_data_; };
 
     tree::NodeTree& tree();
     const tree::NodeTree& tree() const;

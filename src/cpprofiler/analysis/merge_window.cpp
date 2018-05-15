@@ -3,6 +3,7 @@
 #include "../tree/traditional_view.hh"
 #include "merging/pentagon_list_widget.hh"
 #include "pentagon_counter.hpp"
+#include "../user_data.hh"
 
 #include <QGridLayout>
 #include <QWidget>
@@ -15,7 +16,9 @@ namespace cpprofiler { namespace analysis {
 
     MergeWindow::MergeWindow() {
 
-        m_view.reset(new tree::TraditionalView(m_nt));
+        user_data_.reset(new UserData);
+        m_view.reset(new tree::TraditionalView(m_nt, *user_data_));
+
 
         m_view->setScale(50);
 
@@ -39,7 +42,7 @@ namespace cpprofiler { namespace analysis {
         // pent_list = new PentagonListWidget(this, *dummy_result);
         pent_list = new PentagonListWidget(this, m_merge_result);
 
-        connect(pent_list, &PentagonListWidget::pentagonClicked, m_view.get(), &tree::TraditionalView::selectNode);
+        connect(pent_list, &PentagonListWidget::pentagonClicked, m_view.get(), &tree::TraditionalView::setCurrentNode);
 
         auto sort_cb = new QCheckBox("sorted", this);
         sort_cb->setChecked(true);

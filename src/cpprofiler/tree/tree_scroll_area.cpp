@@ -120,7 +120,7 @@ namespace cpprofiler { namespace tree {
 
         // perfHelper.begin("tree drawing");
 
-        DrawingCursor dc(m_start_node, m_tree, m_layout, m_user_data, m_vis_flags, painter, start_pos, clip);
+        DrawingCursor dc(m_start_node, m_tree, m_layout, user_data_, m_vis_flags, painter, start_pos, clip);
         PreorderNodeVisitor<DrawingCursor>(dc).run();
         // perfHelper.end();
 
@@ -232,7 +232,7 @@ namespace cpprofiler { namespace tree {
     }
 
     TreeScrollArea::TreeScrollArea(NodeID start, const NodeTree& tree, const UserData& user_data, const Layout& layout, const VisualFlags& nf)
-        : m_start_node(start), m_tree(tree), m_user_data(user_data), m_layout(layout), m_vis_flags(nf) {
+        : m_start_node(start), m_tree(tree), user_data_(user_data), m_layout(layout), m_vis_flags(nf) {
             setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
             setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
