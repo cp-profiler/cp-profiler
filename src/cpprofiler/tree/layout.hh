@@ -25,14 +25,15 @@ Q_OBJECT
     mutable utils::Mutex m_layout_mutex;
 
     /// TODO: make sure this is always protected by a mutex
-    std::vector<std::unique_ptr<Shape, ShapeDeleter>> m_shapes;
+    std::vector<ShapeUniqPtr> m_shapes;
 
     /// Relative offset from the parent node along the x axis
     std::vector<double> m_child_offsets;
 
-    /// Indicates whether layout for the node and its children is done
+    /// Whether layout for the node and its children is done (indexed by NodeID)
     std::vector<bool> m_layout_done;
 
+    /// Whether a node's shape need to be recomputed (indexed by NodeID)
     std::vector<bool> m_dirty;
 
 public:
@@ -45,18 +46,23 @@ public:
 
     const Shape& getShape(NodeID nid) const;
 
-    void setShape(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape);
+    void setShape(NodeID nid, ShapeUniqPtr shape);
 
     double getOffset(NodeID nid) const;
 
-    int getDepth(NodeID nid) const;
+    /// Get the height of the shape of node `nid`
+    int getHeight(NodeID nid) const;
 
+    /// Whether layout is done for node `nid`
     bool getLayoutDone(NodeID nid) const;
 
+    /// Whether node `nid` is dirty
     bool isDirty(NodeID nid) const;
 
+    /// Set node `nid` as (dirty) / (not dirty) based on `val`
     void setDirty(NodeID nid, bool val);
 
+    /// Get bounding box of node `nid`
     const BoundingBox& getBoundingBox(NodeID nid) const;
 
     Layout();

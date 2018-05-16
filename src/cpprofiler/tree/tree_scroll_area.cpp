@@ -60,7 +60,7 @@ namespace cpprofiler { namespace tree {
 
         auto tree_width = bb.right - bb.left;
 
-        auto tree_height = m_layout.getDepth(m_start_node) * layout::dist_y;
+        auto tree_height = m_layout.getHeight(m_start_node) * layout::dist_y;
 
         auto viewport_size = viewport()->size();
 

@@ -33,7 +33,7 @@ namespace cpprofiler { namespace tree {
     /// corresponding root nodes be along X axis to avoid overlap, additionally
     /// allowing for some margin -- layout::min_dist_x)
     static int distance_between(const Shape& s1, const Shape& s2) {
-        const auto common_depth = std::min(s1.depth(), s2.depth());
+        const auto common_depth = std::min(s1.height(), s2.height());
 
         auto max = 0;
         for (auto i = 0; i < common_depth; ++i) {
@@ -48,8 +48,8 @@ namespace cpprofiler { namespace tree {
     /// offsets will contain the resulting relative distance from the parent node (along x);
     static ShapeUniqPtr combine_shapes(const Shape& s1, const Shape& s2, std::vector<int>& offsets) {
 
-        const auto depth_left = s1.depth();
-        const auto depth_right = s2.depth();
+        const auto depth_left = s1.height();
+        const auto depth_right = s2.height();
 
         const auto max_depth = std::max(depth_left, depth_right);
         const auto common_depth = std::min(depth_left, depth_right);
@@ -92,8 +92,8 @@ namespace cpprofiler { namespace tree {
     /// `dist` is the disntance between s2 and the left extent
     static Shape merge_left(const Shape& s1, const Shape& s2, int& dist) {
 
-        const auto depth_left = s1.depth();
-        const auto depth_right = s2.depth();
+        const auto depth_left = s1.height();
+        const auto depth_right = s2.height();
 
         const auto common_depth = std::min(depth_left, depth_right);
         const auto max_depth = std::max(depth_left, depth_right);
@@ -229,7 +229,7 @@ namespace cpprofiler { namespace tree {
             for (auto i = 0; i < nkids; ++i) {
                 auto kid_l = tree.getChild(nid, i);
                 const auto& s1 = layout.getShape(kid_l);
-                max_depth = std::max(max_depth, s1.depth());
+                max_depth = std::max(max_depth, s1.height());
             }
         }
 
@@ -259,7 +259,7 @@ namespace cpprofiler { namespace tree {
             for (auto kid = 0; kid < nkids; ++kid) {
                 const auto kid_id = tree.getChild(nid, kid);
                 const auto& shape = layout.getShape(kid_id);
-                if (shape.depth() > depth - 1) {
+                if (shape.height() > depth - 1) {
                     leftmost_x = std::min(leftmost_x, shape[depth-1].l + x_offsets[kid]);
                     rightmost_x = std::max(leftmost_x, shape[depth-1].r + x_offsets[kid]);
                 }
@@ -315,11 +315,11 @@ namespace cpprofiler { namespace tree {
                 const auto kid = tree_.getChild(nid, 0);
                 const auto& kid_s = m_layout.getShape(kid);
 
-                auto shape = ShapeUniqPtr(new Shape(kid_s.depth() + 1));
+                auto shape = ShapeUniqPtr(new Shape(kid_s.height() + 1));
 
                 (*shape)[0] = {0, 0};
 
-                for (auto depth = 0; depth < kid_s.depth(); depth++) {
+                for (auto depth = 0; depth < kid_s.height(); depth++) {
                     (*shape)[depth+1] = kid_s[depth];
                 }
 

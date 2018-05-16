@@ -112,10 +112,10 @@ struct CompareShapes {
     const auto& s1 = si1.shape;
     const auto& s2 = si2.shape;
 
-    if (s1.depth() < s2.depth()) return true;
-    if (s1.depth() > s2.depth()) return false;
+    if (s1.height() < s2.height()) return true;
+    if (s1.height() > s2.height()) return false;
 
-    for (int i = 0; i < s1.depth(); ++i) {
+    for (int i = 0; i < s1.height(); ++i) {
       if (s1[i].l < s2[i].l) return false;
       if (s1[i].l > s2[i].l) return true;
       if (s1[i].r < s2[i].r) return true;
@@ -180,7 +180,7 @@ static std::vector<SubtreePattern> runSimilarShapes(const NodeTree& tree, const 
     while (it != end) {
         auto upper = shape_set.upper_bound(*it);
 
-        const int height = it->shape.depth();
+        const int height = it->shape.height();
 
         auto pattern = SubtreePattern{{}, height, 0};
         for (; it != upper; ++it) {

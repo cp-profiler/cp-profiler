@@ -82,27 +82,27 @@ namespace cpprofiler { namespace tree {
         painter.setBrush(QColor{0, 0, 0, 50});
         painter.setPen(Qt::NoPen);
 
-        auto& shape = layout.getShape(nid);
+        const auto& shape = layout.getShape(nid);
 
-        int depth = shape.depth();
-        QPointF *points = new QPointF[depth * 2];
+        const int height = shape.height();
+        QPointF *points = new QPointF[height * 2];
 
         int l_x = x + shape[0].l;
         int r_x = x + shape[0].r;
         y = y + BRANCH_WIDTH / 2;
 
         points[0] = QPointF(l_x, y);
-        points[depth * 2 - 1] = QPointF(r_x, y);
+        points[height * 2 - 1] = QPointF(r_x, y);
 
-        for (int i = 1; i <  depth; i++){
+        for (int i = 1; i <  height; i++){
             y += static_cast<double>(layout::dist_y);
             l_x = x + shape[i].l;
             r_x = x + shape[i].r;
             points[i] = QPointF(l_x, y);
-            points[depth * 2 - i - 1] = QPointF(r_x, y);
+            points[height * 2 - i - 1] = QPointF(r_x, y);
         }
 
-        painter.drawConvexPolygon(points, shape.depth() * 2);
+        painter.drawConvexPolygon(points, shape.height() * 2);
 
         delete[] points;
 
@@ -112,7 +112,7 @@ namespace cpprofiler { namespace tree {
 
     static void drawBoundingBox(QPainter& painter, int x, int y, NodeID nid, const Layout& layout) {
         auto bb = layout.getBoundingBox(nid);
-        auto height = layout.getDepth(nid) * layout::dist_y;
+        auto height = layout.getHeight(nid) * layout::dist_y;
         painter.drawRect(x + bb.left, y, bb.right - bb.left, height);
     }
 
@@ -266,7 +266,7 @@ namespace cpprofiler { namespace tree {
             (cur_x + bb.left > clippingRect.x() + clippingRect.width()) ||
             (cur_x + bb.right < clippingRect.x()) ||
             (cur_y > clippingRect.y() + clippingRect.height()) ||
-            (cur_y + (m_layout.getDepth(m_cur_node) + 1) * layout::dist_y < clippingRect.y())
+            (cur_y + (m_layout.getHeight(m_cur_node) + 1) * layout::dist_y < clippingRect.y())
         ) {
             // qDebug() << "node clipped";
             return true;

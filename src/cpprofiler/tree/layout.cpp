@@ -50,8 +50,8 @@ namespace cpprofiler { namespace tree {
     }
 
 
-    int Layout::getDepth(NodeID nid) const {
-        return getShape(nid).depth();
+    int Layout::getHeight(NodeID nid) const {
+        return getShape(nid).height();
     }
 
     const BoundingBox& Layout::getBoundingBox(NodeID nid) const {

@@ -8,6 +8,7 @@
 
 namespace cpprofiler { namespace tree {
 
+/// Shape's extent on some level
 class Extent {
 public:
     /// Left extent
@@ -15,13 +16,12 @@ public:
     /// Right extent
     int r;
     /// Construct with \a l and \a r
-    Extent(int l, int r);
+    Extent(int l0, int r0): l(l0), r(r0) {}
 
     Extent() = default;
-
-    ~Extent();
 };
 
+/// Shape's bounding box
 struct BoundingBox {
     int left;
     int right;
@@ -31,45 +31,43 @@ struct BoundingBox {
     }
 };
 
-
+/// Subtree's shape (outline) represented by extents on each depth level
 class Shape {
 
-    utils::Array<Extent> m_extents;
+    /// Shape's extents
+    utils::Array<Extent> extents_;
 
-    BoundingBox m_bb;
-
-    /// two integers per level
-
-    // simple array:
-        // int for size
-        // ptr to memory 12 
+    /// Shapes's bounding box
+    BoundingBox bb_;
 
     friend std::ostream& operator<<(std::ostream&, const Shape&);
 
 public:
-    Shape(int depth);
-    ~Shape();
+    /// Create a shape of depth/height of `height` with extents uninitialized
+    explicit Shape(int height);
 
-    Shape& operator=(const Shape& s);
-
-    Shape(std::initializer_list<Extent> init_list)
-    : m_extents{init_list} {}
-
+    /// Create a shape using initializer list and a pre-computed bounding box
     Shape(std::initializer_list<Extent> init_list, const BoundingBox& bb)
-    : m_extents{init_list}, m_bb{bb} {
-    }
+    : extents_{init_list}, bb_{bb} {}
 
-    /// returns the height of the shape
-    int depth() const;
+    /// Get the depth/height of the shape
+    int height() const { return extents_.size(); }
 
-    Extent& operator[](int depth);
+    /// Get the extent at `depth`
+    Extent& operator[](int depth) { return extents_[depth]; }
 
-    const Extent& operator[](int depth) const;
+    /// Get the extent at `depth`
+    const Extent& operator[](int depth) const { return extents_[depth]; }
 
-    void setBoundingBox(BoundingBox bb);
-    const BoundingBox& boundingBox() const;
+    /// Set bounding box
+    void setBoundingBox(BoundingBox bb) { bb_ = bb; }
 
+    /// Get bounding box
+    const BoundingBox& boundingBox() const { return bb_; }
+
+    /// Shape used for all leaf nodes (that don't have labels displayed)
     static Shape leaf;
+    /// Shape used for all hidden nodes / failed subtrees (that don't have labels displayed)
     static Shape hidden;
 
 };
