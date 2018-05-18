@@ -26,6 +26,9 @@ void pre_order_apply(const tree::NodeTree& nt, NodeID start, const NodeAction& a
 /// Inquire if the node is the right-most child
 bool is_right_most_child(const tree::NodeTree& nt, NodeID nid);
 
+/// Return a list of nodes under `nid` (including `nid`)
+std::vector<NodeID> nodes_below(const tree::NodeTree& tree, NodeID nid);
+
 /// Return node identifires in an arbitrary order
 std::vector<NodeID> any_order(const tree::NodeTree& tree);
 

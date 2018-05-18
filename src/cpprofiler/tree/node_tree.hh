@@ -119,6 +119,9 @@ public:
     /// Get the label of node `nid`
     const Label getLabel(NodeID nid) const;
 
+    /// Get the nogood of node `nid`
+    const Nogood& getNogood(NodeID nid) const;
+
     /// Check if the node `nid` has solved children (ancestors?)
     bool hasSolvedChildren(NodeID nid) const;
 

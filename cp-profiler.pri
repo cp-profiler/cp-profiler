@@ -42,6 +42,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/analysis/pattern_rect.cpp \
     $$PWD/src/cpprofiler/tree/node_drawing.cpp \
     $$PWD/src/cpprofiler/db_handler.cpp \
+    $$PWD/src/cpprofiler/nogood_dialog.cpp \
     $$PWD/src/sqlite/sqlite3.c \
 
 HEADERS += \
@@ -100,6 +101,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/node_drawing.hh \
     $$PWD/src/cpprofiler/db_handler.hh \
     $$PWD/src/cpprofiler/solver_data.hh \
+    $$PWD/src/cpprofiler/nogood_dialog.hh \
     $$PWD/src/sqlite/sqlite3.h \
 
 SOURCES += \

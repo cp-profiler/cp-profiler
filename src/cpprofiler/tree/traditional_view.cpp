@@ -22,18 +22,21 @@
 #include "node_id.hh"
 #include "shape.hh"
 #include "../user_data.hh"
+#include "../solver_data.hh"
 #include "layout_computer.hh"
 #include "../config.hh"
 
+#include "../nogood_dialog.hh"
 
 #include "../utils/perf_helper.hh"
 #include "../utils/tree_utils.hh"
 
 namespace cpprofiler { namespace tree {
 
-TraditionalView::TraditionalView(const NodeTree& tree, UserData& ud)
+TraditionalView::TraditionalView(const NodeTree& tree, UserData& ud, SolverData& sd)
 : tree_(tree),
   user_data_(ud),
+  solver_data_(sd),
   vis_flags_(utils::make_unique<VisualFlags>()),
   layout_(utils::make_unique<Layout>()),
   layout_computer_(utils::make_unique<LayoutComputer>(tree, *layout_, *vis_flags_))
@@ -480,14 +483,15 @@ void TraditionalView::printNodeInfo() {
     const auto nid = node();
     if (nid == NodeID::NoNode) return;
 
-    qDebug() << "---- Node Info:" << nid << "----";
-    qDebug() << "offset:" << layout_->getOffset(nid);
+    print("--- Node Info: {} ----", nid);
+    print("offset: {}", layout_->getOffset(nid));
     auto bb = layout_->getBoundingBox(nid);
-    qDebug() << "bb:[" << bb.left << "," << bb.right << "]";
-    qDebug() << "dirty:" << layout_->isDirty(nid);
-    qDebug() << "hidden:" << vis_flags_->isHidden(nid);
-    qDebug() << "has solved kids:" << tree_.hasSolvedChildren(nid);
-    qDebug() << "has open kids:" << tree_.hasOpenChildren(nid);
+    print("bb:[{},{}]", bb.left, bb.right);
+    print("dirty: {}", layout_->isDirty(nid));
+    print("hidden: {}", vis_flags_->isHidden(nid));
+    print("has solved kids: {}, ", tree_.hasSolvedChildren(nid));
+    print("has open kids: {}", tree_.hasOpenChildren(nid));
+    print("nogood: {}", tree_.getNogood(nid).get());
 }
 
 void TraditionalView::highlightSubtrees(const std::vector<NodeID>& nodes) {
@@ -499,6 +503,20 @@ void TraditionalView::highlightSubtrees(const std::vector<NodeID>& nodes) {
     }
 
     emit needsRedrawing();
+}
+
+void TraditionalView::showNogoods() const {
+
+    if (!solver_data_.hasNogoods()) return;
+
+    print("show nogoods");
+
+    const auto nodes = utils::nodes_below(tree_, node());
+
+    auto ng_dialog = new NogoodDialog(tree_, nodes);
+    ng_dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    ng_dialog->show();
 }
 
 

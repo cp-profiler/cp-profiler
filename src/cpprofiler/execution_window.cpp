@@ -28,7 +28,7 @@ namespace cpprofiler {
     : m_execution(ex)
     {
         const auto& tree = ex.tree();
-        m_traditional_view.reset(new tree::TraditionalView(tree, ex.userData()));
+        m_traditional_view.reset(new tree::TraditionalView(tree, ex.userData(), ex.solver_data()));
 
         auto layout = new QGridLayout();
 
@@ -124,6 +124,10 @@ namespace cpprofiler {
                 nodeMenu->addAction(bookmarkNode);
                 connect(bookmarkNode, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::bookmarkCurrentNode);
 
+                auto showNogoods = new QAction{"Show nogoods", this};
+                showNogoods->setShortcut(QKeySequence("Shift+N"));
+                nodeMenu->addAction(showNogoods);
+                connect(showNogoods, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::showNogoods);
             }
 
             {

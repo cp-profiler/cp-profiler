@@ -4,6 +4,7 @@
 #include "merging/pentagon_list_widget.hh"
 #include "pentagon_counter.hpp"
 #include "../user_data.hh"
+#include "../solver_data.hh"
 
 #include <QGridLayout>
 #include <QWidget>
@@ -17,7 +18,8 @@ namespace cpprofiler { namespace analysis {
     MergeWindow::MergeWindow() {
 
         user_data_.reset(new UserData);
-        m_view.reset(new tree::TraditionalView(m_nt, *user_data_));
+        solver_data_.reset(new SolverData);
+        m_view.reset(new tree::TraditionalView(m_nt, *user_data_, *solver_data_));
 
 
         m_view->setScale(50);

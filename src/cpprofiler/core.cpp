@@ -16,3 +16,7 @@ std::ostream& operator<<(std::ostream& os, const NodeStatus& ns) {
 }
 
 }}
+
+namespace cpprofiler {
+    const Nogood Nogood::empty("");
+}

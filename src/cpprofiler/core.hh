@@ -25,5 +25,19 @@ namespace cpprofiler { namespace tree {
 
 }}
 
+namespace cpprofiler {
+
+    class Nogood {
+        std::string orig_ng_;
+
+    public:
+        Nogood(const std::string& text): orig_ng_(text) {}
+
+        const std::string get() const { return orig_ng_; }
+
+        static const Nogood empty;
+    };
+}
+
 
 #endif

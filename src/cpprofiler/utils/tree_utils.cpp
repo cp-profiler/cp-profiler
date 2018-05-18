@@ -31,26 +31,40 @@ int calculate_depth(const NodeTree& nt, NodeID nid) {
     return depth;
 }
 
-void apply_below(const NodeTree& nt, NodeID nid, const NodeAction& action) {
+std::vector<NodeID> nodes_below(const tree::NodeTree& nt, NodeID nid) {
 
     if (nid == NodeID::NoNode) {
         throw std::exception();
     }
+
+    std::vector<NodeID> nodes;
 
     std::stack<NodeID> stk;
 
     stk.push(nid);
 
     while(!stk.empty()) {
-
         const auto n = stk.top(); stk.pop();
-        action(n);
+        nodes.push_back(n);
 
         const auto kids = nt.childrenCount(n);
         for (auto alt = 0; alt < kids; ++alt) {
             stk.push(nt.getChild(n, alt));
         }
     }
+
+    return nodes;
+}
+
+void apply_below(const NodeTree& nt, NodeID nid, const NodeAction& action) {
+
+    if (nid == NodeID::NoNode) {
+        throw std::exception();
+    }
+
+    auto nodes = nodes_below(nt, nid);
+
+    for (auto n : nodes) { action(n); }
 }
 
 void pre_order_apply(const tree::NodeTree& nt, NodeID start, const NodeAction& action) {

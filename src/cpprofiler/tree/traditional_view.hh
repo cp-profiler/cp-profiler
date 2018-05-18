@@ -10,6 +10,7 @@
 
 namespace cpprofiler {
     class UserData;
+    class SolverData;
 }
 
 namespace cpprofiler { namespace tree {
@@ -28,8 +29,11 @@ class TraditionalView : public QObject {
 
     const NodeTree& tree_;
 
-    /// User data (bookmarks etc.), possibly null
+    /// User data (bookmarks etc.)
     UserData& user_data_;
+
+    /// Nogoods, solver ids
+    SolverData& solver_data_;
 
     /// TODO: make sure node flags is thread-safe?
     std::unique_ptr<VisualFlags> vis_flags_;
@@ -52,7 +56,7 @@ private slots:
     void redraw();
 public:
 
-    TraditionalView(const NodeTree& tree, UserData& ud);
+    TraditionalView(const NodeTree& tree, UserData& ud, SolverData& sd);
     ~TraditionalView();
 
     QWidget* widget();
@@ -130,6 +134,9 @@ public slots:
     void printNodeInfo();
 
     void dirtyCurrentNodeUp();
+
+    /// Show nogoods of the nodes under the current node and the node inself
+    void showNogoods() const;
 
     void highlightSubtrees(const std::vector<NodeID>& nodes);
 

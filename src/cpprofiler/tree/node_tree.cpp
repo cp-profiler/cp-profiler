@@ -11,14 +11,11 @@
 namespace cpprofiler { namespace tree {
 
 
-NodeTree::NodeTree() : structure_{new Structure()}, node_info_(new NodeInfo) {
-    print("NodeTree()");
-}
+NodeTree::NodeTree() : structure_{new Structure()}, node_info_(new NodeInfo) {}
 
 NodeTree::~NodeTree() = default;
 
 void NodeTree::setSolverData(std::shared_ptr<SolverData> sd) {
-    print("set solver data");
     solver_data_ = sd;
 }
 
@@ -226,16 +223,20 @@ void NodeTree::setHasOpenChildren(NodeID nid, bool val) {
 }
 
 const Label NodeTree::getLabel(NodeID nid) const {
-    // return std::to_string(nid);
+    return std::to_string(nid);
 
-    auto uid = solver_data_->getSolverID(nid);
-    return uid.toString();
+    // auto uid = solver_data_->getSolverID(nid);
+    // return uid.toString();
 
     auto& orig = labels_.at(nid);
     if (name_map_) {
         return name_map_->replaceNames(orig);
     }
     return orig;
+}
+
+const Nogood& NodeTree::getNogood(NodeID nid) const {
+    return solver_data_->getNogood(nid);
 }
 
 bool NodeTree::hasSolvedChildren(NodeID nid) const {

@@ -103,6 +103,10 @@ void TreeBuilder::handleNode(Message* node) {
         }
     }
 
+    if (node->has_nogood()) {
+        m_execution.solver_data().setNogood(nid, node->nogood());
+    }
+
     m_execution.solver_data().setNodeId({n_uid.nid, n_uid.rid, n_uid.tid}, nid);
 
 }

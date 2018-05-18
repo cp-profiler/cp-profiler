@@ -64,12 +64,12 @@ namespace cpprofiler {
     void IdMap::addPair(SolverID sid, tree::NodeID nid) {
         QWriteLocker locker(&m_lock);
 
-        m_uid2id.insert({sid, nid});
+        uid2id_.insert({sid, nid});
         nid2uid_.insert({nid, sid});
     }
 
     tree::NodeID IdMap::get(SolverID sid) const {
         QReadLocker locker(&m_lock);
-        return m_uid2id.at(sid);
+        return uid2id_.at(sid);
     }
 }

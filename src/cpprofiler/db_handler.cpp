@@ -25,12 +25,15 @@ struct BookmarkItem {
     std::string text;
 };
 
+struct NogoodItem {
+    NodeID nid;
+    std::string text;
+};
+
 struct CloseSqlStatement {
     void operator()(sqlite3_stmt* stmt) {
         if (sqlite3_finalize(stmt) != SQLITE_OK) {
             debug("error") << "could not finalize a statement in db\n";
-        } else {
-            print("successfully finalized sqlite statement!");
         }
     }
 };
@@ -39,29 +42,12 @@ struct CloseDB {
     void operator()(sqlite3* db) {
         if (sqlite3_close(db) != SQLITE_OK) {
             debug("error") << "could not close db\n";
-        } else {
-            print("successfully closed sqlite!");
         }
     }
 };
 
 using SqlStatement = std::unique_ptr<sqlite3_stmt, CloseSqlStatement>;
 using Sqlite3 = std::unique_ptr<sqlite3, CloseDB>;
-
-static int nodeCallback(void*,int ncolumns,char** columns,char** col_names) {
-    qDebug() << "node callback";
-    qDebug() << "columns:" << ncolumns;
-
-    for (auto i = 0u; i < ncolumns; ++i) {
-        if (columns[i]) {
-            debug("force") << "col " << i << ":" << "name: " << col_names[i] << " ";
-            debug("force") << "val:" << columns[i] << "\n";
-        }
-    }
-
-    /// sqlite requires the return value of 0 to go on with the query
-    return 0;
-}
 
 /// Execute `sql` query; return true on success
 static bool execute_query(sqlite3* db, const char* query, SQL_Callback cb = nullptr, void * arg = nullptr) {
@@ -198,6 +184,40 @@ static bool read_bookmarks(sqlite3* db, Execution& ex) {
     return success;
 }
 
+/// Read all nogoods from the database
+static bool read_nogoods(sqlite3* db, Execution& ex) {
+    const auto query = "select * from Nogoods;";
+    auto select_ng_ = prepare_statement(db, query);
+
+    bool success = false;
+
+    auto& sd = ex.solver_data();
+
+    while(true) {
+
+        int res = sqlite3_step(select_ng_.get());
+
+        if (res == SQLITE_DONE) {
+            success = true;
+            break;
+        }
+
+        if (res == SQLITE_ERROR) {
+            print("sqlite runtime ERROR!");
+            break;
+        }
+
+        const auto nid = NodeID(sqlite3_column_int(select_ng_.get(), 0));
+        const auto ng_text = (const char*)(sqlite3_column_text(select_ng_.get(), 1));
+
+        sd.setNogood(nid, {ng_text});
+
+        if (res != SQLITE_ROW) break;
+    }
+
+    return success;
+}
+
 /// Opens a database file returing a handle on success (nullptr otherwise)
 static Sqlite3 open_db(const char* path) {
 
@@ -288,6 +308,49 @@ static void insert_bookmark(sqlite3_stmt* stmt, BookmarkItem bi) {
     }
 }
 
+static void insert_nogood(sqlite3_stmt* stmt, NogoodItem ngi) {
+
+    if (sqlite3_reset(stmt) != SQLITE_OK) {
+        debug("error") << "could not reset db statement\n";
+    }
+
+    sqlite3_bind_int(stmt, 1, ngi.nid);
+    sqlite3_bind_text(stmt, 2, ngi.text.c_str(), -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        debug("error") << "could not execute db statement\n";
+    }
+}
+
+static void save_nogoods(sqlite3* db, const Execution* ex) {
+
+    print("saving nogoods");
+
+    const char* query = "INSERT INTO Nogoods \
+                         (NodeID, Nogood) \
+                         VALUES (?,?);";
+
+    auto insert_ng_stmt = prepare_statement(db, query);
+
+    const auto& nt = ex->tree();
+    const auto& sd = ex->solver_data();
+
+    const auto nodes = utils::any_order(nt);
+
+    execute_query(db, "BEGIN;");
+
+    for (const auto n : nodes) {
+        const auto& text = sd.getNogood(n).get();
+        if (text != "") {
+            insert_nogood(insert_ng_stmt.get(), {n, text});
+        }
+    }
+
+    execute_query(db, "END;");
+
+
+}
+
 static void save_user_data(sqlite3* db, const Execution* ex) {
 
     const char* query = "INSERT INTO Bookmarks \
@@ -339,14 +402,19 @@ static Sqlite3 create_db(const char* path) {
         );"
     );
 
-    if (success1 && success2) {
+    const auto success3 = execute_query(db, "CREATE TABLE Nogoods( \
+        NodeID INTEGER PRIMARY KEY, \
+        Nogood varchar(8) \
+    );");
+
+    if (success1 && success2 && success3) {
         return Sqlite3{db};
     } else {
         return nullptr;
     }
 }
 
-    /// this takes under 2 sec for a ~1.5M nodes (golomb 10)
+    /// this takes (without nogoods) under 2 sec for a ~1.5M nodes (golomb 10)
     void save_execution(const Execution* ex, const char* path) {
 
         perfHelper.begin("save execution");
@@ -356,6 +424,13 @@ static Sqlite3 create_db(const char* path) {
         save_nodes(db.get(), ex);
 
         save_user_data(db.get(), ex);
+
+        const auto& sd = ex->solver_data();
+
+        if (sd.hasNogoods()) {
+            save_nogoods(db.get(), ex);
+        }
+
 
         perfHelper.end();
     }
@@ -371,6 +446,8 @@ static Sqlite3 create_db(const char* path) {
         read_nodes(db.get(), *ex);
 
         read_bookmarks(db.get(), *ex);
+
+        read_nogoods(db.get(), *ex);
 
         return ex;
     }
