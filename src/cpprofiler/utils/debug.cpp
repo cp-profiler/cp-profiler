@@ -19,7 +19,7 @@ std::ostream& debug(std::string type) {
         ,"perf"
         // ,"layout"
         ,"msg:command"
-        // ,"msg:node"
+        ,"msg:node"
     };
 
     if (std::find(to_print.begin(), to_print.end(), type) != to_print.end() ) {

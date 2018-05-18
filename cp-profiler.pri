@@ -99,6 +99,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/node_widget.hh \
     $$PWD/src/cpprofiler/tree/node_drawing.hh \
     $$PWD/src/cpprofiler/db_handler.hh \
+    $$PWD/src/cpprofiler/solver_data.hh \
     $$PWD/src/sqlite/sqlite3.h \
 
 SOURCES += \

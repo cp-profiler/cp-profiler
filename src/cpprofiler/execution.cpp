@@ -17,19 +17,19 @@ namespace cpprofiler {
     Execution::Execution(const std::string& name, bool restarts)
         : m_name{name},
           m_tree{new tree::NodeTree()},
+          solver_data_(utils::make_unique<SolverData>()),
           user_data_(utils::make_unique<UserData>()),
           m_is_restarts(restarts)
     {
+
+        m_tree->setSolverData(solver_data_);
+
+        print("Execution()");
+
         /// need to create a dummy root node
         if (restarts) {
             m_tree->createRoot(0, "root");
         }
-
-        debug("memory") << "Execution()\n";
-    }
-
-    Execution::~Execution() {
-        debug("memory") << "~Execution()\n";
     }
 
     void Execution::setNameMap(std::shared_ptr<const NameMap> nm) {
@@ -38,11 +38,11 @@ namespace cpprofiler {
     }
 
     const SolverData& Execution::solver_data() const {
-        return m_solver_data;
+        return *solver_data_;
     }
 
     SolverData& Execution::solver_data() {
-        return m_solver_data;
+        return *solver_data_;
     }
 
     tree::NodeTree& Execution::tree() {
@@ -63,25 +63,13 @@ namespace cpprofiler {
 
     void IdMap::addPair(SolverID sid, tree::NodeID nid) {
         QWriteLocker locker(&m_lock);
-        m_uid2id[sid] = nid;
+
+        m_uid2id.insert({sid, nid});
+        nid2uid_.insert({nid, sid});
     }
 
     tree::NodeID IdMap::get(SolverID sid) const {
         QReadLocker locker(&m_lock);
         return m_uid2id.at(sid);
     }
-}
-
-
-namespace cpprofiler {
-
-    tree::NodeID SolverData::getNodeId(SolverID sid) const {
-        return m_id_map.get(sid);
-    }
-
-    void SolverData::setNodeId(SolverID sid, tree::NodeID nid) {
-        m_id_map.addPair(sid, nid);
-    }
-
-
 }

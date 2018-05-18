@@ -13,6 +13,7 @@
 
 namespace cpprofiler {
     class NameMap;
+    class SolverData;
 }
 
 namespace cpprofiler { namespace tree {
@@ -33,6 +34,8 @@ Q_OBJECT
     std::unique_ptr<NodeInfo> node_info_;
     /// Mapping from ugly to nice names (if present, owned by Execution)
     std::shared_ptr<const NameMap> name_map_;
+    /// Contains a mapping from node ids to their original solver ids (triplets)
+    std::shared_ptr<SolverData> solver_data_;
     /// Nodes' labels
     std::vector<Label> labels_;
     /// Count of different types of nodes, tree depth
@@ -61,6 +64,8 @@ public:
     const NodeStats& node_stats() const;
 
     cpprofiler::utils::Mutex& treeMutex() const;
+
+    void setSolverData(std::shared_ptr<SolverData> sd);
 
     void setNameMap(std::shared_ptr<const NameMap> nm);
 

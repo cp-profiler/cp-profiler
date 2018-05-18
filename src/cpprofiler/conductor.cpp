@@ -93,6 +93,8 @@ namespace cpprofiler {
 
             const auto fileName = QFileDialog::getOpenFileName(this, "Open Execution").toStdString();
 
+            if (fileName == "") return;
+
             auto ex = db_handler::load_execution(fileName.c_str());
 
             if (!ex) {

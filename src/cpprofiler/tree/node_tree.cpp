@@ -2,6 +2,7 @@
 
 #include "structure.hh"
 #include "node_info.hh"
+#include "../solver_data.hh"
 #include "../utils/tree_utils.hh"
 #include "../name_map.hh"
 #include <QDebug>
@@ -15,6 +16,11 @@ NodeTree::NodeTree() : structure_{new Structure()}, node_info_(new NodeInfo) {
 }
 
 NodeTree::~NodeTree() = default;
+
+void NodeTree::setSolverData(std::shared_ptr<SolverData> sd) {
+    print("set solver data");
+    solver_data_ = sd;
+}
 
 void NodeTree::setNameMap(std::shared_ptr<const NameMap> nm) {
     name_map_ = nm;
@@ -153,7 +159,10 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
     if (is_closing(status)) closeNode(nid);
     if (status == NodeStatus::SOLVED) notifyAncestors(nid);
 
-    assert( childrenCount(nid) == kids );
+    if ( childrenCount(nid) != kids ) {
+        print("error: replacing existing node");
+    }
+    // assert( childrenCount(nid) == kids );
 
     emit structureUpdated();
 
@@ -217,6 +226,11 @@ void NodeTree::setHasOpenChildren(NodeID nid, bool val) {
 }
 
 const Label NodeTree::getLabel(NodeID nid) const {
+    // return std::to_string(nid);
+
+    auto uid = solver_data_->getSolverID(nid);
+    return uid.toString();
+
     auto& orig = labels_.at(nid);
     if (name_map_) {
         return name_map_->replaceNames(orig);

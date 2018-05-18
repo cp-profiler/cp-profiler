@@ -436,7 +436,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         // load_execution(c, "/home/maxim/dev/cp-profiler2/golomb8.db");
 
-        save_and_load(c, "/home/maxim/dev/cp-profiler2/test.db");
+        // save_and_load(c, "/home/maxim/dev/cp-profiler2/test.db");
 
         // db_create_tree(c);
 

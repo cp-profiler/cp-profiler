@@ -26,31 +26,27 @@ struct BookmarkItem {
 };
 
 struct CloseSqlStatement {
-    void operator()(sqlite3_stmt* stmt);
+    void operator()(sqlite3_stmt* stmt) {
+        if (sqlite3_finalize(stmt) != SQLITE_OK) {
+            debug("error") << "could not finalize a statement in db\n";
+        } else {
+            print("successfully finalized sqlite statement!");
+        }
+    }
 };
 
 struct CloseDB {
-    void operator()(sqlite3* db);
+    void operator()(sqlite3* db) {
+        if (sqlite3_close(db) != SQLITE_OK) {
+            debug("error") << "could not close db\n";
+        } else {
+            print("successfully closed sqlite!");
+        }
+    }
 };
 
 using SqlStatement = std::unique_ptr<sqlite3_stmt, CloseSqlStatement>;
 using Sqlite3 = std::unique_ptr<sqlite3, CloseDB>;
-
-void CloseSqlStatement::operator()(sqlite3_stmt* stmt) {
-    if (sqlite3_finalize(stmt) != SQLITE_OK) {
-        debug("error") << "could not finalize a statement in db\n";
-    } else {
-        print("successfully finalized sqlite statement!");
-    }
-}
-
-void CloseDB::operator()(sqlite3* db) {
-    if (sqlite3_close(db) != SQLITE_OK) {
-        debug("error") << "could not close db\n";
-    } else {
-        print("successfully closed sqlite!");
-    }
-}
 
 static int nodeCallback(void*,int ncolumns,char** columns,char** col_names) {
     qDebug() << "node callback";

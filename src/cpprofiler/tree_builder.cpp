@@ -64,7 +64,7 @@ void TreeBuilder::handleNode(Message* node) {
 
 
     std::unique_ptr<Message> node_msg{node};
-    debug("msg:node") << *node << std::endl;
+    // debug("msg:node") << *node << std::endl;
 
     const auto n_uid = node->nodeUID();
     const auto p_uid = node->parentUID();
@@ -74,6 +74,7 @@ void TreeBuilder::handleNode(Message* node) {
     tree::NodeID pid = tree::NodeID::NoNode;
 
     if (p_uid.nid != -1) {
+        /// should solver data be moved to node tree?
         pid = m_execution.solver_data().getNodeId({p_uid.nid, p_uid.rid, p_uid.tid});
     }
 
