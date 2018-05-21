@@ -141,12 +141,20 @@ namespace cpprofiler { namespace tests { namespace execution {
         auto n4 =  tree.promoteNode(root, 3, 2, tree::NodeStatus::BRANCH);
 
         auto n5 =  tree.promoteNode(n1, 0, 0, tree::NodeStatus::FAILED);
-        auto n6 =  tree.promoteNode(n1, 1, 4, tree::NodeStatus::BRANCH);
+        auto n6 =  tree.promoteNode(n1, 1, 12, tree::NodeStatus::BRANCH);
 
             auto n6a =  tree.promoteNode(n6, 0, 0, tree::NodeStatus::FAILED);
             auto n6b =  tree.promoteNode(n6, 1, 0, tree::NodeStatus::FAILED);
             auto n6c =  tree.promoteNode(n6, 2, 0, tree::NodeStatus::FAILED);
             auto n6d =  tree.promoteNode(n6, 3, 0, tree::NodeStatus::FAILED);
+            tree.promoteNode(n6, 4, 0, tree::NodeStatus::FAILED);
+            tree.promoteNode(n6, 5, 0, tree::NodeStatus::FAILED);
+            tree.promoteNode(n6, 6, 0, tree::NodeStatus::FAILED);
+            tree.promoteNode(n6, 7, 0, tree::NodeStatus::FAILED);
+            tree.promoteNode(n6, 8, 0, tree::NodeStatus::FAILED);
+            tree.promoteNode(n6, 9, 0, tree::NodeStatus::FAILED);
+            tree.promoteNode(n6, 10, 0, tree::NodeStatus::FAILED);
+            tree.promoteNode(n6, 11, 0, tree::NodeStatus::FAILED);
 
         auto n7 =  tree.promoteNode(n2, 0, 0, tree::NodeStatus::FAILED);
         auto n8 =  tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH);

@@ -334,6 +334,12 @@ namespace cpprofiler {
 
         for (auto nid : order) {
 
+            /// Making sure undefined/skipped nodes are not logged
+            {
+                const auto status = nt.getStatus(nid);
+                if (status == tree::NodeStatus::SKIPPED || status == tree::NodeStatus::UNDETERMINED) continue;
+            }
+
             // Note: not every child is logged (SKIPPED and UNDET are not)
             int kids_logged = 0;
 
@@ -346,8 +352,9 @@ namespace cpprofiler {
             for (auto alt = 0; alt < kids; alt++) {
 
                 const auto kid = nt.getChild(nid, alt);
-                const auto status = nt.getStatus(kid);
 
+                /// Making sure undefined/skipped children are not logged
+                const auto status = nt.getStatus(kid);
                 if (status == tree::NodeStatus::SKIPPED || status == tree::NodeStatus::UNDETERMINED) continue;
 
                 ++kids_logged;
