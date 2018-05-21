@@ -509,12 +509,18 @@ void TraditionalView::showNogoods() const {
 
     if (!solver_data_.hasNogoods()) return;
 
-    print("show nogoods");
+    const auto cur_nid = node();
+    if (cur_nid == NodeID::NoNode) return;
 
-    const auto nodes = utils::nodes_below(tree_, node());
+    const auto nodes = utils::nodes_below(tree_, cur_nid);
 
     auto ng_dialog = new NogoodDialog(tree_, nodes);
     ng_dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(ng_dialog, &NogoodDialog::nogoodClicked, [this](NodeID nid) {
+        const_cast<TraditionalView*>(this)->setCurrentNode(nid);
+        const_cast<TraditionalView*>(this)->centerCurrentNode();
+    });
 
     ng_dialog->show();
 }

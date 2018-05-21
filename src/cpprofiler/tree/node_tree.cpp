@@ -186,6 +186,10 @@ const NodeStats& NodeTree::node_stats() const {
     return node_stats_;
 }
 
+const SolverData& NodeTree::solver_data() const {
+    return *solver_data_;
+}
+
 utils::Mutex& NodeTree::treeMutex() const {
     return structure_->getMutex();
 }

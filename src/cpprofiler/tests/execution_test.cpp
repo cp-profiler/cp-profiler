@@ -411,6 +411,21 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     }
 
+    static void nogood_dialog(Conductor& c, const char* path) {
+
+        auto ex = db_handler::load_execution(path);
+        if (!ex) {
+            print("could not load the execution");
+        } else {
+            c.addNewExecution(ex);
+        }
+
+        c.showTraditionalView(ex.get());
+
+
+
+    }
+
     void run(Conductor& c) {
 
         /// this one works with db
@@ -437,6 +452,8 @@ namespace cpprofiler { namespace tests { namespace execution {
         // load_execution(c, "/home/maxim/dev/cp-profiler2/golomb8.db");
 
         // save_and_load(c, "/home/maxim/dev/cp-profiler2/test.db");
+
+        nogood_dialog(c, "/home/maxim/dev/cp-profiler2/nogoods.db");
 
         // db_create_tree(c);
 

@@ -270,7 +270,7 @@ namespace cpprofiler {
         m_execution_list->addExecution(*ex);
 
         const bool auto_show = true;
-        if (auto_show && m_options.save_search_path != "") {
+        if (auto_show && m_options.save_search_path == "") {
             showTraditionalView(ex.get());
         }
 

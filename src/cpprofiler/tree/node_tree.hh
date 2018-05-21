@@ -63,6 +63,8 @@ public:
 
     const NodeStats& node_stats() const;
 
+    const SolverData& solver_data() const;
+
     cpprofiler::utils::Mutex& treeMutex() const;
 
     void setSolverData(std::shared_ptr<SolverData> sd);
