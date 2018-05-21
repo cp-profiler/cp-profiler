@@ -151,10 +151,9 @@ void TraditionalView::navLeft() {
 
     auto cur_alt = tree_.getAlternative(nid);
 
-    auto kids = tree_.childrenCount(pid);
-
     if (cur_alt > 0) {
         auto kid = tree_.getChild(pid, cur_alt - 1);
+        setNode(kid);
         centerCurrentNode();
     }
 

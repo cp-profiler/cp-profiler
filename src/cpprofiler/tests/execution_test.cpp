@@ -419,18 +419,28 @@ namespace cpprofiler { namespace tests { namespace execution {
 
     }
 
-    static void nogood_dialog(Conductor& c, const char* path) {
+    static void nogood_dialog(Conductor& c) {
 
-        auto ex = db_handler::load_execution(path);
+        const char* orig_path = "/home/maxim/dev/cp-profiler2/nogoods.db";
+
+        auto ex = db_handler::load_execution(orig_path);
         if (!ex) {
             print("could not load the execution");
         } else {
             c.addNewExecution(ex);
+            c.showTraditionalView(ex.get());
         }
 
-        c.showTraditionalView(ex.get());
 
+        const char* replayed_path = "/home/maxim/dev/cp-profiler2/nogoods_replayed.db";
 
+        auto ex2 = db_handler::load_execution(replayed_path);
+        if (!ex2) {
+            print("could not load the execution");
+        } else {
+            c.addNewExecution(ex2);
+            c.showTraditionalView(ex2.get());
+        }
 
     }
 
@@ -461,7 +471,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         // save_and_load(c, "/home/maxim/dev/cp-profiler2/test.db");
 
-        // nogood_dialog(c, "/home/maxim/dev/cp-profiler2/nogoods.db");
+        nogood_dialog(c);
 
         // db_create_tree(c);
 

@@ -18,6 +18,7 @@
 #include "../traditional_view.hh"
 
 #include <numeric>
+#include <climits>
 
 namespace cpprofiler { namespace tree {
 
@@ -36,7 +37,7 @@ namespace cpprofiler { namespace tree {
     static int distance_between(const Shape& s1, const Shape& s2) {
         const auto common_depth = std::min(s1.height(), s2.height());
 
-        auto max = 0;
+        auto max = INT_MIN;
         for (auto i = 0; i < common_depth; ++i) {
             auto cur_dist = s1[i].r - s2[i].l;
             if (cur_dist > max) max = cur_dist; 
@@ -248,8 +249,8 @@ namespace cpprofiler { namespace tree {
         (*combined)[0] = {-traditional::HALF_MAX_NODE_W, traditional::HALF_MAX_NODE_W};
         for (auto depth = 1; depth < new_depth; ++depth) {
 
-            auto leftmost_x = 0;
-            auto rightmost_x = 0;
+            auto leftmost_x = INT_MAX;
+            auto rightmost_x = INT_MIN;
             for (auto alt = 0; alt < nkids; ++alt) {
                 const auto kid = tree.getChild(nid, alt);
                 const auto& shape = layout.getShape(kid);
@@ -264,15 +265,14 @@ namespace cpprofiler { namespace tree {
         }
 
         /// calculate bounding box
-        int l_bound = 0;
-        int r_bound = 0;
+        int l_bound = INT_MAX;
+        int r_bound = INT_MIN;
         for (auto depth = 0; depth < new_depth; ++depth) {
             l_bound = std::min((*combined)[depth].l, l_bound);
             r_bound = std::max((*combined)[depth].r, r_bound);
         }
 
         combined->setBoundingBox({l_bound, r_bound});
-
 
         layout.setShape(nid, std::move(combined));
 
@@ -321,7 +321,7 @@ namespace cpprofiler { namespace tree {
 
                 auto shape = ShapeUniqPtr(new Shape(kid_s.height() + 1));
 
-                (*shape)[0] = {0, 0};
+                (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, false);
 
                 for (auto depth = 0; depth < kid_s.height(); depth++) {
                     (*shape)[depth+1] = kid_s[depth];
