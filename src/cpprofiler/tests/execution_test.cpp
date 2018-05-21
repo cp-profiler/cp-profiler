@@ -453,7 +453,7 @@ namespace cpprofiler { namespace tests { namespace execution {
 
         // save_and_load(c, "/home/maxim/dev/cp-profiler2/test.db");
 
-        nogood_dialog(c, "/home/maxim/dev/cp-profiler2/nogoods.db");
+        // nogood_dialog(c, "/home/maxim/dev/cp-profiler2/nogoods.db");
 
         // db_create_tree(c);
 

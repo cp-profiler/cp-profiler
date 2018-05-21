@@ -171,7 +171,7 @@ namespace cpprofiler { namespace tree {
         if (selected) {
             m_painter.setBrush(QColor{0, 0, 0, 20});
 
-            // drawBoundingBox(m_painter, cur_x, cur_y, m_cur_node, m_layout);
+            drawBoundingBox(m_painter, cur_x, cur_y, m_cur_node, m_layout);
 
             drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
         }

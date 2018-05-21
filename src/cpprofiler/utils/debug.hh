@@ -13,16 +13,23 @@ std::ostream& debug(std::string str = "");
 std::ostream& operator<<(std::ostream& os, const QString& str);
 
 template<typename T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
+std::string to_string(const std::vector<T>& vec) {
     if (vec.size() == 0) {
-        return os << "[]";
+        return "[]";
     }
 
-    os << "[";
-    for (auto i = 0u; i < vec.size() - 1; ++i) {
-        os << vec[i] << ",";
+    std::ostringstream oss;
+    oss << "[";
+    for (auto i = 0u; i < vec.size() - 1; ++ i) {
+        oss << vec[i] << ",";
     }
-    return os << vec.back() << "]";
+    oss << vec.back() << "]";
+    return oss.str();
+}
+
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
+    return os << to_string(vec);
 }
 
 inline std::string format(const char* temp) {

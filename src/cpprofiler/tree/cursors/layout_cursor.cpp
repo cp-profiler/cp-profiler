@@ -12,6 +12,7 @@
 #include "../shape.hh"
 #include "../../config.hh"
 #include "../../utils/tree_utils.hh"
+#include "../../utils/debug.hh"
 
 /// needed for VisualFlags
 #include "../traditional_view.hh"
@@ -165,7 +166,7 @@ namespace cpprofiler { namespace tree {
         return result;
     }
 
-    static inline void computeForNodeBinary(NodeID nid, Layout& layout, const NodeTree& nt, bool label_shown) {
+    inline static void computeForNodeBinary(NodeID nid, Layout& layout, const NodeTree& nt, bool label_shown) {
 
         auto kid_l = nt.getChild(nid, 0);
         auto kid_r = nt.getChild(nid, 1);
@@ -193,56 +194,67 @@ namespace cpprofiler { namespace tree {
         layout.setChildOffset(kid_r, offsets[1]);
     }
 
-    static inline void computeForNodeNary(NodeID nid, int nkids, Layout& layout, const NodeTree& tree) {
-
-        /// calculate all distances
+    inline static std::vector<int> compute_distances(NodeID nid, int nkids, Layout& lo, const NodeTree& tree) {
         std::vector<int> distances(nkids - 1);
 
         for (auto i = 0; i < nkids - 1; ++i) {
             auto kid_l = tree.getChild(nid, i);
             auto kid_r = tree.getChild(nid, i+1);
-            const auto& s1 = layout.getShape(kid_l);
-            const auto& s2 = layout.getShape(kid_r);
+            const auto& s1 = lo.getShape(kid_l);
+            const auto& s2 = lo.getShape(kid_r);
             distances[i] = distance_between(s1, s2);
         }
 
-        /// calculate total width (the sum of all distances + )
-        int total_width = 0;
-        const auto leftmost_kid = tree.getChild(nid, 0);
-        const auto& leftmost_shape = layout.getShape(leftmost_kid);
-        {
-            const auto rightmost_kid = tree.getChild(nid, nkids - 1);
-            const auto& rightmost_shape = layout.getShape(rightmost_kid);
+        return distances;
+    }
 
-            total_width -= leftmost_shape.boundingBox().left;
-            for (auto distance : distances) {
-                total_width += distance;
-            }
-            total_width += rightmost_shape.boundingBox().right;
-        }
+    inline static const Shape& leftmost_shape(NodeID nid, const Layout& lo, const NodeTree& tree) {
+        const auto lkid = tree.getChild(nid, 0);
+        return lo.getShape(lkid);
+    }
 
-        const auto half_w = total_width / 2;
+    inline static const Shape& rightmost_shape(NodeID nid, int nkids, const Layout& lo, const NodeTree& tree) {
+        const auto rkid = tree.getChild(nid, nkids - 1);
+        return lo.getShape(rkid);
+    }
 
-        /// calculate max depth
+    inline static int kids_max_depth(NodeID nid, int nkids, const Layout& lo, const NodeTree& tree) {
         int max_depth = 0;
-        {
-            for (auto i = 0; i < nkids; ++i) {
-                auto kid_l = tree.getChild(nid, i);
-                const auto& s1 = layout.getShape(kid_l);
-                max_depth = std::max(max_depth, s1.height());
-            }
+        for (auto i = 0; i < nkids; ++i) {
+            auto kid = tree.getChild(nid, i);
+            const auto& s1 = lo.getShape(kid);
+            max_depth = std::max(max_depth, s1.height());
+        }
+        return max_depth;
+    }
+
+    static inline void computeForNodeNary(NodeID nid, int nkids, Layout& layout, const NodeTree& tree) {
+
+        /// calculate all distances
+        const auto distances = compute_distances(nid, nkids, layout, tree);
+
+        /// distance between the leftmost and the rightmost nodes
+        int max_dist = 0;
+        for (auto distance : distances) {
+            max_dist += distance;
         }
 
-        const auto new_depth = max_depth + 1;
+        /// calculate the depth of the resulting shape
+        const auto new_depth = kids_max_depth(nid, nkids, layout, tree) + 1;
 
         auto combined = ShapeUniqPtr(new Shape{new_depth});
 
-        combined->setBoundingBox({-half_w, half_w});
+        const auto& l_shape = leftmost_shape(nid, layout, tree);
+        const auto l_bound = -max_dist/2 + l_shape.boundingBox().left;
+
+        const auto& r_shape = rightmost_shape(nid, nkids, layout, tree);
+        const auto r_bound = max_dist/2 + r_shape.boundingBox().right;
+        combined->setBoundingBox({l_bound, r_bound});
+
 
         std::vector<int> x_offsets(nkids);
-
         /// calculate offsets
-        auto cur_x = -half_w - leftmost_shape.boundingBox().left;
+        auto cur_x = -max_dist/2;
         for (auto i = 0; i < nkids; ++i) {
             const auto kid = tree.getChild(nid, i);
             layout.setChildOffset(kid, cur_x);
@@ -256,12 +268,12 @@ namespace cpprofiler { namespace tree {
 
             auto leftmost_x = 0;
             auto rightmost_x = 0;
-            for (auto kid = 0; kid < nkids; ++kid) {
-                const auto kid_id = tree.getChild(nid, kid);
-                const auto& shape = layout.getShape(kid_id);
+            for (auto alt = 0; alt < nkids; ++alt) {
+                const auto kid = tree.getChild(nid, alt);
+                const auto& shape = layout.getShape(kid);
                 if (shape.height() > depth - 1) {
-                    leftmost_x = std::min(leftmost_x, shape[depth-1].l + x_offsets[kid]);
-                    rightmost_x = std::max(leftmost_x, shape[depth-1].r + x_offsets[kid]);
+                    leftmost_x = std::min(leftmost_x, shape[depth-1].l + x_offsets[alt]);
+                    rightmost_x = std::max(leftmost_x, shape[depth-1].r + x_offsets[alt]);
                 }
             }
 
