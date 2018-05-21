@@ -208,16 +208,6 @@ namespace cpprofiler { namespace tree {
         return distances;
     }
 
-    inline static const Shape& leftmost_shape(NodeID nid, const Layout& lo, const NodeTree& tree) {
-        const auto lkid = tree.getChild(nid, 0);
-        return lo.getShape(lkid);
-    }
-
-    inline static const Shape& rightmost_shape(NodeID nid, int nkids, const Layout& lo, const NodeTree& tree) {
-        const auto rkid = tree.getChild(nid, nkids - 1);
-        return lo.getShape(rkid);
-    }
-
     inline static int kids_max_depth(NodeID nid, int nkids, const Layout& lo, const NodeTree& tree) {
         int max_depth = 0;
         for (auto i = 0; i < nkids; ++i) {
@@ -243,14 +233,6 @@ namespace cpprofiler { namespace tree {
         const auto new_depth = kids_max_depth(nid, nkids, layout, tree) + 1;
 
         auto combined = ShapeUniqPtr(new Shape{new_depth});
-
-        const auto& l_shape = leftmost_shape(nid, layout, tree);
-        const auto l_bound = -max_dist/2 + l_shape.boundingBox().left;
-
-        const auto& r_shape = rightmost_shape(nid, nkids, layout, tree);
-        const auto r_bound = max_dist/2 + r_shape.boundingBox().right;
-        combined->setBoundingBox({l_bound, r_bound});
-
 
         std::vector<int> x_offsets(nkids);
         /// calculate offsets
@@ -280,6 +262,16 @@ namespace cpprofiler { namespace tree {
             (*combined)[depth].l = leftmost_x;
             (*combined)[depth].r = rightmost_x;
         }
+
+        /// calculate bounding box
+        int l_bound = 0;
+        int r_bound = 0;
+        for (auto depth = 0; depth < new_depth; ++depth) {
+            l_bound = std::min((*combined)[depth].l, l_bound);
+            r_bound = std::max((*combined)[depth].r, r_bound);
+        }
+
+        combined->setBoundingBox({l_bound, r_bound});
 
 
         layout.setShape(nid, std::move(combined));
