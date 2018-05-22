@@ -5,50 +5,55 @@
 #include <QMutex>
 #include <QDebug>
 
-namespace cpprofiler {namespace utils {
+namespace cpprofiler
+{
+namespace utils
+{
 
-class DebugMutex : public QMutex {
-public:
-
+class DebugMutex : public QMutex
+{
+  public:
     DebugMutex() : QMutex(QMutex::Recursive) {}
 
-    void lock(std::string msg) {
+    void lock(std::string msg)
+    {
 
         // qDebug() << "(" << msg.c_str() << ") lock";
 
         QMutex::lock();
     }
 
-    bool tryLock() {
+    bool tryLock()
+    {
 
         // qDebug() << "try lock";
         return QMutex::tryLock();
     }
 
-    void unlock(std::string msg) {
+    void unlock(std::string msg)
+    {
         // qDebug() << "(" << msg.c_str() << ") unlock";
         QMutex::unlock();
-        
     }
-
 };
 
-class DebugMutexLocker {
+class DebugMutexLocker
+{
 
-    DebugMutex* m_mutex;
+    DebugMutex *m_mutex;
 
     std::string m_msg;
 
-
-public:
-    DebugMutexLocker(DebugMutex* m, std::string msg = "") : m_mutex(m), m_msg(msg) {
+  public:
+    DebugMutexLocker(DebugMutex *m, std::string msg = "") : m_mutex(m), m_msg(msg)
+    {
         m_mutex->lock(m_msg);
     }
 
-    ~DebugMutexLocker() {
+    ~DebugMutexLocker()
+    {
         m_mutex->unlock(m_msg);
     }
-
 };
 
 // using Mutex = QMutex;
@@ -56,7 +61,7 @@ public:
 using Mutex = utils::DebugMutex;
 using MutexLocker = utils::DebugMutexLocker;
 
-}}
-
+} // namespace utils
+} // namespace cpprofiler
 
 #endif

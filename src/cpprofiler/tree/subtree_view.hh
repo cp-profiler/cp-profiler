@@ -9,11 +9,14 @@
 #include "layout.hh"
 #include "../core.hh"
 
-namespace cpprofiler { namespace tree {
+namespace cpprofiler
+{
+namespace tree
+{
 
-
-class SubtreeView : public QWidget {
-Q_OBJECT
+class SubtreeView : public QWidget
+{
+    Q_OBJECT
 
     std::unique_ptr<UserData> user_data_;
     std::unique_ptr<Layout> m_layout;
@@ -24,10 +27,9 @@ Q_OBJECT
 
     NodeID m_cur_node = NodeID::NoNode;
 
-public:
-    SubtreeView(const NodeTree& nt)
-    :   user_data_(utils::make_unique<UserData>())
-    ,   m_layout(utils::make_unique<Layout>())
+  public:
+    SubtreeView(const NodeTree &nt)
+        : user_data_(utils::make_unique<UserData>()), m_layout(utils::make_unique<Layout>())
     {
         auto layout_computer = LayoutComputer(nt, *m_layout, node_flags);
         layout_computer.compute();
@@ -37,18 +39,20 @@ public:
         m_scroll_area->viewport()->update();
     }
 
-    QWidget* widget() {
+    QWidget *widget()
+    {
         return m_scroll_area.get();
     }
 
-public slots:
+  public slots:
 
-    void setNode(NodeID nid) {
+    void setNode(NodeID nid)
+    {
         m_cur_node = nid;
         m_scroll_area->changeStartNode(nid);
         m_scroll_area->viewport()->update();
     }
-
 };
 
-}}
+} // namespace tree
+} // namespace cpprofiler

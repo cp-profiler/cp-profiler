@@ -1,50 +1,56 @@
 #include "execution_list.hh"
 #include "execution.hh"
 
-
 #include <QDebug>
 #include <iostream>
 
+namespace cpprofiler
+{
 
-namespace cpprofiler {
+ExecutionItem::ExecutionItem(Execution &e)
+    : QStandardItem(e.name().c_str()), m_execution(e) {}
 
-    ExecutionItem::ExecutionItem(Execution& e)
-        : QStandardItem(e.name().c_str()), m_execution(e) {}
+Execution *ExecutionItem::get_execution()
+{
+    return &m_execution;
+}
+} // namespace cpprofiler
 
-    Execution* ExecutionItem::get_execution() {
-        return &m_execution;
-    }
+namespace cpprofiler
+{
+
+ExecutionList::ExecutionList()
+{
+    m_tree_view.setHeaderHidden(true);
+    m_tree_view.setModel(&m_execution_tree_model);
+    m_tree_view.setSelectionMode(QAbstractItemView::MultiSelection);
 }
 
-namespace cpprofiler {
+void ExecutionList::addExecution(Execution &e)
+{
+    m_execution_tree_model.appendRow(new ExecutionItem{e});
+}
 
-    ExecutionList::ExecutionList() {
-        m_tree_view.setHeaderHidden(true);
-        m_tree_view.setModel(&m_execution_tree_model);
-        m_tree_view.setSelectionMode(QAbstractItemView::MultiSelection);
-    }
+std::vector<Execution *> ExecutionList::getSelected()
+{
+    auto selected_model = m_tree_view.selectionModel();
+    auto selected = selected_model->selectedRows();
 
-    void ExecutionList::addExecution(Execution& e) {
-        m_execution_tree_model.appendRow(new ExecutionItem{e});
-    }
+    std::vector<Execution *> result;
 
-    std::vector<Execution*> ExecutionList::getSelected() {
-        auto selected_model = m_tree_view.selectionModel();
-        auto selected = selected_model->selectedRows();
+    for (auto idx : selected)
+    {
 
-        std::vector<Execution*> result;
+        auto item = m_execution_tree_model.itemFromIndex(idx);
+        auto exec_item = dynamic_cast<ExecutionItem *>(item);
 
-        for (auto idx : selected) {
-
-            auto item = m_execution_tree_model.itemFromIndex(idx);
-            auto exec_item = dynamic_cast<ExecutionItem*>(item);
-
-            if (exec_item) {
-                result.push_back(exec_item->get_execution());
-            }
+        if (exec_item)
+        {
+            result.push_back(exec_item->get_execution());
         }
-        
-        return result;
     }
 
+    return result;
 }
+
+} // namespace cpprofiler

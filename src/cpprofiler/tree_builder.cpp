@@ -10,24 +10,37 @@
 
 #include <thread>
 
-namespace cpprofiler {
+namespace cpprofiler
+{
 
-static std::ostream& operator<<(std::ostream& os, const NodeUID& uid) {
+static std::ostream &operator<<(std::ostream &os, const NodeUID &uid)
+{
     return os << "{" << uid.nid << ", " << uid.rid << ", " << uid.tid << "}";
 }
 
-static std::ostream& operator<<(std::ostream& os, const NodeStatus& status) {
-    switch (status) {
-        case SOLVED: os << "SOLVED"; break;
-        case FAILED: os << "FAILED"; break;
-        case BRANCH: os << "BRANCH"; break;
-        case SKIPPED: os << "SKIPPED"; break;
+static std::ostream &operator<<(std::ostream &os, const NodeStatus &status)
+{
+    switch (status)
+    {
+    case SOLVED:
+        os << "SOLVED";
+        break;
+    case FAILED:
+        os << "FAILED";
+        break;
+    case BRANCH:
+        os << "BRANCH";
+        break;
+    case SKIPPED:
+        os << "SKIPPED";
+        break;
     }
     return os;
 }
 
 /// works correctly for node messages only atm
-static std::ostream& operator<<(std::ostream& os, const Message& msg) {
+static std::ostream &operator<<(std::ostream &os, const Message &msg)
+{
     os << "nid: " << msg.nodeUID() << ", pid: " << msg.parentUID();
     os << ", alt: " << msg.alt() << ", kids: " << msg.kids();
     os << ", " << msg.status();
@@ -37,31 +50,35 @@ static std::ostream& operator<<(std::ostream& os, const Message& msg) {
     return os;
 }
 
-TreeBuilder::TreeBuilder(Execution& ex): m_execution(ex) {
+TreeBuilder::TreeBuilder(Execution &ex) : m_execution(ex)
+{
     std::cerr << "  TreeBuilder()\n";
     startBuilding();
 }
 
-void TreeBuilder::startBuilding() {
+void TreeBuilder::startBuilding()
+{
     perfHelper.begin("tree building");
     std::cerr << "  Builder: start building\n";
 }
 
-void TreeBuilder::finishBuilding() {
+void TreeBuilder::finishBuilding()
+{
     perfHelper.end();
     debug("done") << "  Builder: done building\n";
     emit buildingDone();
 }
 
-void TreeBuilder::handleNode(Message* node) {
+void TreeBuilder::handleNode(Message *node)
+{
 
     static bool done = false;
 
-    if (!done) {
+    if (!done)
+    {
         debug("thread") << "BuilderThread:handleNode thread:" << std::this_thread::get_id() << std::endl;
         done = true;
     }
-
 
     std::unique_ptr<Message> node_msg{node};
     // debug("msg:node") << *node << std::endl;
@@ -69,46 +86,51 @@ void TreeBuilder::handleNode(Message* node) {
     const auto n_uid = node->nodeUID();
     const auto p_uid = node->parentUID();
 
-    auto& tree = m_execution.tree();
+    auto &tree = m_execution.tree();
 
     tree::NodeID pid = tree::NodeID::NoNode;
 
-    if (p_uid.nid != -1) {
+    if (p_uid.nid != -1)
+    {
         /// should solver data be moved to node tree?
         pid = m_execution.solver_data().getNodeId({p_uid.nid, p_uid.rid, p_uid.tid});
     }
 
-
     const auto kids = node->kids();
     const auto alt = node->alt();
     const auto status = static_cast<tree::NodeStatus>(node->status());
-    const auto& label = node->has_label() ? node->label() : tree::emptyLabel;
+    const auto &label = node->has_label() ? node->label() : tree::emptyLabel;
 
     NodeID nid;
 
     {
         utils::MutexLocker tree_lock(&tree.treeMutex(), "builder");
 
-        if (pid == NodeID::NoNode) {
+        if (pid == NodeID::NoNode)
+        {
 
-            if (m_execution.doesRestarts()) {
+            if (m_execution.doesRestarts())
+            {
                 tree.addExtraChild(NodeID{0});
                 nid = tree.promoteNode(NodeID{0}, n_uid.rid, kids, status, label);
-            } else {
+            }
+            else
+            {
                 nid = tree.createRoot(kids);
             }
-
-        } else {
+        }
+        else
+        {
             nid = tree.promoteNode(pid, alt, kids, status, label);
         }
     }
 
-    if (node->has_nogood()) {
+    if (node->has_nogood())
+    {
         m_execution.solver_data().setNogood(nid, node->nogood());
     }
 
     m_execution.solver_data().setNodeId({n_uid.nid, n_uid.rid, n_uid.tid}, nid);
-
 }
 
-}
+} // namespace cpprofiler

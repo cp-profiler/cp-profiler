@@ -7,33 +7,32 @@
 /// ingore everything sent there
 static std::ostringstream oss;
 
-namespace cpprofiler {
+namespace cpprofiler
+{
 
-std::ostream& debug(std::string type) {
+std::ostream &debug(std::string type)
+{
 
     static std::vector<std::string> to_print = {
-        ""
-        ,"force"
-        ,"done"
-        ,"error"
-        ,"perf"
+        "", "force", "done", "error", "perf"
         // ,"layout"
-        ,"msg:command"
-        ,"msg:node"
-    };
+        ,
+        "msg:command", "msg:node"};
 
-    if (std::find(to_print.begin(), to_print.end(), type) != to_print.end() ) {
+    if (std::find(to_print.begin(), to_print.end(), type) != to_print.end())
+    {
         return std::cerr;
-    } else {
+    }
+    else
+    {
         oss.seekp(0);
         return oss;
     }
 }
 
-std::ostream& operator<<(std::ostream& os, const QString& str) {
+std::ostream &operator<<(std::ostream &os, const QString &str)
+{
     return os << str.toStdString();
 }
 
-
-
-}
+} // namespace cpprofiler

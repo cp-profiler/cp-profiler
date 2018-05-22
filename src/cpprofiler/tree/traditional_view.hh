@@ -8,12 +8,16 @@
 #include "node_id.hh"
 #include "visual_flags.hh"
 
-namespace cpprofiler {
-    class UserData;
-    class SolverData;
-}
+namespace cpprofiler
+{
+class UserData;
+class SolverData;
+} // namespace cpprofiler
 
-namespace cpprofiler { namespace tree {
+namespace cpprofiler
+{
+namespace tree
+{
 
 class Layout;
 class LayoutComputer;
@@ -23,17 +27,17 @@ class Structure;
 
 class TreeScrollArea;
 
-
-class TraditionalView : public QObject {
+class TraditionalView : public QObject
+{
     Q_OBJECT
 
-    const NodeTree& tree_;
+    const NodeTree &tree_;
 
     /// User data (bookmarks etc.)
-    UserData& user_data_;
+    UserData &user_data_;
 
     /// Nogoods, solver ids
-    SolverData& solver_data_;
+    SolverData &solver_data_;
 
     /// TODO: make sure node flags is thread-safe?
     std::unique_ptr<VisualFlags> vis_flags_;
@@ -51,18 +55,17 @@ class TraditionalView : public QObject {
     /// Sets nid as the currently selected node
     void setNode(NodeID nid);
 
-public:
-
-    TraditionalView(const NodeTree& tree, UserData& ud, SolverData& sd);
+  public:
+    TraditionalView(const NodeTree &tree, UserData &ud, SolverData &sd);
     ~TraditionalView();
 
-    QWidget* widget();
+    QWidget *widget();
 
     /// Show the label for node `nid` causing layout update
     void setLabelShown(NodeID nid, bool val);
 
     /// Exposes layout info (i.e. shapes needed for shape analysis)
-    const Layout& layout() const;
+    const Layout &layout() const;
 
     /// Collapse/uncollapse a pentagon node based on its current state
     void toggleCollapsePentagon(NodeID nid);
@@ -70,14 +73,14 @@ public:
     /// Set `nid` and its predecessors as requiring re-layout
     void dirtyUp(NodeID nid);
 
-signals:
+  signals:
     /// Triggers a redraw that updates scrollarea's viewport (perhaps a direct call would suffice)
     void needsRedrawing();
 
     /// A signal that notifies execution to change its current node with that of this view
     void curNodeChanged(NodeID nid);
 
-public slots:
+  public slots:
 
     /// Update scrollarea's viewport
     void redraw();
@@ -138,11 +141,10 @@ public slots:
     /// Show nogoods of the nodes under the current node and the node inself
     void showNogoods() const;
 
-    void highlightSubtrees(const std::vector<NodeID>& nodes);
-
-
+    void highlightSubtrees(const std::vector<NodeID> &nodes);
 };
 
-}}
+} // namespace tree
+} // namespace cpprofiler
 
 #endif

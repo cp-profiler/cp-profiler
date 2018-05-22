@@ -3,25 +3,31 @@
 #include <QDebug>
 #include <ostream>
 
-namespace cpprofiler { namespace tree {
+namespace cpprofiler
+{
+namespace tree
+{
 
-    Shape::Shape(int height) : extents_(height) {}
+Shape::Shape(int height) : extents_(height) {}
 
-    std::ostream& operator<<(std::ostream& os, const cpprofiler::tree::Shape& s) {
-        os << "{ height: " << s.height() << ", [ ";
-        
-        for (auto i = 0; i < s.extents_.size(); ++i) {
-            os << "{" << s.extents_[i].l << ":" << s.extents_[i].r << "} ";
-        }
-        
-        return os << "]}";
+std::ostream &operator<<(std::ostream &os, const cpprofiler::tree::Shape &s)
+{
+    os << "{ height: " << s.height() << ", [ ";
+
+    for (auto i = 0; i < s.extents_.size(); ++i)
+    {
+        os << "{" << s.extents_[i].l << ":" << s.extents_[i].r << "} ";
     }
 
-    using namespace traditional;
+    return os << "]}";
+}
 
-    Shape Shape::leaf({{-HALF_MAX_NODE_W, HALF_MAX_NODE_W}},
-                        BoundingBox{-HALF_MAX_NODE_W, HALF_MAX_NODE_W});
+using namespace traditional;
 
-    Shape Shape::hidden({ {-HALF_MAX_NODE_W, HALF_MAX_NODE_W},{-MAX_NODE_W, MAX_NODE_W} },
-                        BoundingBox{-MAX_NODE_W, MAX_NODE_W});
-}}
+Shape Shape::leaf({{-HALF_MAX_NODE_W, HALF_MAX_NODE_W}},
+                  BoundingBox{-HALF_MAX_NODE_W, HALF_MAX_NODE_W});
+
+Shape Shape::hidden({{-HALF_MAX_NODE_W, HALF_MAX_NODE_W}, {-MAX_NODE_W, MAX_NODE_W}},
+                    BoundingBox{-MAX_NODE_W, MAX_NODE_W});
+} // namespace tree
+} // namespace cpprofiler

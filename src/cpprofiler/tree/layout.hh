@@ -9,7 +9,10 @@
 
 #include "../core.hh"
 
-namespace cpprofiler { namespace tree {
+namespace cpprofiler
+{
+namespace tree
+{
 
 class Shape;
 class LayoutComputer;
@@ -19,8 +22,9 @@ class ShapeDeleter;
 
 using ShapeUniqPtr = std::unique_ptr<Shape, ShapeDeleter>;
 
-class Layout : public QObject {
-Q_OBJECT
+class Layout : public QObject
+{
+    Q_OBJECT
 
     mutable utils::Mutex m_layout_mutex;
 
@@ -36,15 +40,14 @@ Q_OBJECT
     /// Whether a node's shape need to be recomputed (indexed by NodeID)
     std::vector<bool> m_dirty;
 
-public:
-
-    utils::Mutex& getMutex() const;
+  public:
+    utils::Mutex &getMutex() const;
 
     void setChildOffset(NodeID nid, double offset);
 
     void setLayoutDone(NodeID nid, bool);
 
-    const Shape& getShape(NodeID nid) const;
+    const Shape &getShape(NodeID nid) const;
 
     void setShape(NodeID nid, ShapeUniqPtr shape);
 
@@ -63,18 +66,17 @@ public:
     void setDirty(NodeID nid, bool val);
 
     /// Get bounding box of node `nid`
-    const BoundingBox& getBoundingBox(NodeID nid) const;
+    const BoundingBox &getBoundingBox(NodeID nid) const;
 
     Layout();
     ~Layout();
 
-public slots:
+  public slots:
 
     void growDataStructures(int n_nodes);
-
 };
 
-}}
-
+} // namespace tree
+} // namespace cpprofiler
 
 #endif

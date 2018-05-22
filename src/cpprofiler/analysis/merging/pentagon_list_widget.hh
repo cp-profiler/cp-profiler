@@ -8,26 +8,28 @@
 
 #include "pentagon_rect.hh"
 
-namespace cpprofiler { namespace analysis {
+namespace cpprofiler
+{
+namespace analysis
+{
 
+class PentagonListWidget : public QWidget
+{
+    Q_OBJECT
 
-class PentagonListWidget : public QWidget {
-Q_OBJECT
+    QGraphicsView *m_view;
+    QGraphicsScene *m_scene;
 
-    QGraphicsView* m_view;
-    QGraphicsScene* m_scene;
-
-    const MergeResult& m_merge_res;
+    const MergeResult &m_merge_res;
 
     bool needs_sorting = true;
 
     /// Which pentagon from the list is selected
     NodeID m_selected = NodeID::NoNode;
 
-
-public:
-
-    PentagonListWidget(QWidget* w, const MergeResult& res) : QWidget(w), m_merge_res(res) {
+  public:
+    PentagonListWidget(QWidget *w, const MergeResult &res) : QWidget(w), m_merge_res(res)
+    {
 
         auto layout = new QVBoxLayout(this);
 
@@ -47,50 +49,61 @@ public:
     }
 
     /// Width available for drawing
-    int viewWidth() {
+    int viewWidth()
+    {
         return m_view->viewport()->width();
     }
 
-    void handleClick(NodeID node) {
+    void handleClick(NodeID node)
+    {
 
         m_selected = node;
         emit pentagonClicked(node);
         updateScene();
     }
 
-    void updateScene() {
+    void updateScene()
+    {
         using namespace pent_config;
 
         m_scene->clear();
 
         /// This is used to scale the horizontal bars
         int max_value = 0;
-        for (const auto& pen : m_merge_res) {
+        for (const auto &pen : m_merge_res)
+        {
             max_value = std::max(max_value, std::max(pen.size_l, pen.size_r));
         }
 
         auto displayed_items = m_merge_res; /// make copy
 
-        const auto sort_function = [](const PentagonItem& p1, const PentagonItem& p2) {
-            const auto diff1 = std::abs(p1.size_r-p1.size_l);
-            const auto diff2 = std::abs(p2.size_r-p2.size_l);
+        const auto sort_function = [](const PentagonItem &p1, const PentagonItem &p2) {
+            const auto diff1 = std::abs(p1.size_r - p1.size_l);
+            const auto diff2 = std::abs(p2.size_r - p2.size_l);
 
-            if (diff1 < diff2) {
+            if (diff1 < diff2)
+            {
                 return false;
-            } else if (diff2 > diff1) {
+            }
+            else if (diff2 > diff1)
+            {
                 return true;
-            } else {
+            }
+            else
+            {
                 const auto sum1 = p1.size_r + p1.size_l;
                 const auto sum2 = p2.size_r + p2.size_l;
                 return sum2 < sum1;
             }
         };
 
-        if (needs_sorting) {
+        if (needs_sorting)
+        {
             std::sort(displayed_items.begin(), displayed_items.end(), sort_function);
         }
 
-        for (auto i = 0; i < displayed_items.size(); ++i) {
+        for (auto i = 0; i < displayed_items.size(); ++i)
+        {
             const auto ypos = i * (HEIGHT + PADDING) + PADDING;
 
             const bool sel = (displayed_items[i].pen_nid == m_selected);
@@ -98,27 +111,24 @@ public:
         }
     }
 
-signals:
+  signals:
     void pentagonClicked(NodeID);
 
-
-public slots:
-    void handleSortCB(int state) {
-        if (state == Qt::Checked) {
+  public slots:
+    void handleSortCB(int state)
+    {
+        if (state == Qt::Checked)
+        {
             needs_sorting = true;
-        } else {
+        }
+        else
+        {
             needs_sorting = false;
         }
 
         updateScene();
     }
-
-
 };
 
-
-
-
-
-
-}}
+} // namespace analysis
+} // namespace cpprofiler

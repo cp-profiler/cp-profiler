@@ -3,9 +3,13 @@
 #include "../core.hh"
 #include <set>
 
-namespace cpprofiler { namespace tree {
+namespace cpprofiler
+{
+namespace tree
+{
 
-class VisualFlags {
+class VisualFlags
+{
 
     std::vector<bool> label_shown_;
 
@@ -19,7 +23,7 @@ class VisualFlags {
 
     void ensure_id_exists(NodeID id);
 
-public:
+  public:
     void setLabelShown(NodeID nid, bool val);
     bool isLabelShown(NodeID nid) const;
 
@@ -32,6 +36,5 @@ public:
     void unhighlightAll();
 };
 
-
-
-}}
+} // namespace tree
+} // namespace cpprofiler

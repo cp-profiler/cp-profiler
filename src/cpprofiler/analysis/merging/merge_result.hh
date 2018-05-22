@@ -3,9 +3,13 @@
 #include "../../core.hh"
 #include <vector>
 
-namespace cpprofiler { namespace analysis {
+namespace cpprofiler
+{
+namespace analysis
+{
 
-struct PentagonItem {
+struct PentagonItem
+{
     /// pentagon node
     NodeID pen_nid;
     /// left subtree size
@@ -16,5 +20,5 @@ struct PentagonItem {
 
 using MergeResult = std::vector<PentagonItem>;
 
-
-}}
+} // namespace analysis
+} // namespace cpprofiler

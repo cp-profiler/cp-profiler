@@ -6,49 +6,53 @@
 #include <QPoint>
 #include <QRect>
 
-
 class QPainter;
 
-namespace cpprofiler {
-    class UserData;
+namespace cpprofiler
+{
+class UserData;
 
-    namespace tree {
-        class VisualFlags;
-    }
+namespace tree
+{
+class VisualFlags;
 }
+} // namespace cpprofiler
 
-namespace cpprofiler { namespace tree {
+namespace cpprofiler
+{
+namespace tree
+{
 
 class Layout;
 
 /// This uses unsafe methods for tree structure!
-class DrawingCursor : public NodeCursor {
+class DrawingCursor : public NodeCursor
+{
 
-    const Layout& m_layout;
+    const Layout &m_layout;
 
-    const NodeTree& m_node_tree;
+    const NodeTree &m_node_tree;
 
-    const UserData& user_data_;
+    const UserData &user_data_;
 
-    const VisualFlags& m_vis_flags;
+    const VisualFlags &m_vis_flags;
 
-    QPainter& m_painter;
+    QPainter &m_painter;
     QRect clippingRect;
 
     int cur_x, cur_y;
 
     bool isClipped();
 
-public:
-
+  public:
     DrawingCursor(NodeID start,
-                 const NodeTree& tree,
-                 const Layout& layout,
-                 const UserData& user_data,
-                 const VisualFlags& flags,
-                 QPainter& painter,
-                 QPoint start_pos,
-                 const QRect& clippingRect0);
+                  const NodeTree &tree,
+                  const Layout &layout,
+                  const UserData &user_data,
+                  const VisualFlags &flags,
+                  QPainter &painter,
+                  QPoint start_pos,
+                  const QRect &clippingRect0);
 
     void processCurrentNode();
 
@@ -61,11 +65,9 @@ public:
     void moveSidewards();
 
     void finalize();
-
 };
 
-
-}}
-
+} // namespace tree
+} // namespace cpprofiler
 
 #endif

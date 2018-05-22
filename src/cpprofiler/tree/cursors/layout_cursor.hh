@@ -5,22 +5,26 @@
 #include <QPainter>
 #include "node_cursor.hh"
 
-namespace cpprofiler { namespace tree {
+namespace cpprofiler
+{
+namespace tree
+{
 
-    class Layout;
-    class VisualFlags;
+class Layout;
+class VisualFlags;
 
-class LayoutCursor : public NodeCursor {
+class LayoutCursor : public NodeCursor
+{
 
-    Layout& m_layout;
-    const NodeTree& tree_;
-    const VisualFlags& m_vis_flags;
+    Layout &m_layout;
+    const NodeTree &tree_;
+    const VisualFlags &m_vis_flags;
     /// painter used for dispaying text (labels)
-    const QPainter* m_painter = nullptr;
+    const QPainter *m_painter = nullptr;
 
-public:
+  public:
     // Constructor
-    LayoutCursor(NodeID start, const NodeTree& tree, const VisualFlags& nf, Layout& lo);
+    LayoutCursor(NodeID start, const NodeTree &tree, const VisualFlags &nf, Layout &lo);
 
     void computeForNode(NodeID nid);
 
@@ -29,10 +33,9 @@ public:
     void processCurrentNode();
 
     void finalize();
-
 };
 
-}}
-
+} // namespace tree
+} // namespace cpprofiler
 
 #endif

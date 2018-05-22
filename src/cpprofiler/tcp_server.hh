@@ -5,24 +5,21 @@
 #include <functional>
 #include <cstdint>
 
+namespace cpprofiler
+{
 
-namespace cpprofiler {
-
-class TcpServer : public QTcpServer {
-Q_OBJECT
-public:
+class TcpServer : public QTcpServer
+{
+    Q_OBJECT
+  public:
     TcpServer(std::function<void(intptr_t)> callback);
 
-private:
-
+  private:
     void incomingConnection(qintptr socketDesc) override;
 
     std::function<void(intptr_t)> m_callback;
-
-
 };
 
-
-}
+} // namespace cpprofiler
 
 #endif

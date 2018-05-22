@@ -3,31 +3,29 @@
 #include <QCommandLineParser>
 #include <QString>
 
-namespace cpprofiler {
+namespace cpprofiler
+{
 
-namespace cl_options {
-    extern QCommandLineOption paths;
-    extern QCommandLineOption mzn;
-    extern QCommandLineOption save_search;
-}
+namespace cl_options
+{
+extern QCommandLineOption paths;
+extern QCommandLineOption mzn;
+extern QCommandLineOption save_search;
+} // namespace cl_options
 
-class CommandLineParser {
+class CommandLineParser
+{
 
     QCommandLineParser cl_parser;
 
-public:
-
+  public:
     CommandLineParser();
 
-    void process(const QCoreApplication& app);
+    void process(const QCoreApplication &app);
 
-    QString value(const QCommandLineOption& opt);
+    QString value(const QCommandLineOption &opt);
 
-    bool isSet(const QCommandLineOption& opt);
-
-
-
+    bool isSet(const QCommandLineOption &opt);
 };
 
-
-}
+} // namespace cpprofiler

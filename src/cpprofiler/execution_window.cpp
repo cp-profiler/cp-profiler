@@ -22,290 +22,292 @@
 
 #include "stats_bar.hpp"
 
-namespace cpprofiler {
+namespace cpprofiler
+{
 
-    ExecutionWindow::ExecutionWindow(Execution& ex)
+ExecutionWindow::ExecutionWindow(Execution &ex)
     : execution_(ex)
+{
+    const auto &tree = ex.tree();
+    traditional_view_.reset(new tree::TraditionalView(tree, ex.userData(), ex.solver_data()));
+
+    auto layout = new QGridLayout();
+
+    statusBar()->showMessage("Ready");
+
+    auto stats_bar = new NodeStatsBar(this, tree.node_stats());
+    statusBar()->addPermanentWidget(stats_bar);
+
+    resize(500, 700);
+
     {
-        const auto& tree = ex.tree();
-        traditional_view_.reset(new tree::TraditionalView(tree, ex.userData(), ex.solver_data()));
+        auto widget = new QWidget();
+        setCentralWidget(widget);
+        widget->setLayout(layout);
+        layout->addWidget(traditional_view_->widget(), 0, 0, 2, 1);
+    }
 
-        auto layout = new QGridLayout();
+    {
 
-        statusBar()->showMessage("Ready");
+        auto sb = new QSlider(Qt::Vertical);
 
-        auto stats_bar = new NodeStatsBar(this, tree.node_stats());
-        statusBar()->addPermanentWidget(stats_bar);
+        sb->setMinimum(1);
+        sb->setMaximum(100);
 
-        resize(500,700);
+        constexpr int start_scale = 50;
+        sb->setValue(start_scale);
+        layout->addWidget(sb, 1, 1, Qt::AlignHCenter);
 
-        {
-            auto widget = new QWidget();
-            setCentralWidget(widget);
-            widget->setLayout(layout);
-            layout->addWidget(traditional_view_->widget(), 0, 0, 2, 1);
-        }
+        traditional_view_->setScale(start_scale);
 
-        {
-
-            auto sb = new QSlider(Qt::Vertical);
-
-            sb->setMinimum(1);
-            sb->setMaximum(100);
-
-            constexpr int start_scale = 50;
-            sb->setValue(start_scale);
-            layout->addWidget(sb, 1, 1, Qt::AlignHCenter);
-
-            traditional_view_->setScale(start_scale);
-
-            connect(sb, &QSlider::valueChanged,
+        connect(sb, &QSlider::valueChanged,
                 traditional_view_.get(), &tree::TraditionalView::setScale);
-            
 
-            // connect(traditional_view_.get(), &tree::TraditionalView::nodeClicked,
-            //     this, &ExecutionWindow::selectNode);
+        // connect(traditional_view_.get(), &tree::TraditionalView::nodeClicked,
+        //     this, &ExecutionWindow::selectNode);
 
-            connect(&execution_.tree(), &tree::NodeTree::structureUpdated,
-                    traditional_view_.get(), &tree::TraditionalView::setLayoutOutdated);
-
-            {
-                auto statsUpdateTimer = new QTimer(this);
-                connect(statsUpdateTimer, &QTimer::timeout, stats_bar, &NodeStatsBar::update);
-                statsUpdateTimer->start(16);
-            }
-
-        }
-
+        connect(&execution_.tree(), &tree::NodeTree::structureUpdated,
+                traditional_view_.get(), &tree::TraditionalView::setLayoutOutdated);
 
         {
-            auto menuBar = new QMenuBar(0);
-            // Don't add the menu bar on Mac OS X
-            #ifndef Q_WS_MAC
-                /// is this needed???
-              setMenuBar(menuBar);
-            #endif
+            auto statsUpdateTimer = new QTimer(this);
+            connect(statsUpdateTimer, &QTimer::timeout, stats_bar, &NodeStatsBar::update);
+            statsUpdateTimer->start(16);
+        }
+    }
 
-            {
-                auto nodeMenu = menuBar->addMenu("&Node");
+    {
+        auto menuBar = new QMenuBar(0);
+// Don't add the menu bar on Mac OS X
+#ifndef Q_WS_MAC
+        /// is this needed???
+        setMenuBar(menuBar);
+#endif
 
-                auto centerNode = new QAction{"Center current node", this};
-                centerNode->setShortcut(QKeySequence("C"));
-                nodeMenu->addAction(centerNode);
-                connect(centerNode, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::centerCurrentNode);
+        {
+            auto nodeMenu = menuBar->addMenu("&Node");
 
-                auto toggleShowLabel = new QAction{"Show labels down", this};
-                toggleShowLabel->setShortcut(QKeySequence("L"));
-                nodeMenu->addAction(toggleShowLabel);
-                connect(toggleShowLabel, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::showLabelsDown);
+            auto centerNode = new QAction{"Center current node", this};
+            centerNode->setShortcut(QKeySequence("C"));
+            nodeMenu->addAction(centerNode);
+            connect(centerNode, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::centerCurrentNode);
 
-                auto toggleShowLabelsUp = new QAction{"Show labels down", this};
-                toggleShowLabelsUp->setShortcut(QKeySequence("Shift+L"));
-                nodeMenu->addAction(toggleShowLabelsUp);
-                connect(toggleShowLabelsUp, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::showLabelsUp);
+            auto toggleShowLabel = new QAction{"Show labels down", this};
+            toggleShowLabel->setShortcut(QKeySequence("L"));
+            nodeMenu->addAction(toggleShowLabel);
+            connect(toggleShowLabel, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::showLabelsDown);
 
-                auto hideFailed = new QAction{"Hide failed", this};
-                hideFailed->setShortcut(QKeySequence("F"));
-                nodeMenu->addAction(hideFailed);
-                connect(hideFailed, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::hideFailed);
+            auto toggleShowLabelsUp = new QAction{"Show labels down", this};
+            toggleShowLabelsUp->setShortcut(QKeySequence("Shift+L"));
+            nodeMenu->addAction(toggleShowLabelsUp);
+            connect(toggleShowLabelsUp, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::showLabelsUp);
 
-                auto unhideAll = new QAction{"Unhide all", this};
-                unhideAll->setShortcut(QKeySequence("U"));
-                nodeMenu->addAction(unhideAll);
-                connect(unhideAll, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::unhideAll);
+            auto hideFailed = new QAction{"Hide failed", this};
+            hideFailed->setShortcut(QKeySequence("F"));
+            nodeMenu->addAction(hideFailed);
+            connect(hideFailed, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::hideFailed);
 
-                auto toggleHighlighted = new QAction{"Toggle highlight subtree", this};
-                toggleHighlighted->setShortcut(QKeySequence("H"));
-                nodeMenu->addAction(toggleHighlighted);
-                connect(toggleHighlighted, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::toggleHighlighted);
+            auto unhideAll = new QAction{"Unhide all", this};
+            unhideAll->setShortcut(QKeySequence("U"));
+            nodeMenu->addAction(unhideAll);
+            connect(unhideAll, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::unhideAll);
 
-                auto bookmarkNode = new  QAction{"Add/remove bookmark", this};
-                bookmarkNode->setShortcut(QKeySequence("Shift+B"));
-                nodeMenu->addAction(bookmarkNode);
-                connect(bookmarkNode, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::bookmarkCurrentNode);
+            auto toggleHighlighted = new QAction{"Toggle highlight subtree", this};
+            toggleHighlighted->setShortcut(QKeySequence("H"));
+            nodeMenu->addAction(toggleHighlighted);
+            connect(toggleHighlighted, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::toggleHighlighted);
 
-                auto showNogoods = new QAction{"Show nogoods", this};
-                showNogoods->setShortcut(QKeySequence("Shift+N"));
-                nodeMenu->addAction(showNogoods);
-                connect(showNogoods, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::showNogoods);
-            }
+            auto bookmarkNode = new QAction{"Add/remove bookmark", this};
+            bookmarkNode->setShortcut(QKeySequence("Shift+B"));
+            nodeMenu->addAction(bookmarkNode);
+            connect(bookmarkNode, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::bookmarkCurrentNode);
 
-            {
+            auto showNogoods = new QAction{"Show nogoods", this};
+            showNogoods->setShortcut(QKeySequence("Shift+N"));
+            nodeMenu->addAction(showNogoods);
+            connect(showNogoods, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::showNogoods);
+        }
 
-                auto navMenu = menuBar->addMenu("Na&vigation");
+        {
 
-                auto navRoot = new QAction{"Go to the root", this};
-                navRoot->setShortcut(QKeySequence("R"));
-                navMenu->addAction(navRoot);
-                connect(navRoot, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navRoot);
+            auto navMenu = menuBar->addMenu("Na&vigation");
 
-                auto navDown = new QAction{"Go to the left-most child", this};
-                navDown->setShortcut(QKeySequence("Down"));
-                navMenu->addAction(navDown);
-                connect(navDown, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navDown);
+            auto navRoot = new QAction{"Go to the root", this};
+            navRoot->setShortcut(QKeySequence("R"));
+            navMenu->addAction(navRoot);
+            connect(navRoot, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navRoot);
 
-                auto navDownAlt = new QAction{"Go to the right-most child", this};
-                navDownAlt->setShortcut(QKeySequence("Alt+Down"));
-                navMenu->addAction(navDownAlt);
-                connect(navDownAlt, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navDownAlt);
+            auto navDown = new QAction{"Go to the left-most child", this};
+            navDown->setShortcut(QKeySequence("Down"));
+            navMenu->addAction(navDown);
+            connect(navDown, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navDown);
 
-                auto navUp = new QAction{"Go up", this};
-                navUp->setShortcut(QKeySequence("Up"));
-                navMenu->addAction(navUp);
-                connect(navUp, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navUp);
+            auto navDownAlt = new QAction{"Go to the right-most child", this};
+            navDownAlt->setShortcut(QKeySequence("Alt+Down"));
+            navMenu->addAction(navDownAlt);
+            connect(navDownAlt, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navDownAlt);
 
-                auto navLeft = new QAction{"Go left", this};
-                navLeft->setShortcut(QKeySequence("Left"));
-                navMenu->addAction(navLeft);
-                connect(navLeft, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navLeft);
+            auto navUp = new QAction{"Go up", this};
+            navUp->setShortcut(QKeySequence("Up"));
+            navMenu->addAction(navUp);
+            connect(navUp, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navUp);
 
-                auto navRight = new QAction{"Go right", this};
-                navRight->setShortcut(QKeySequence("Right"));
-                navMenu->addAction(navRight);
-                connect(navRight, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navRight);
-            }
+            auto navLeft = new QAction{"Go left", this};
+            navLeft->setShortcut(QKeySequence("Left"));
+            navMenu->addAction(navLeft);
+            connect(navLeft, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navLeft);
 
+            auto navRight = new QAction{"Go right", this};
+            navRight->setShortcut(QKeySequence("Right"));
+            navMenu->addAction(navRight);
+            connect(navRight, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navRight);
+        }
 
-            {
-                auto debugMenu = menuBar->addMenu("Debu&g");
+        {
+            auto debugMenu = menuBar->addMenu("Debu&g");
 
-                auto computeLayout = new QAction{"Compute layout", this};
-                debugMenu->addAction(computeLayout);
-                connect(computeLayout, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::forceComputeLayout);
+            auto computeLayout = new QAction{"Compute layout", this};
+            debugMenu->addAction(computeLayout);
+            connect(computeLayout, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::forceComputeLayout);
 
-                auto dirtyNodesUp = new QAction{"Dirty Nodes Up", this};
-                debugMenu->addAction(dirtyNodesUp);
-                connect(dirtyNodesUp, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::dirtyCurrentNodeUp);
+            auto dirtyNodesUp = new QAction{"Dirty Nodes Up", this};
+            debugMenu->addAction(dirtyNodesUp);
+            connect(dirtyNodesUp, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::dirtyCurrentNodeUp);
 
-                auto getNodeInfo = new QAction{"Print node info", this};
-                getNodeInfo->setShortcut(QKeySequence("I"));
-                debugMenu->addAction(getNodeInfo);
-                connect(getNodeInfo, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::printNodeInfo);
+            auto getNodeInfo = new QAction{"Print node info", this};
+            getNodeInfo->setShortcut(QKeySequence("I"));
+            debugMenu->addAction(getNodeInfo);
+            connect(getNodeInfo, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::printNodeInfo);
 
-                auto removeNode = new QAction{"Remove node", this};
-                removeNode->setShortcut(QKeySequence("Del"));
-                debugMenu->addAction(removeNode);
-                connect(removeNode, &QAction::triggered, this, &ExecutionWindow::removeSelectedNode);
-            }
+            auto removeNode = new QAction{"Remove node", this};
+            removeNode->setShortcut(QKeySequence("Del"));
+            debugMenu->addAction(removeNode);
+            connect(removeNode, &QAction::triggered, this, &ExecutionWindow::removeSelectedNode);
+        }
 
-            {
-                auto dataMenu = menuBar->addMenu("&Data");
+        {
+            auto dataMenu = menuBar->addMenu("&Data");
 
-                auto showBookmarks = new QAction{"Show bookmarks", this};
-                dataMenu->addAction(showBookmarks);
-                connect(showBookmarks, &QAction::triggered, this, &ExecutionWindow::showBookmarks);
-            }
+            auto showBookmarks = new QAction{"Show bookmarks", this};
+            dataMenu->addAction(showBookmarks);
+            connect(showBookmarks, &QAction::triggered, this, &ExecutionWindow::showBookmarks);
+        }
 
-            {
-                auto analysisMenu = menuBar->addMenu("&Analyses");
-                auto similarSubtree = new QAction{"Similar Subtrees", this};
-                similarSubtree->setShortcut(QKeySequence("Shift+S"));
-                analysisMenu->addAction(similarSubtree);
+        {
+            auto analysisMenu = menuBar->addMenu("&Analyses");
+            auto similarSubtree = new QAction{"Similar Subtrees", this};
+            similarSubtree->setShortcut(QKeySequence("Shift+S"));
+            analysisMenu->addAction(similarSubtree);
 
-                const auto& tree_layout = traditional_view_->layout();
+            const auto &tree_layout = traditional_view_->layout();
 
-                connect(similarSubtree, &QAction::triggered, [this, &ex, &tree_layout]() {
-                    auto ssw = new analysis::SimilarSubtreeWindow(this, ex.tree(), tree_layout);
-                    ssw->show();
+            connect(similarSubtree, &QAction::triggered, [this, &ex, &tree_layout]() {
+                auto ssw = new analysis::SimilarSubtreeWindow(this, ex.tree(), tree_layout);
+                ssw->show();
 
-                    connect(ssw, &analysis::SimilarSubtreeWindow::should_be_highlighted,
+                connect(ssw, &analysis::SimilarSubtreeWindow::should_be_highlighted,
                         traditional_view_.get(), &tree::TraditionalView::highlightSubtrees);
-                });
+            });
 
-                auto saveSearch = new QAction{"Save Search (for replaying)", this};
-                analysisMenu->addAction(saveSearch);
-                connect(saveSearch, &QAction::triggered, [this]() { emit needToSaveSearch(&execution_); });
-            }
-
-            // auto debugText = new QTextEdit{this};
-            // // debugText->setHeight(200);
-            // debugText->setReadOnly(true);
-
-            // layout->addWidget(debugText, 2, 0);
-
+            auto saveSearch = new QAction{"Save Search (for replaying)", this};
+            analysisMenu->addAction(saveSearch);
+            connect(saveSearch, &QAction::triggered, [this]() { emit needToSaveSearch(&execution_); });
         }
+
+        // auto debugText = new QTextEdit{this};
+        // // debugText->setHeight(200);
+        // debugText->setReadOnly(true);
+
+        // layout->addWidget(debugText, 2, 0);
     }
+}
 
-    ExecutionWindow::~ExecutionWindow() = default;
+ExecutionWindow::~ExecutionWindow() = default;
 
-    tree::TraditionalView& ExecutionWindow::traditional_view() {
-        return *traditional_view_;
-    }
+tree::TraditionalView &ExecutionWindow::traditional_view()
+{
+    return *traditional_view_;
+}
 
-    void ExecutionWindow::showBookmarks() const {
+void ExecutionWindow::showBookmarks() const
+{
 
-        auto b_window = new QDialog();
-        b_window->setAttribute(Qt::WA_DeleteOnClose);
+    auto b_window = new QDialog();
+    b_window->setAttribute(Qt::WA_DeleteOnClose);
 
-        auto lo = new QVBoxLayout(b_window);
+    auto lo = new QVBoxLayout(b_window);
 
-        auto bm_table = new QTableView();
+    auto bm_table = new QTableView();
 
-        auto bm_model = new QStandardItemModel(0, 2);
-        QStringList headers{"NodeID", "Bookmark Text"};
-        bm_model->setHorizontalHeaderLabels(headers);
-        bm_table->horizontalHeader()->setStretchLastSection(true);
+    auto bm_model = new QStandardItemModel(0, 2);
+    QStringList headers{"NodeID", "Bookmark Text"};
+    bm_model->setHorizontalHeaderLabels(headers);
+    bm_table->horizontalHeader()->setStretchLastSection(true);
 
-        bm_table->setModel(bm_model);
+    bm_table->setModel(bm_model);
 
+    {
+        const auto &ud = execution_.userData();
+
+        const auto nodes = ud.bookmarkedNodes();
+
+        for (const auto n : nodes)
         {
-            const auto& ud = execution_.userData();
-
-            const auto nodes = ud.bookmarkedNodes();
-
-            for (const auto n : nodes) {
-                auto nid_item = new QStandardItem(QString::number(n));
-                auto text = ud.getBookmark(n);
-                auto text_item = new QStandardItem(text.c_str());
-                bm_model->appendRow({nid_item, text_item});
-            }
+            auto nid_item = new QStandardItem(QString::number(n));
+            auto text = ud.getBookmark(n);
+            auto text_item = new QStandardItem(text.c_str());
+            bm_model->appendRow({nid_item, text_item});
         }
-
-
-        lo->addWidget(bm_table);
-
-        b_window->show();
-
-        // QTableView
-
     }
 
-    /// TODO: this should only be active when the tree is done building
-    void ExecutionWindow::removeSelectedNode() {
+    lo->addWidget(bm_table);
 
-        auto nid = execution_.userData().getSelectedNode();
-        if (nid == NodeID::NoNode) return;
+    b_window->show();
 
-        const auto pid = execution_.tree().getParent(nid);
-        execution_.userData().setSelectedNode(pid);
+    // QTableView
+}
 
-        execution_.tree().removeNode(nid);
+/// TODO: this should only be active when the tree is done building
+void ExecutionWindow::removeSelectedNode()
+{
 
-        if (pid != NodeID::NoNode) {
-            traditional_view_->dirtyUp(pid);
-        }
+    auto nid = execution_.userData().getSelectedNode();
+    if (nid == NodeID::NoNode)
+        return;
 
-        traditional_view_->setLayoutOutdated();
-        traditional_view_->redraw();
+    const auto pid = execution_.tree().getParent(nid);
+    execution_.userData().setSelectedNode(pid);
 
+    execution_.tree().removeNode(nid);
+
+    if (pid != NodeID::NoNode)
+    {
+        traditional_view_->dirtyUp(pid);
     }
 
-    static void writeToFile(const QString& path, const QString& str) {
-      QFile file(path);
+    traditional_view_->setLayoutOutdated();
+    traditional_view_->redraw();
+}
 
-      if (file.open(QFile::WriteOnly | QFile::Truncate)) {
+static void writeToFile(const QString &path, const QString &str)
+{
+    QFile file(path);
+
+    if (file.open(QFile::WriteOnly | QFile::Truncate))
+    {
         QTextStream out(&file);
 
         out << str;
-
-      } else {
+    }
+    else
+    {
         qDebug() << "could not open the file: " << path;
-      }
     }
-
-
-    void ExecutionWindow::print_log(const std::string& str) {
-        writeToFile("debug.log", str.c_str());
-    }
-
 }
+
+void ExecutionWindow::print_log(const std::string &str)
+{
+    writeToFile("debug.log", str.c_str());
+}
+
+} // namespace cpprofiler

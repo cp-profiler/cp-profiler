@@ -17,471 +17,498 @@
 #include <QDebug>
 #include <iostream>
 
-namespace cpprofiler { namespace tests { namespace execution {
+namespace cpprofiler
+{
+namespace tests
+{
+namespace execution
+{
 
-    void copy_test(utils::Array<int> arr) {
-        auto new_arr = arr;
-    }
+void copy_test(utils::Array<int> arr)
+{
+    auto new_arr = arr;
+}
 
-    void array_test() {
+void array_test()
+{
 
-        utils::Array<int> arr(1);
+    utils::Array<int> arr(1);
 
-        copy_test(arr);
+    copy_test(arr);
+}
 
-    }
+void binary_tree_execution(Conductor &conductor)
+{
 
-    void binary_tree_execution(Conductor& conductor) {
+    auto ex = conductor.addNewExecution("test execution");
 
-        auto ex = conductor.addNewExecution("test execution");
+    auto &tree = ex->tree();
 
-        auto& tree = ex->tree();
+    auto root = tree.createRoot(2, "0");
+    auto n1 = tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
+    auto n2 = tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
 
-        auto root = tree.createRoot(2, "0");
-        auto n1 =  tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
-        auto n2 =  tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
+    ex->userData().setSelectedNode(n1);
 
-        ex->userData().setSelectedNode(n1);
+    auto n3 = tree.promoteNode(n1, 0, 2, tree::NodeStatus::BRANCH, "3");
+    auto n4 = tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "4");
 
-        auto n3 =  tree.promoteNode(n1, 0, 2, tree::NodeStatus::BRANCH, "3");
-        auto n4 =  tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "4");
+    auto n5 = tree.promoteNode(n3, 0, 2, tree::NodeStatus::BRANCH, "5");
+    auto n6 = tree.promoteNode(n3, 1, 2, tree::NodeStatus::BRANCH, "6");
 
-        auto n5 =  tree.promoteNode(n3, 0, 2, tree::NodeStatus::BRANCH, "5");
-        auto n6 =  tree.promoteNode(n3, 1, 2, tree::NodeStatus::BRANCH, "6");
+    tree.promoteNode(n5, 0, 0, tree::NodeStatus::SOLVED, "7");
+    tree.promoteNode(n5, 1, 0, tree::NodeStatus::FAILED, "8");
 
-        tree.promoteNode(n5, 0, 0, tree::NodeStatus::SOLVED, "7");
-        tree.promoteNode(n5, 1, 0, tree::NodeStatus::FAILED, "8");
+    tree.promoteNode(n6, 0, 0, tree::NodeStatus::FAILED, "9");
+    tree.promoteNode(n6, 1, 0, tree::NodeStatus::SKIPPED, "10");
 
-        tree.promoteNode(n6, 0, 0, tree::NodeStatus::FAILED, "9");
-        tree.promoteNode(n6, 1, 0, tree::NodeStatus::SKIPPED, "10");
+    auto n7 = tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "11");
+    auto n8 = tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "12");
 
-        auto n7 =  tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "11");
-        auto n8 =  tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "12");
+    auto n9 = tree.promoteNode(n2, 0, 2, tree::NodeStatus::BRANCH, "13");
+    auto n10 = tree.promoteNode(n2, 1, 0, tree::NodeStatus::FAILED, "14");
 
-        auto n9 =  tree.promoteNode(n2, 0, 2, tree::NodeStatus::BRANCH, "13");
-        auto n10 =  tree.promoteNode(n2, 1, 0, tree::NodeStatus::FAILED, "14");
+    auto n11 = tree.promoteNode(n9, 0, 2, tree::NodeStatus::BRANCH, "15");
+    auto n12 = tree.promoteNode(n9, 1, 0, tree::NodeStatus::FAILED, "16");
 
-        auto n11 =  tree.promoteNode(n9, 0, 2, tree::NodeStatus::BRANCH, "15");
-        auto n12 =  tree.promoteNode(n9, 1, 0, tree::NodeStatus::FAILED, "16");
+    auto n13 = tree.promoteNode(n11, 0, 2, tree::NodeStatus::BRANCH, "17");
+    auto n14 = tree.promoteNode(n11, 1, 0, tree::NodeStatus::FAILED, "18");
 
-        auto n13 =  tree.promoteNode(n11, 0, 2, tree::NodeStatus::BRANCH, "17");
-        auto n14 =  tree.promoteNode(n11, 1, 0, tree::NodeStatus::FAILED, "18");
+    auto n15 = tree.promoteNode(n13, 0, 2, tree::NodeStatus::BRANCH, "19");
+    auto n16 = tree.promoteNode(n13, 1, 0, tree::NodeStatus::FAILED, "20");
 
-        auto n15 =  tree.promoteNode(n13, 0, 2, tree::NodeStatus::BRANCH, "19");
-        auto n16 =  tree.promoteNode(n13, 1, 0, tree::NodeStatus::FAILED, "20");
+    auto n17 = tree.promoteNode(n15, 0, 2, tree::NodeStatus::BRANCH, "21");
+    auto n18 = tree.promoteNode(n15, 1, 0, tree::NodeStatus::FAILED, "22");
 
-        auto n17 =  tree.promoteNode(n15, 0, 2, tree::NodeStatus::BRANCH, "21");
-        auto n18 =  tree.promoteNode(n15, 1, 0, tree::NodeStatus::FAILED, "22");
+    auto n19 = tree.promoteNode(n17, 0, 2, tree::NodeStatus::BRANCH, "23");
+    auto n20 = tree.promoteNode(n17, 1, 0, tree::NodeStatus::FAILED, "24");
 
-        auto n19 =  tree.promoteNode(n17, 0, 2, tree::NodeStatus::BRANCH, "23");
-        auto n20 =  tree.promoteNode(n17, 1, 0, tree::NodeStatus::FAILED, "24");
+    auto n21 = tree.promoteNode(n19, 0, 2, tree::NodeStatus::BRANCH, "25");
+    auto n22 = tree.promoteNode(n19, 1, 0, tree::NodeStatus::FAILED, "26");
 
-        auto n21 =  tree.promoteNode(n19, 0, 2, tree::NodeStatus::BRANCH, "25");
-        auto n22 =  tree.promoteNode(n19, 1, 0, tree::NodeStatus::FAILED, "26");
+    auto n23 = tree.promoteNode(n21, 0, 2, tree::NodeStatus::BRANCH, "27");
+    auto n24 = tree.promoteNode(n21, 1, 0, tree::NodeStatus::UNDETERMINED, "28");
 
-        auto n23 =  tree.promoteNode(n21, 0, 2, tree::NodeStatus::BRANCH, "27");
-        auto n24 =  tree.promoteNode(n21, 1, 0, tree::NodeStatus::UNDETERMINED, "28");
+    auto n25 = tree.promoteNode(n23, 0, 2, tree::NodeStatus::BRANCH, "29");
+    auto n26 = tree.promoteNode(n23, 1, 0, tree::NodeStatus::FAILED, "30");
 
-        auto n25 =  tree.promoteNode(n23, 0, 2, tree::NodeStatus::BRANCH, "29");
-        auto n26 =  tree.promoteNode(n23, 1, 0, tree::NodeStatus::FAILED, "30");
+    auto n27 = tree.promoteNode(n25, 0, 2, tree::NodeStatus::BRANCH, "31");
+    auto n28 = tree.promoteNode(n25, 1, 0, tree::NodeStatus::FAILED, "32");
 
-        auto n27 =  tree.promoteNode(n25, 0, 2, tree::NodeStatus::BRANCH, "31");
-        auto n28 =  tree.promoteNode(n25, 1, 0, tree::NodeStatus::FAILED, "32");
+    auto n29 = tree.promoteNode(n27, 0, 2, tree::NodeStatus::BRANCH, "33");
+    auto n30 = tree.promoteNode(n27, 1, 0, tree::NodeStatus::FAILED, "34");
 
-        auto n29 =  tree.promoteNode(n27, 0, 2, tree::NodeStatus::BRANCH, "33");
-        auto n30 =  tree.promoteNode(n27, 1, 0, tree::NodeStatus::FAILED, "34");
+    auto n31 = tree.promoteNode(n29, 0, 2, tree::NodeStatus::BRANCH, "35");
+    auto n32 = tree.promoteNode(n29, 1, 0, tree::NodeStatus::FAILED, "36");
 
-        auto n31 =  tree.promoteNode(n29, 0, 2, tree::NodeStatus::BRANCH, "35");
-        auto n32 =  tree.promoteNode(n29, 1, 0, tree::NodeStatus::FAILED, "36");
+    auto n33 = tree.promoteNode(n31, 0, 2, tree::NodeStatus::BRANCH, "37");
+    auto n34 = tree.promoteNode(n31, 1, 0, tree::NodeStatus::FAILED, "38");
 
-        auto n33 =  tree.promoteNode(n31, 0, 2, tree::NodeStatus::BRANCH, "37");
-        auto n34 =  tree.promoteNode(n31, 1, 0, tree::NodeStatus::FAILED, "38");
+    auto n35 = tree.promoteNode(n33, 0, 0, tree::NodeStatus::FAILED, "39");
+    auto n36 = tree.promoteNode(n33, 1, 0, tree::NodeStatus::FAILED, "40");
 
-        auto n35 =  tree.promoteNode(n33, 0, 0, tree::NodeStatus::FAILED, "39");
-        auto n36 =  tree.promoteNode(n33, 1, 0, tree::NodeStatus::FAILED, "40");
+    conductor.showTraditionalView(ex);
+}
 
-        conductor.showTraditionalView(ex);
-    }
+void nary_execution(Conductor &conductor)
+{
 
-    void nary_execution(Conductor& conductor) {
+    auto ex = conductor.addNewExecution("n-ary execution");
 
-        auto ex = conductor.addNewExecution("n-ary execution");
+    auto &tree = ex->tree();
 
-        auto& tree = ex->tree();
+    auto root = tree.createRoot(4);
+    auto n1 = tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
+    auto n2 = tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
+    auto n3 = tree.promoteNode(root, 2, 0, tree::NodeStatus::FAILED, "3");
+    auto n4 = tree.promoteNode(root, 3, 2, tree::NodeStatus::BRANCH, "4");
 
-        auto root = tree.createRoot(4);
-        auto n1 =  tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
-        auto n2 =  tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
-        auto n3 =  tree.promoteNode(root, 2, 0, tree::NodeStatus::FAILED, "3");
-        auto n4 =  tree.promoteNode(root, 3, 2, tree::NodeStatus::BRANCH, "4");
+    auto n5 = tree.promoteNode(n1, 0, 0, tree::NodeStatus::FAILED, "5");
+    auto n6 = tree.promoteNode(n1, 1, 0, tree::NodeStatus::FAILED, "6");
 
-        auto n5 =  tree.promoteNode(n1, 0, 0, tree::NodeStatus::FAILED, "5");
-        auto n6 =  tree.promoteNode(n1, 1, 0, tree::NodeStatus::FAILED, "6");
+    auto n7 = tree.promoteNode(n2, 0, 0, tree::NodeStatus::FAILED, "7");
+    auto n8 = tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH, "8");
 
-        auto n7 =  tree.promoteNode(n2, 0, 0, tree::NodeStatus::FAILED, "7");
-        auto n8 =  tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH, "8");
+    auto n9 = tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "9");
+    auto n10 = tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "10");
 
-        auto n9 =  tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "9");
-        auto n10 =  tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "10");
+    auto n11 = tree.promoteNode(n8, 0, 0, tree::NodeStatus::FAILED, "11");
+    auto n12 = tree.promoteNode(n8, 1, 0, tree::NodeStatus::FAILED, "12");
+}
 
-        auto n11 =  tree.promoteNode(n8, 0, 0, tree::NodeStatus::FAILED, "11");
-        auto n12 =  tree.promoteNode(n8, 1, 0, tree::NodeStatus::FAILED, "12");
-    }
+void larger_nary_execution(Conductor &conductor)
+{
+
+    auto ex = conductor.addNewExecution("n-ary execution");
 
-    void larger_nary_execution(Conductor& conductor) {
+    auto &tree = ex->tree();
 
-        auto ex = conductor.addNewExecution("n-ary execution");
+    auto root = tree.createRoot(4);
+    auto n1 = tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH);
+    auto n2 = tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH);
+    auto n3 = tree.promoteNode(root, 2, 0, tree::NodeStatus::FAILED);
+    auto n4 = tree.promoteNode(root, 3, 2, tree::NodeStatus::BRANCH);
 
-        auto& tree = ex->tree();
+    auto n5 = tree.promoteNode(n1, 0, 0, tree::NodeStatus::FAILED);
+    auto n6 = tree.promoteNode(n1, 1, 12, tree::NodeStatus::BRANCH);
 
-        auto root = tree.createRoot(4);
-        auto n1 =  tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH);
-        auto n2 =  tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH);
-        auto n3 =  tree.promoteNode(root, 2, 0, tree::NodeStatus::FAILED);
-        auto n4 =  tree.promoteNode(root, 3, 2, tree::NodeStatus::BRANCH);
+    auto n6a = tree.promoteNode(n6, 0, 0, tree::NodeStatus::FAILED);
+    auto n6b = tree.promoteNode(n6, 1, 0, tree::NodeStatus::FAILED);
+    auto n6c = tree.promoteNode(n6, 2, 0, tree::NodeStatus::FAILED);
+    auto n6d = tree.promoteNode(n6, 3, 0, tree::NodeStatus::FAILED);
+    tree.promoteNode(n6, 4, 0, tree::NodeStatus::FAILED);
+    tree.promoteNode(n6, 5, 0, tree::NodeStatus::FAILED);
+    tree.promoteNode(n6, 6, 0, tree::NodeStatus::FAILED);
+    tree.promoteNode(n6, 7, 0, tree::NodeStatus::FAILED);
+    tree.promoteNode(n6, 8, 0, tree::NodeStatus::FAILED);
+    tree.promoteNode(n6, 9, 0, tree::NodeStatus::FAILED);
+    tree.promoteNode(n6, 10, 0, tree::NodeStatus::FAILED);
+    tree.promoteNode(n6, 11, 0, tree::NodeStatus::FAILED);
 
-        auto n5 =  tree.promoteNode(n1, 0, 0, tree::NodeStatus::FAILED);
-        auto n6 =  tree.promoteNode(n1, 1, 12, tree::NodeStatus::BRANCH);
+    auto n7 = tree.promoteNode(n2, 0, 0, tree::NodeStatus::FAILED);
+    auto n8 = tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH);
 
-            auto n6a =  tree.promoteNode(n6, 0, 0, tree::NodeStatus::FAILED);
-            auto n6b =  tree.promoteNode(n6, 1, 0, tree::NodeStatus::FAILED);
-            auto n6c =  tree.promoteNode(n6, 2, 0, tree::NodeStatus::FAILED);
-            auto n6d =  tree.promoteNode(n6, 3, 0, tree::NodeStatus::FAILED);
-            tree.promoteNode(n6, 4, 0, tree::NodeStatus::FAILED);
-            tree.promoteNode(n6, 5, 0, tree::NodeStatus::FAILED);
-            tree.promoteNode(n6, 6, 0, tree::NodeStatus::FAILED);
-            tree.promoteNode(n6, 7, 0, tree::NodeStatus::FAILED);
-            tree.promoteNode(n6, 8, 0, tree::NodeStatus::FAILED);
-            tree.promoteNode(n6, 9, 0, tree::NodeStatus::FAILED);
-            tree.promoteNode(n6, 10, 0, tree::NodeStatus::FAILED);
-            tree.promoteNode(n6, 11, 0, tree::NodeStatus::FAILED);
+    auto n9 = tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED);
+    auto n10 = tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED);
 
-        auto n7 =  tree.promoteNode(n2, 0, 0, tree::NodeStatus::FAILED);
-        auto n8 =  tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH);
+    auto n11 = tree.promoteNode(n8, 0, 0, tree::NodeStatus::FAILED);
+    auto n12 = tree.promoteNode(n8, 1, 0, tree::NodeStatus::FAILED);
+}
 
-        auto n9 =  tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED);
-        auto n10 =  tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED);
+void simple_nary_execution(Conductor &conductor)
+{
 
-        auto n11 =  tree.promoteNode(n8, 0, 0, tree::NodeStatus::FAILED);
-        auto n12 =  tree.promoteNode(n8, 1, 0, tree::NodeStatus::FAILED);
-    }
+    auto ex = conductor.addNewExecution("n-ary execution");
 
-    void simple_nary_execution(Conductor& conductor) {
+    auto &tree = ex->tree();
 
-        auto ex = conductor.addNewExecution("n-ary execution");
+    auto root = tree.createRoot(4);
+    auto n1 = tree.promoteNode(root, 0, 0, tree::NodeStatus::FAILED);
+    auto n2 = tree.promoteNode(root, 1, 0, tree::NodeStatus::FAILED);
+    auto n3 = tree.promoteNode(root, 2, 0, tree::NodeStatus::FAILED);
+    auto n4 = tree.promoteNode(root, 3, 0, tree::NodeStatus::FAILED);
+}
 
-        auto& tree = ex->tree();
+void binary_test_1_for_identical_subtrees(Conductor &conductor)
+{
 
-        auto root = tree.createRoot(4);
-        auto n1 =  tree.promoteNode(root, 0, 0, tree::NodeStatus::FAILED);
-        auto n2 =  tree.promoteNode(root, 1, 0, tree::NodeStatus::FAILED);
-        auto n3 =  tree.promoteNode(root, 2, 0, tree::NodeStatus::FAILED);
-        auto n4 =  tree.promoteNode(root, 3, 0, tree::NodeStatus::FAILED);
-    }
+    auto ex = conductor.addNewExecution("test for identical subtree algorithm");
 
-    void binary_test_1_for_identical_subtrees(Conductor& conductor) {
+    auto &tree = ex->tree();
 
-        auto ex = conductor.addNewExecution("test for identical subtree algorithm");
+    auto root = tree.createRoot(2);
+    auto n1 = tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "a");
+    auto n2 = tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "b");
 
-        auto& tree = ex->tree();
+    auto n3 = tree.promoteNode(n1, 0, 2, tree::NodeStatus::BRANCH, "c");
+    auto n4 = tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "d");
+    auto n11 = tree.promoteNode(n2, 0, 0, tree::NodeStatus::FAILED, "e");
+    auto n12 = tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH, "f");
 
-        auto root = tree.createRoot(2);
-        auto n1 =  tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "a");
-        auto n2 =  tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "b");
+    auto n5 = tree.promoteNode(n3, 0, 0, tree::NodeStatus::FAILED, "g");
+    auto n6 = tree.promoteNode(n3, 1, 2, tree::NodeStatus::BRANCH, "h");
+    auto n9 = tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "i");
+    auto n10 = tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "j");
+    auto n13 = tree.promoteNode(n12, 0, 0, tree::NodeStatus::FAILED, "k");
+    auto n14 = tree.promoteNode(n12, 1, 0, tree::NodeStatus::FAILED, "l");
 
-        auto n3 =  tree.promoteNode(n1, 0, 2, tree::NodeStatus::BRANCH, "c");
-        auto n4 =  tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "d");
-        auto n11 =  tree.promoteNode(n2, 0, 0, tree::NodeStatus::FAILED, "e");
-        auto n12 =  tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH, "f");
+    auto n7 = tree.promoteNode(n6, 0, 0, tree::NodeStatus::FAILED, "m");
+    auto n8 = tree.promoteNode(n6, 1, 0, tree::NodeStatus::FAILED, "n");
+}
 
-        auto n5 =  tree.promoteNode(n3, 0, 0, tree::NodeStatus::FAILED, "g");
-        auto n6 =  tree.promoteNode(n3, 1, 2, tree::NodeStatus::BRANCH, "h");
-        auto n9 =  tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "i");
-        auto n10 =  tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "j");
-        auto n13 =  tree.promoteNode(n12, 0, 0, tree::NodeStatus::FAILED, "k");
-        auto n14 =  tree.promoteNode(n12, 1, 0, tree::NodeStatus::FAILED, "l");
+void binary_test_2_for_identical_subtrees(Conductor &conductor)
+{
 
-        auto n7 =  tree.promoteNode(n6, 0, 0, tree::NodeStatus::FAILED, "m");
-        auto n8 =  tree.promoteNode(n6, 1, 0, tree::NodeStatus::FAILED, "n");
+    auto ex = conductor.addNewExecution("test for identical subtree algorithm");
 
-    }
+    auto &tree = ex->tree();
 
-    void binary_test_2_for_identical_subtrees(Conductor& conductor) {
+    auto root = tree.createRoot(2, "0");
+    auto n1 = tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
+    auto n2 = tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
 
-        auto ex = conductor.addNewExecution("test for identical subtree algorithm");
+    auto n3 = tree.promoteNode(n1, 0, 2, tree::NodeStatus::BRANCH, "3");
+    auto n4 = tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "4");
+    auto n5 = tree.promoteNode(n2, 0, 2, tree::NodeStatus::BRANCH, "5");
+    auto n6 = tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH, "6");
 
-        auto& tree = ex->tree();
+    auto n7 = tree.promoteNode(n3, 0, 0, tree::NodeStatus::FAILED, "7");
+    auto n8 = tree.promoteNode(n3, 1, 0, tree::NodeStatus::FAILED, "8");
+    auto n9 = tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "9");
+    auto n10 = tree.promoteNode(n4, 1, 2, tree::NodeStatus::BRANCH, "10");
+    auto n13 = tree.promoteNode(n6, 0, 2, tree::NodeStatus::BRANCH, "13");
+    auto n14 = tree.promoteNode(n6, 1, 2, tree::NodeStatus::BRANCH, "14");
 
-        auto root = tree.createRoot(2, "0");
-        auto n1 =  tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
-        auto n2 =  tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
+    auto n15 = tree.promoteNode(n10, 0, 0, tree::NodeStatus::FAILED, "15");
+    auto n16 = tree.promoteNode(n10, 1, 0, tree::NodeStatus::FAILED, "16");
 
-        auto n3 =  tree.promoteNode(n1, 0, 2, tree::NodeStatus::BRANCH, "3");
-        auto n4 =  tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "4");
-        auto n5 =  tree.promoteNode(n2, 0, 2, tree::NodeStatus::BRANCH, "5");
-        auto n6 =  tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH, "6");
+    auto n11 = tree.promoteNode(n5, 0, 0, tree::NodeStatus::FAILED, "11");
+    auto n12 = tree.promoteNode(n5, 1, 0, tree::NodeStatus::FAILED, "12");
 
-        auto n7 =  tree.promoteNode(n3, 0, 0, tree::NodeStatus::FAILED, "7");
-        auto n8 =  tree.promoteNode(n3, 1, 0, tree::NodeStatus::FAILED, "8");
-        auto n9 =  tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "9");
-        auto n10 =  tree.promoteNode(n4, 1, 2, tree::NodeStatus::BRANCH, "10");
-        auto n13 =  tree.promoteNode(n6, 0, 2, tree::NodeStatus::BRANCH, "13");
-        auto n14 =  tree.promoteNode(n6, 1, 2, tree::NodeStatus::BRANCH, "14");
+    auto n17 = tree.promoteNode(n13, 0, 0, tree::NodeStatus::FAILED, "17");
+    auto n18 = tree.promoteNode(n13, 1, 0, tree::NodeStatus::FAILED, "18");
 
-        auto n15 =  tree.promoteNode(n10, 0, 0, tree::NodeStatus::FAILED, "15");
-        auto n16 =  tree.promoteNode(n10, 1, 0, tree::NodeStatus::FAILED, "16");
+    auto n19 = tree.promoteNode(n14, 0, 0, tree::NodeStatus::FAILED, "19");
+    auto n20 = tree.promoteNode(n14, 1, 2, tree::NodeStatus::BRANCH, "20");
 
-        auto n11 =  tree.promoteNode(n5, 0, 0, tree::NodeStatus::FAILED, "11");
-        auto n12 =  tree.promoteNode(n5, 1, 0, tree::NodeStatus::FAILED, "12");
+    auto n21 = tree.promoteNode(n20, 0, 0, tree::NodeStatus::FAILED, "21");
+    auto n22 = tree.promoteNode(n20, 1, 0, tree::NodeStatus::FAILED, "22");
+}
 
-        auto n17 =  tree.promoteNode(n13, 0, 0, tree::NodeStatus::FAILED, "17");
-        auto n18 =  tree.promoteNode(n13, 1, 0, tree::NodeStatus::FAILED, "18");
+void build_for_comparison_a(tree::NodeTree &tree)
+{
 
-        auto n19 =  tree.promoteNode(n14, 0, 0, tree::NodeStatus::FAILED, "19");
-        auto n20 =  tree.promoteNode(n14, 1, 2, tree::NodeStatus::BRANCH, "20");
+    auto root = tree.createRoot(2, "0");
 
-        auto n21 =  tree.promoteNode(n20, 0, 0, tree::NodeStatus::FAILED, "21");
-        auto n22 =  tree.promoteNode(n20, 1, 0, tree::NodeStatus::FAILED, "22");
+    auto n1 = tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
+    auto n2 = tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
 
-    }
+    auto n3 = tree.promoteNode(n1, 0, 0, tree::NodeStatus::FAILED, "3");
+    auto n4 = tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "4");
 
-    void build_for_comparison_a(tree::NodeTree& tree) {
+    auto n7 = tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "7");
+    auto n8 = tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "8");
 
-        auto root = tree.createRoot(2, "0");
+    auto n5 = tree.promoteNode(n2, 0, 0, tree::NodeStatus::SOLVED, "5");
+    auto n6 = tree.promoteNode(n2, 1, 0, tree::NodeStatus::FAILED, "6");
+}
 
-        auto n1 = tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
-        auto n2 = tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
+void build_for_comparison_b(tree::NodeTree &tree)
+{
 
-        auto n3 = tree.promoteNode(n1, 0, 0, tree::NodeStatus::FAILED, "3");
-        auto n4 = tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "4");
+    auto root = tree.createRoot(2, "0");
 
-        auto n7 = tree.promoteNode(n4, 0, 0, tree::NodeStatus::FAILED, "7");
-        auto n8 = tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "8");
+    auto n1 = tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
+    auto n2 = tree.promoteNode(root, 1, 0, tree::NodeStatus::FAILED, "2");
 
-        auto n5 = tree.promoteNode(n2, 0, 0, tree::NodeStatus::SOLVED, "5");
-        auto n6 = tree.promoteNode(n2, 1, 0, tree::NodeStatus::FAILED, "6");
-    }
+    auto n3 = tree.promoteNode(n1, 0, 0, tree::NodeStatus::FAILED, "3");
+    auto n4 = tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "4");
 
-    void build_for_comparison_b(tree::NodeTree& tree) {
+    auto n7 = tree.promoteNode(n4, 0, 2, tree::NodeStatus::BRANCH, "7");
+    auto n8 = tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "8");
 
-        auto root = tree.createRoot(2, "0");
+    auto n9 = tree.promoteNode(n7, 0, 0, tree::NodeStatus::FAILED, "9");
+    auto n10 = tree.promoteNode(n7, 1, 0, tree::NodeStatus::FAILED, "10");
+}
 
-        auto n1 = tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
-        auto n2 = tree.promoteNode(root, 1, 0, tree::NodeStatus::FAILED, "2");
+void comparison(Conductor &c)
+{
 
-        auto n3 = tree.promoteNode(n1, 0, 0, tree::NodeStatus::FAILED, "3");
-        auto n4 = tree.promoteNode(n1, 1, 2, tree::NodeStatus::BRANCH, "4");
+    auto ex1 = c.addNewExecution("Execution A");
+    build_for_comparison_a(ex1->tree());
 
-        auto n7 = tree.promoteNode(n4, 0, 2, tree::NodeStatus::BRANCH, "7");
-        auto n8 = tree.promoteNode(n4, 1, 0, tree::NodeStatus::FAILED, "8");
+    auto ex2 = c.addNewExecution("Execution B");
+    build_for_comparison_b(ex2->tree());
 
-        auto n9 = tree.promoteNode(n7, 0, 0, tree::NodeStatus::FAILED, "9");
-        auto n10 = tree.promoteNode(n7, 1, 0, tree::NodeStatus::FAILED, "10");
-    }
+    c.mergeTrees(ex1, ex2);
+}
 
-    void comparison(Conductor& c) {
+void comparison2(Conductor &c)
+{
 
-        auto ex1 = c.addNewExecution("Execution A");
-        build_for_comparison_a(ex1->tree());
+    const auto path = "/home/maxim/dev/cp-profiler2/golomb8.db";
 
-        auto ex2 = c.addNewExecution("Execution B");
-        build_for_comparison_b(ex2->tree());
+    auto ex1 = db_handler::load_execution(path);
+    if (ex1)
+        c.addNewExecution(ex1);
 
-        c.mergeTrees(ex1, ex2);
-    }
+    auto ex2 = db_handler::load_execution(path);
+    if (ex2)
+        c.addNewExecution(ex2);
 
-    void comparison2(Conductor& c) {
+    c.mergeTrees(ex1.get(), ex2.get());
+}
 
-        const auto path = "/home/maxim/dev/cp-profiler2/golomb8.db";
+void tree_building(Conductor &c)
+{
 
-        auto ex1 = db_handler::load_execution(path);
-        if (ex1) c.addNewExecution(ex1);
+    /// create a dummy root node
+    auto ex = c.addNewExecution("test tree");
 
-        auto ex2 = db_handler::load_execution(path);
-        if (ex2) c.addNewExecution(ex2);
+    auto &tree = ex->tree();
 
-        c.mergeTrees(ex1.get(), ex2.get());
-    }
+    auto root = tree.createRoot(0);
 
-    void tree_building(Conductor& c) {
-
-        /// create a dummy root node
-        auto ex = c.addNewExecution("test tree");
-
-        auto& tree = ex->tree();
-
-        auto root = tree.createRoot(0);
-
-        auto n1 = tree.promoteNode(NodeID::NoNode, -1, 0, tree::NodeStatus::FAILED, "1");
+    auto n1 = tree.promoteNode(NodeID::NoNode, -1, 0, tree::NodeStatus::FAILED, "1");
     //     auto n2 = tree.promoteNode(root, 1, 0, tree::NodeStatus::FAILED, "2");
 
     //     auto n3 = tree.promoteNode(n1, 0, 0, tree::NodeStatus::FAILED, "3");
     //     auto n4 = tree.promoteNode(n1, 1, 0, tree::NodeStatus::FAILED, "4");
+}
+
+void hiding_failed_test(Conductor &c)
+{
+
+    auto ex = c.addNewExecution("test hiding failed");
+
+    auto &tree = ex->tree();
+
+    auto root = tree.createRoot(2, "0");
+
+    auto n1 = tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
+    auto n2 = tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
+
+    auto n3 = tree.promoteNode(n1, 0, 2, tree::NodeStatus::BRANCH, "3");
+    auto n4 = tree.promoteNode(n1, 1, 0, tree::NodeStatus::SOLVED, "4");
+
+    auto n5 = tree.promoteNode(n3, 0, 0, tree::NodeStatus::FAILED, "5");
+    auto n6 = tree.promoteNode(n3, 1, 0, tree::NodeStatus::FAILED, "6");
+
+    auto n7 = tree.promoteNode(n2, 0, 0, tree::NodeStatus::UNDETERMINED, "7");
+    auto n8 = tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH, "8");
+
+    auto n9 = tree.promoteNode(n8, 0, 0, tree::NodeStatus::FAILED, "9");
+    auto n10 = tree.promoteNode(n8, 1, 0, tree::NodeStatus::FAILED, "10");
+}
+
+void restart_tree(Conductor &c)
+{
+
+    auto ex = c.addNewExecution("Restart Tree");
+
+    auto &tree = ex->tree();
+
+    utils::DebugMutexLocker locker(&tree.treeMutex());
+
+    auto root = tree.createRoot(0);
+
+    tree.addExtraChild(root);
+    // tree.addExtraChild(root);
+    // tree.addExtraChild(root);
+    // tree.addExtraChild(root);
+    // tree.addExtraChild(root);
+    // tree.addExtraChild(root);
+
+    // tree.addExtraChild(tree.getChild(root, 3));
+}
+
+static void load_execution(Conductor &c, const char *path)
+{
+
+    auto ex = db_handler::load_execution(path);
+
+    if (!ex)
+    {
+        print("could not load the execution");
+    }
+    else
+    {
+        c.addNewExecution(ex);
+    }
+}
+
+static void save_and_load(Conductor &c, const char *path)
+{
+
+    auto ex1 = c.addNewExecution("simple execution");
+    build_for_comparison_a(ex1->tree());
+
+    ex1->userData().setBookmark(NodeID{2}, "Test Bookmark");
+
+    db_handler::save_execution(ex1, path);
+
+    auto ex = db_handler::load_execution(path);
+    if (!ex)
+    {
+        print("could not load the execution");
+    }
+    else
+    {
+        c.addNewExecution(ex);
+    }
+}
+
+static void db_create_tree(Conductor &c)
+{
+
+    auto ex = c.addNewExecution("Created as in DB");
+    auto &tree = ex->tree();
+
+    tree.db_initialize(100);
+
+    tree.db_createRoot(NodeID{0});
+
+    tree.db_addChild(NodeID{1}, NodeID{0}, 0, tree::NodeStatus::BRANCH, "a");
+    tree.db_addChild(NodeID{2}, NodeID{0}, 1, tree::NodeStatus::BRANCH, "b");
+}
+
+static void save_search(Conductor &c)
+{
+
+    auto ex1 = c.addNewExecution("simple execution");
+    build_for_comparison_a(ex1->tree());
+
+    c.saveSearch(ex1, "test.search");
+}
+
+static void nogood_dialog(Conductor &c)
+{
+
+    const char *orig_path = "/home/maxim/dev/cp-profiler2/nogoods.db";
+
+    auto ex = db_handler::load_execution(orig_path);
+    if (!ex)
+    {
+        print("could not load the execution");
+    }
+    else
+    {
+        c.addNewExecution(ex);
+        // c.showTraditionalView(ex.get());
     }
 
+    const char *replayed_path = "/home/maxim/dev/cp-profiler2/nogoods_replayed.db";
 
-    void hiding_failed_test(Conductor& c) {
-
-        auto ex = c.addNewExecution("test hiding failed");
-
-        auto& tree = ex->tree();
-
-        auto root = tree.createRoot(2, "0");
-
-        auto n1 = tree.promoteNode(root, 0, 2, tree::NodeStatus::BRANCH, "1");
-        auto n2 = tree.promoteNode(root, 1, 2, tree::NodeStatus::BRANCH, "2");
-
-        auto n3 = tree.promoteNode(n1, 0, 2, tree::NodeStatus::BRANCH, "3");
-        auto n4 = tree.promoteNode(n1, 1, 0, tree::NodeStatus::SOLVED, "4");
-
-        auto n5 = tree.promoteNode(n3, 0, 0, tree::NodeStatus::FAILED, "5");
-        auto n6 = tree.promoteNode(n3, 1, 0, tree::NodeStatus::FAILED, "6");
-
-        auto n7 = tree.promoteNode(n2, 0, 0, tree::NodeStatus::UNDETERMINED, "7");
-        auto n8 = tree.promoteNode(n2, 1, 2, tree::NodeStatus::BRANCH, "8");
-
-        auto n9 = tree.promoteNode(n8, 0, 0, tree::NodeStatus::FAILED, "9");
-        auto n10 = tree.promoteNode(n8, 1, 0, tree::NodeStatus::FAILED, "10");
-
+    auto ex2 = db_handler::load_execution(replayed_path);
+    if (!ex2)
+    {
+        print("could not load the execution");
+    }
+    else
+    {
+        c.addNewExecution(ex2);
+        // c.showTraditionalView(ex2.get());
     }
 
-    void restart_tree(Conductor& c) {
+    c.mergeTrees(ex.get(), ex2.get());
+}
 
-        auto ex = c.addNewExecution("Restart Tree");
+void run(Conductor &c)
+{
 
-        auto& tree = ex->tree();
+    /// this one works with db
+    // binary_test_1_for_identical_subtrees(c);
 
-        utils::DebugMutexLocker locker(&tree.treeMutex());
+    // binary_test_2_for_identical_subtrees(c);
 
-        auto root = tree.createRoot(0);
+    // binary_tree_execution(c);
+    // simple_nary_execution(c);
+    // nary_execution(c);
+    // larger_nary_execution(c);
 
-        tree.addExtraChild(root);
-        // tree.addExtraChild(root);
-        // tree.addExtraChild(root);
-        // tree.addExtraChild(root);
-        // tree.addExtraChild(root);
-        // tree.addExtraChild(root);
+    // hiding_failed_test(c);
 
+    // comparison(c);
 
-        // tree.addExtraChild(tree.getChild(root, 3));
+    // comparison2(c);
 
-    }
+    // tree_building(c);
 
-    static void load_execution(Conductor& c, const char* path) {
+    // restart_tree(c);
 
-        auto ex = db_handler::load_execution(path);
+    // load_execution(c, "/home/maxim/dev/cp-profiler2/golomb8.db");
 
-        if (!ex) {
-            print("could not load the execution");
-        } else {
-            c.addNewExecution(ex);
-        }
-    }
+    // save_and_load(c, "/home/maxim/dev/cp-profiler2/test.db");
 
-    static void save_and_load(Conductor& c, const char* path) {
+    nogood_dialog(c);
 
+    // db_create_tree(c);
 
-        auto ex1 = c.addNewExecution("simple execution");
-        build_for_comparison_a(ex1->tree());
+    // save_search(c);
 
-        ex1->userData().setBookmark(NodeID{2}, "Test Bookmark");
+    // TODO: copmarison of two golomb rulers 8 (same) results in a wierd memory error
+}
 
-        db_handler::save_execution(ex1, path);
-
-        auto ex = db_handler::load_execution(path);
-        if (!ex) {
-            print("could not load the execution");
-        } else {
-            c.addNewExecution(ex);
-        }
-
-    }
-
-    static void db_create_tree(Conductor& c) {
-
-        auto ex = c.addNewExecution("Created as in DB");
-        auto& tree = ex->tree();
-
-        tree.db_initialize(100);
-
-        tree.db_createRoot(NodeID{0});
-
-        tree.db_addChild(NodeID{1}, NodeID{0}, 0, tree::NodeStatus::BRANCH, "a");
-        tree.db_addChild(NodeID{2}, NodeID{0}, 1, tree::NodeStatus::BRANCH, "b");
-    }
-
-    static void save_search(Conductor& c) {
-
-        auto ex1 = c.addNewExecution("simple execution");
-        build_for_comparison_a(ex1->tree());
-
-        c.saveSearch(ex1, "test.search");
-
-    }
-
-    static void nogood_dialog(Conductor& c) {
-
-        const char* orig_path = "/home/maxim/dev/cp-profiler2/nogoods.db";
-
-        auto ex = db_handler::load_execution(orig_path);
-        if (!ex) {
-            print("could not load the execution");
-        } else {
-            c.addNewExecution(ex);
-            // c.showTraditionalView(ex.get());
-        }
-
-
-        const char* replayed_path = "/home/maxim/dev/cp-profiler2/nogoods_replayed.db";
-
-        auto ex2 = db_handler::load_execution(replayed_path);
-        if (!ex2) {
-            print("could not load the execution");
-        } else {
-            c.addNewExecution(ex2);
-            // c.showTraditionalView(ex2.get());
-        }
-
-        c.mergeTrees(ex.get(), ex2.get());
-
-    }
-
-    void run(Conductor& c) {
-
-        /// this one works with db
-        // binary_test_1_for_identical_subtrees(c);
-
-        // binary_test_2_for_identical_subtrees(c);
-
-        // binary_tree_execution(c);
-        // simple_nary_execution(c);
-        // nary_execution(c);
-        // larger_nary_execution(c);
-
-        // hiding_failed_test(c);
-
-        // comparison(c);
-
-        // comparison2(c);
-
-
-        // tree_building(c);
-
-        // restart_tree(c);
-
-        // load_execution(c, "/home/maxim/dev/cp-profiler2/golomb8.db");
-
-        // save_and_load(c, "/home/maxim/dev/cp-profiler2/test.db");
-
-        nogood_dialog(c);
-
-        // db_create_tree(c);
-
-        // save_search(c);
-
-
-        // TODO: copmarison of two golomb rulers 8 (same) results in a wierd memory error
-
-    }
-
-}}}
+} // namespace execution
+} // namespace tests
+} // namespace cpprofiler

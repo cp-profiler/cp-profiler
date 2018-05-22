@@ -11,12 +11,16 @@
 
 #include "node_stats.hh"
 
-namespace cpprofiler {
-    class NameMap;
-    class SolverData;
-}
+namespace cpprofiler
+{
+class NameMap;
+class SolverData;
+} // namespace cpprofiler
 
-namespace cpprofiler { namespace tree {
+namespace cpprofiler
+{
+namespace tree
+{
 
 class Structure;
 class NodeInfo;
@@ -26,8 +30,9 @@ static Label emptyLabel = {};
 
 /// Node tree encapsulates tree structure, node statistics (number of nodes etc.),
 /// status for nodes (node_info_), labels
-class NodeTree : public QObject {
-Q_OBJECT
+class NodeTree : public QObject
+{
+    Q_OBJECT
     /// Tree structural information
     std::unique_ptr<Structure> structure_;
     /// Nodes' statuses and flags (has solved/open children etc.)
@@ -53,19 +58,18 @@ Q_OBJECT
     /// Set closed and notify ancestors
     void closeNode(NodeID nid);
 
-public:
-
+  public:
     NodeTree();
     ~NodeTree();
 
-    const NodeInfo& node_info() const;
-    NodeInfo& node_info();
+    const NodeInfo &node_info() const;
+    NodeInfo &node_info();
 
-    const NodeStats& node_stats() const;
+    const NodeStats &node_stats() const;
 
-    const SolverData& solver_data() const;
+    const SolverData &solver_data() const;
 
-    cpprofiler::utils::Mutex& treeMutex() const;
+    cpprofiler::utils::Mutex &treeMutex() const;
 
     void setSolverData(std::shared_ptr<SolverData> sd);
 
@@ -87,7 +91,7 @@ public:
     /// Set the flag for open children
     void setHasOpenChildren(NodeID nid, bool val);
 
-    void setLabel(NodeID nid, const Label& label);
+    void setLabel(NodeID nid, const Label &label);
 
     /// Remove node `nid` from the tree
     void removeNode(NodeID nid);
@@ -125,7 +129,7 @@ public:
     const Label getLabel(NodeID nid) const;
 
     /// Get the nogood of node `nid`
-    const Nogood& getNogood(NodeID nid) const;
+    const Nogood &getNogood(NodeID nid) const;
 
     /// Check if the node `nid` has solved children (ancestors?)
     bool hasSolvedChildren(NodeID nid) const;
@@ -146,21 +150,18 @@ public:
 
     /// ********************************************************************
 
-signals:
+  signals:
 
     /// Notifies that the strucutre of the tree changed in general
-    /// and triggeres layout update 
+    /// and triggeres layout update
     void structureUpdated();
 
     /// Notifies that the structure underneath the node has changed
     /// and requires layout update
     void childrenStructureChanged(NodeID nid);
-
 };
 
-}}
-
-
-
+} // namespace tree
+} // namespace cpprofiler
 
 #endif

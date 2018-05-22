@@ -8,36 +8,40 @@
 #include <QMutex>
 #include "node_id.hh"
 
-namespace cpprofiler { namespace tree {
+namespace cpprofiler
+{
+namespace tree
+{
 
 enum class NodeStatus;
 
-enum class NodeFlag {
+enum class NodeFlag
+{
 
 };
 
-struct NumFlagLoc {
+struct NumFlagLoc
+{
     int pos;
     int len;
 };
 
-class NodeInfoEntry {
+class NodeInfoEntry
+{
 
-private:
-
+  private:
     std::bitset<4> m_bitset;
 
-public:
-
+  public:
     void setFlag(NodeFlag flag, bool value);
     bool getFlag(NodeFlag flag) const;
 
     void setNumericFlag(NumFlagLoc loc, int value);
     int getNumericFlag(NumFlagLoc loc) const;
-
 };
 
-class NodeInfo {
+class NodeInfo
+{
 
     mutable utils::Mutex m_mutex;
 
@@ -46,8 +50,7 @@ class NodeInfo {
     std::vector<bool> m_has_solved_children;
     std::vector<bool> m_has_open_children;
 
-public:
-
+  public:
     NodeStatus getStatus(NodeID nid) const;
     void setStatus(NodeID nid, NodeStatus status);
 
@@ -58,11 +61,9 @@ public:
 
     void setHasOpenChildren(NodeID nid, bool val);
     bool hasOpenChildren(NodeID nid) const;
-
-
-
 };
 
-}}
+} // namespace tree
+} // namespace cpprofiler
 
 #endif

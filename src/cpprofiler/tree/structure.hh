@@ -7,11 +7,15 @@
 
 #include "memory"
 
+namespace cpprofiler
+{
+namespace tree
+{
 
-namespace cpprofiler { namespace tree {
-
-struct invalid_tree : std::exception {
-    const char* what() const throw() override {
+struct invalid_tree : std::exception
+{
+    const char *what() const throw() override
+    {
         return "invalid tree\n";
     }
 };
@@ -19,10 +23,11 @@ struct invalid_tree : std::exception {
 class LayoutComputer;
 
 /// Structure is responsible for dealing with the tree's structural information.
-/// Since it is not aware of statuses, labels etc., it is the caller's responsibility 
+/// Since it is not aware of statuses, labels etc., it is the caller's responsibility
 /// to ensure that this information is stored elsewhere when, for example, new nodes
 /// are created using Structure's API.
-class Structure {
+class Structure
+{
 
     /// Protects `nodes_`
     mutable utils::Mutex mutex_;
@@ -38,12 +43,11 @@ class Structure {
 
     void db_createNode(NodeID nid, NodeID pid, int kids);
 
-public:
-
+  public:
     Structure();
 
     /// Get mutex protecting structural information
-    utils::Mutex& getMutex() const;
+    utils::Mutex &getMutex() const;
 
     /// Get the identifier of the root (should be 0)
     NodeID getRoot() const;
@@ -66,7 +70,7 @@ public:
     /// Get the total nuber of nodes (including undetermined)
     int nodeCount() const;
 
-/// ************ Modifying (building) a tree ************
+    /// ************ Modifying (building) a tree ************
 
     /// Create a root node and `kids` children
     NodeID createRoot(int kids);
@@ -80,8 +84,7 @@ public:
     /// Remove `alt` child of `pid`
     void removeChild(NodeID pid, int alt);
 
-
-/// ************ Building a tree from a database ************
+    /// ************ Building a tree from a database ************
 
     void db_initialize(int size);
 
@@ -90,10 +93,9 @@ public:
     void db_createChild(NodeID nid, NodeID pid, int alt);
 
     void db_addChild(NodeID nid, NodeID pid, int alt);
-
 };
 
-}}
-
+} // namespace tree
+} // namespace cpprofiler
 
 #endif

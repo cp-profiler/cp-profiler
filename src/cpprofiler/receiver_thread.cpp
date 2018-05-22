@@ -9,51 +9,56 @@
 #include <QTcpSocket>
 #include "utils/debug.hh"
 
-namespace cpprofiler {
+namespace cpprofiler
+{
 
-    class Message;
+class Message;
 
-    ReceiverThread::ReceiverThread(intptr_t socket_desc, const Settings& s)
-        : m_socket_desc(socket_desc), m_settings(s)
-    {
-        std::cerr << "socket descriptor: " << socket_desc << std::endl;
-    }
+ReceiverThread::ReceiverThread(intptr_t socket_desc, const Settings &s)
+    : m_socket_desc(socket_desc), m_settings(s)
+{
+    std::cerr << "socket descriptor: " << socket_desc << std::endl;
+}
 
-    void ReceiverThread::run() {
+void ReceiverThread::run()
+{
 
-        QTcpSocket socket;
+    QTcpSocket socket;
 
-        m_worker.reset(new ReceiverWorker{socket, m_settings});
+    m_worker.reset(new ReceiverWorker{socket, m_settings});
 
-        /// propagate the signal further upwards;
-        /// blocking connection is used to ensure that the execution is created
-        /// before any further message is processed
-        connect(m_worker.get(), &ReceiverWorker::notifyStart,
+    /// propagate the signal further upwards;
+    /// blocking connection is used to ensure that the execution is created
+    /// before any further message is processed
+    connect(m_worker.get(), &ReceiverWorker::notifyStart,
             this, &ReceiverThread::notifyStart, Qt::BlockingQueuedConnection);
 
-        connect(m_worker.get(), &ReceiverWorker::newNode,
+    connect(m_worker.get(), &ReceiverWorker::newNode,
             this, &ReceiverThread::newNode);
 
-        connect(m_worker.get(), &ReceiverWorker::doneReceiving,
+    connect(m_worker.get(), &ReceiverWorker::doneReceiving,
             this, &ReceiverThread::doneReceiving);
 
-        auto res = socket.setSocketDescriptor(m_socket_desc);
+    auto res = socket.setSocketDescriptor(m_socket_desc);
 
-        if (!res) {
-            std::cerr << "invalid socket descriptor\n";
-            this->quit(); return;
-        }
-
-        connect(&socket, &QTcpSocket::readyRead, m_worker.get(), &ReceiverWorker::doRead);
-
-        connect(&socket, &QTcpSocket::disconnected, [this]() {
-            this->quit();
-        });
-
-        exec();
+    if (!res)
+    {
+        std::cerr << "invalid socket descriptor\n";
+        this->quit();
+        return;
     }
 
-    ReceiverThread::~ReceiverThread() {
-        debug("memory") << "~ReceiverThread\n";
-    }
+    connect(&socket, &QTcpSocket::readyRead, m_worker.get(), &ReceiverWorker::doRead);
+
+    connect(&socket, &QTcpSocket::disconnected, [this]() {
+        this->quit();
+    });
+
+    exec();
 }
+
+ReceiverThread::~ReceiverThread()
+{
+    debug("memory") << "~ReceiverThread\n";
+}
+} // namespace cpprofiler

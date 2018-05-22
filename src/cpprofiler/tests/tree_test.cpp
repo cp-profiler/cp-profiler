@@ -6,85 +6,99 @@
 
 #include <cassert>
 
-namespace cpprofiler { namespace tests { namespace tree_test {
+namespace cpprofiler
+{
+namespace tests
+{
+namespace tree_test
+{
 
-        class TestClass {
-        private:
-            int m_id;
-            static int counter;
-        public:
-            TestClass() {
-                counter++;
-                m_id = counter;
-                debug("memory") << "TestClass:" << m_id;
-            }
+class TestClass
+{
+  private:
+    int m_id;
+    static int counter;
 
-            ~TestClass() {
-                debug("memory") << "~TestClass" << m_id;
-            }
+  public:
+    TestClass()
+    {
+        counter++;
+        m_id = counter;
+        debug("memory") << "TestClass:" << m_id;
+    }
 
-            TestClass(const TestClass& other) {
-                counter++;
-                m_id = counter;
-                debug("memory") << "copy TestClass";
-            }
+    ~TestClass()
+    {
+        debug("memory") << "~TestClass" << m_id;
+    }
 
-            TestClass(TestClass&& other) {
-                m_id = other.m_id;
-                debug("memory") << "move constructred TestClass";
-            }
+    TestClass(const TestClass &other)
+    {
+        counter++;
+        m_id = counter;
+        debug("memory") << "copy TestClass";
+    }
 
-            TestClass& operator=(const TestClass& other)  {
-                m_id = other.m_id;
-                debug("memory") << "copy assigning TestClass";
-            }
-            
-        };
+    TestClass(TestClass &&other)
+    {
+        m_id = other.m_id;
+        debug("memory") << "move constructred TestClass";
+    }
 
-        int TestClass::counter = 0;
+    TestClass &operator=(const TestClass &other)
+    {
+        m_id = other.m_id;
+        debug("memory") << "copy assigning TestClass";
+    }
+};
 
-        void array_usage() {
+int TestClass::counter = 0;
 
-            utils::Array<TestClass> arr(2);
+void array_usage()
+{
 
-            arr[0] = TestClass{};
-            arr[1] = TestClass{};
+    utils::Array<TestClass> arr(2);
 
-            // auto other = arr;
+    arr[0] = TestClass{};
+    arr[1] = TestClass{};
 
-            // TestClass a;
-            // arr[0] = a;
+    // auto other = arr;
 
-        }
+    // TestClass a;
+    // arr[0] = a;
+}
 
-        void growing_tree() {
+void growing_tree()
+{
 
-            tree::Structure str;
+    tree::Structure str;
 
-            auto root = str.createRoot(0);
+    auto root = str.createRoot(0);
 
-            auto n1 = str.addExtraChild(root);
+    auto n1 = str.addExtraChild(root);
 
-            assert(n1 == str.getChild(root, 0));
+    assert(n1 == str.getChild(root, 0));
 
-            auto n2 = str.addExtraChild(root);
+    auto n2 = str.addExtraChild(root);
 
-            assert(n1 == str.getChild(root, 0));
-            assert(n2 == str.getChild(root, 1));
+    assert(n1 == str.getChild(root, 0));
+    assert(n2 == str.getChild(root, 1));
 
-            auto n3 = str.addExtraChild(root);
+    auto n3 = str.addExtraChild(root);
 
-            assert(n1 == str.getChild(root, 0));
-            assert(n2 == str.getChild(root, 1));
-            assert(n3 == str.getChild(root, 2));
-        }
+    assert(n1 == str.getChild(root, 0));
+    assert(n2 == str.getChild(root, 1));
+    assert(n3 == str.getChild(root, 2));
+}
 
-        void run() {
+void run()
+{
 
-            growing_tree();
+    growing_tree();
 
-            // array_usage();
+    // array_usage();
+}
 
-        }
-
-}}}
+} // namespace tree_test
+} // namespace tests
+} // namespace cpprofiler

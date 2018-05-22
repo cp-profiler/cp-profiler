@@ -6,12 +6,15 @@
 #include <QGraphicsRectItem>
 #include <QGraphicsScene>
 
-namespace cpprofiler { namespace analysis {
+namespace cpprofiler
+{
+namespace analysis
+{
 
-PentagonRect::PentagonRect(QGraphicsScene* scene, PentagonListWidget& listw, const PentagonItem& pen, int y, int max_val, bool selected)
-: QGraphicsRectItem(pent_config::PADDING, y, listw.viewWidth()-1, pent_config::HEIGHT),
-  m_pen_list_widget(listw),
-  m_node(pen.pen_nid)
+PentagonRect::PentagonRect(QGraphicsScene *scene, PentagonListWidget &listw, const PentagonItem &pen, int y, int max_val, bool selected)
+    : QGraphicsRectItem(pent_config::PADDING, y, listw.viewWidth() - 1, pent_config::HEIGHT),
+      m_pen_list_widget(listw),
+      m_node(pen.pen_nid)
 {
     using namespace pent_config;
 
@@ -26,9 +29,10 @@ PentagonRect::PentagonRect(QGraphicsScene* scene, PentagonListWidget& listw, con
     const int width_l = value_l * scale_x;
     const int width_r = value_r * scale_x;
 
-    const int cx = PADDING + listw.viewWidth()/2;
+    const int cx = PADDING + listw.viewWidth() / 2;
 
-    if (selected) {
+    if (selected)
+    {
         setBrush(sel_color);
     }
 
@@ -56,11 +60,12 @@ PentagonRect::PentagonRect(QGraphicsScene* scene, PentagonListWidget& listw, con
         text_item->setPos(x, y);
         scene->addItem(text_item);
     }
-
 }
 
-void PentagonRect::mousePressEvent(QGraphicsSceneMouseEvent*) {
+void PentagonRect::mousePressEvent(QGraphicsSceneMouseEvent *)
+{
     m_pen_list_widget.handleClick(m_node);
 }
 
-}}
+} // namespace analysis
+} // namespace cpprofiler

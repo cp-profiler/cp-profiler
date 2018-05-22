@@ -6,47 +6,44 @@
 
 #include "tree/node_id.hh"
 
-namespace cpprofiler {
+namespace cpprofiler
+{
 
-namespace tree {
-    class TraditionalView;
+namespace tree
+{
+class TraditionalView;
 }
 
 class Execution;
 
-
-class ExecutionWindow : public QMainWindow {
+class ExecutionWindow : public QMainWindow
+{
     Q_OBJECT
 
-    Execution& execution_;
+    Execution &execution_;
     std::unique_ptr<tree::TraditionalView> traditional_view_;
 
-public:
-
-    tree::TraditionalView& traditional_view();
+  public:
+    tree::TraditionalView &traditional_view();
 
     /// Show a window with all bookmarks
     void showBookmarks() const;
 
-    ExecutionWindow(Execution& ex);
+    ExecutionWindow(Execution &ex);
     ~ExecutionWindow();
 
-public slots:
+  public slots:
 
     /// Remove currently selected node; then select its parent
     void removeSelectedNode();
 
-    void print_log(const std::string& str);
+    void print_log(const std::string &str);
 
-signals:
+  signals:
 
-    void needToSaveSearch(Execution* e);
-
+    void needToSaveSearch(Execution *e);
 };
 
-
-}
-
-
+} // namespace cpprofiler
 
 #endif

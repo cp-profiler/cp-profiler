@@ -8,49 +8,57 @@
 
 #include <QStack>
 
-namespace cpprofiler { namespace analysis {
+namespace cpprofiler
+{
+namespace analysis
+{
 
-    using namespace tree;
+using namespace tree;
 
-TreeMerger::TreeMerger(const Execution& ex_l_, const Execution& ex_r_,
-                       tree::NodeTree& nt, MergeResult& res)
+TreeMerger::TreeMerger(const Execution &ex_l_, const Execution &ex_r_,
+                       tree::NodeTree &nt, MergeResult &res)
     : ex_l(ex_l_), ex_r(ex_r_),
       tree_l(ex_l.tree()),
       tree_r(ex_r.tree()),
       res_tree(nt),
-      merge_result(res) {
-
+      merge_result(res)
+{
 
     connect(this, &QThread::finished, this, &QObject::deleteLater);
-
 }
 
-TreeMerger::~TreeMerger() {
+TreeMerger::~TreeMerger()
+{
 
     qDebug() << "Merging: done";
 }
 
-static void find_and_replace_all(std::string& str, std::string substr_old, std::string substr_new) {
+static void find_and_replace_all(std::string &str, std::string substr_old, std::string substr_new)
+{
     auto pos = str.find(substr_old);
-    while (pos != std::string::npos) {
+    while (pos != std::string::npos)
+    {
         str.replace(pos, std::string(substr_old).length(), substr_new);
         pos = str.find(substr_old);
     }
 }
 
-static bool labelsEqual(std::string lhs, std::string rhs) {
+static bool labelsEqual(std::string lhs, std::string rhs)
+{
     /// NOTE(maxim): removes whitespaces before comparing;
     /// this will be necessary as long as Chuffed and Gecode don't agree
     /// on whether to put whitespaces around operators (Gecode uses ' '
     /// for parsing logbrancher while Chuffed uses them as a delimiter
     /// between literals)
 
-    if (lhs.substr(0,3) == "[i]" || lhs.substr(0,3) == "[f]") {
-      lhs = lhs.substr(3);
+    if (lhs.substr(0, 3) == "[i]" || lhs.substr(0, 3) == "[f]")
+    {
+        lhs = lhs.substr(3);
     }
 
-    if (rhs.substr(0,3) == "[i]" || rhs.substr(0,3) == "[f]") {
-      rhs = rhs.substr(3);
+    if (rhs.substr(0, 3) == "[i]" || rhs.substr(0, 3) == "[f]")
+    {
+        rhs = rhs.substr(3);
     }
 
     lhs.erase(remove_if(lhs.begin(), lhs.end(), isspace), lhs.end());
@@ -61,38 +69,47 @@ static bool labelsEqual(std::string lhs, std::string rhs) {
 
     // qDebug() << "comparing: " << lhs.c_str() << " " << rhs.c_str();
 
-    if (lhs.compare(rhs) != 0) {
-      return false;
+    if (lhs.compare(rhs) != 0)
+    {
+        return false;
     }
 
     return true;
 }
 
-static bool compareNodes(NodeID n1, const NodeTree& nt1,
-                         NodeID n2, const NodeTree& nt2,
-                         bool with_labels) {
+static bool compareNodes(NodeID n1, const NodeTree &nt1,
+                         NodeID n2, const NodeTree &nt2,
+                         bool with_labels)
+{
 
-  if (n1 == NodeID::NoNode || n2 == NodeID::NoNode) return false;
+    if (n1 == NodeID::NoNode || n2 == NodeID::NoNode)
+        return false;
 
-  if (nt1.getStatus(n1) != nt2.getStatus(n2)) return false;
+    if (nt1.getStatus(n1) != nt2.getStatus(n2))
+        return false;
 
-  if (with_labels) {
-      const auto& label1 = nt1.getLabel(n1);
-      const auto& label2 = nt2.getLabel(n2);
-      if (!labelsEqual(label1, label2)) return false;
-  }
+    if (with_labels)
+    {
+        const auto &label1 = nt1.getLabel(n1);
+        const auto &label2 = nt2.getLabel(n2);
+        if (!labelsEqual(label1, label2))
+            return false;
+    }
 
-  return true;
+    return true;
 }
 
-
 /// Copy the subtree rooted at nid_s of nt_s as a subtree rooted at nid in nt
-static void copy_tree_into(NodeTree& nt, NodeID nid, const NodeTree& nt_s, NodeID nid_s) {
+static void copy_tree_into(NodeTree &nt, NodeID nid, const NodeTree &nt_s, NodeID nid_s)
+{
 
-    QStack<NodeID> stack; QStack<NodeID> stack_s;
-    stack.push(nid); stack_s.push(nid_s);
+    QStack<NodeID> stack;
+    QStack<NodeID> stack_s;
+    stack.push(nid);
+    stack_s.push(nid_s);
 
-    while(stack_s.size() > 0) {
+    while (stack_s.size() > 0)
+    {
         auto node_s = stack_s.pop();
         auto node = stack.pop();
 
@@ -104,35 +121,38 @@ static void copy_tree_into(NodeTree& nt, NodeID nid, const NodeTree& nt_s, NodeI
 
         nt.promoteNode(node, kids, status, label);
 
-        for (auto alt = 0; alt < kids; ++alt) {
-            stack.push( nt.getChild(node, alt) );
-            stack_s.push( nt_s.getChild(node_s, alt) );
+        for (auto alt = 0; alt < kids; ++alt)
+        {
+            stack.push(nt.getChild(node, alt));
+            stack_s.push(nt_s.getChild(node_s, alt));
         }
     }
-
-
 }
 
-void create_pentagon(NodeTree& nt, NodeID nid,
-                const NodeTree& nt_l, NodeID nid_l,
-                const NodeTree& nt_r, NodeID nid_r) {
+void create_pentagon(NodeTree &nt, NodeID nid,
+                     const NodeTree &nt_l, NodeID nid_l,
+                     const NodeTree &nt_r, NodeID nid_r)
+{
 
     nt.promoteNode(nid, 2, NodeStatus::MERGED);
 
     /// copy the subtree of nt_l into target_l
-    if (nid_l != NodeID::NoNode) {
+    if (nid_l != NodeID::NoNode)
+    {
         auto target_l = nt.getChild(nid, 0);
         copy_tree_into(nt, target_l, nt_l, nid_l);
     }
 
     /// copy the subtree of nt_r into target_r
-    if (nid_r != NodeID::NoNode) {
+    if (nid_r != NodeID::NoNode)
+    {
         auto target_r = nt.getChild(nid, 1);
         copy_tree_into(nt, target_r, nt_r, nid_r);
     }
 }
 
-void TreeMerger::run() {
+void TreeMerger::run()
+{
 
     qDebug() << "Merging: running...";
 
@@ -146,13 +166,15 @@ void TreeMerger::run() {
     auto root_l = tree_l.getRoot();
     auto root_r = tree_r.getRoot();
 
-    stack_l.push(root_l); stack_r.push(root_r);
+    stack_l.push(root_l);
+    stack_r.push(root_r);
 
     auto root = res_tree.createRoot(0);
 
     stack.push(root);
 
-    while(stack_l.size() > 0) {
+    while (stack_l.size() > 0)
+    {
 
         auto node_l = stack_l.pop();
         auto node_r = stack_r.pop();
@@ -162,7 +184,8 @@ void TreeMerger::run() {
 
         bool equal = compareNodes(node_l, tree_l, node_r, tree_r, false);
 
-        if (equal) {
+        if (equal)
+        {
 
             const auto kids_l = tree_l.childrenCount(node_l);
             const auto kids_r = tree_r.childrenCount(node_r);
@@ -176,57 +199,67 @@ void TreeMerger::run() {
                 res_tree.promoteNode(target, max_kids, status, label);
             }
 
-            if (min_kids == max_kids) {
+            if (min_kids == max_kids)
+            {
                 /// ----- MERGE COMPLETELY -----
-                for (auto i = max_kids - 1; i >= 0; --i) {
-                    stack_l.push( tree_l.getChild(node_l, i) );
-                    stack_r.push( tree_r.getChild(node_r, i) );
-                    stack.push( res_tree.getChild(target, i) );
+                for (auto i = max_kids - 1; i >= 0; --i)
+                {
+                    stack_l.push(tree_l.getChild(node_l, i));
+                    stack_r.push(tree_r.getChild(node_r, i));
+                    stack.push(res_tree.getChild(target, i));
                 }
-            } else {
+            }
+            else
+            {
                 /// ----- MERGE PARTIALLY -----
 
                 /// For every "extra" child
-                for (auto i = max_kids - 1; i >= min_kids; --i) {
+                for (auto i = max_kids - 1; i >= min_kids; --i)
+                {
 
-                  if (kids_l > kids_r) {
-                    const auto kid_l = tree_l.getChild(node_l, i);
-                    const auto status = tree_l.getStatus(kid_l);
+                    if (kids_l > kids_r)
+                    {
+                        const auto kid_l = tree_l.getChild(node_l, i);
+                        const auto status = tree_l.getStatus(kid_l);
 
-                    /// NOTE(maxim): this is most likely the case of replaying with skipped nodes,
-                    /// so should not be compared (the same below)
-                    if (status == NodeStatus::UNDETERMINED || status == NodeStatus::SKIPPED) {
-                      continue;
+                        /// NOTE(maxim): this is most likely the case of replaying with skipped nodes,
+                        /// so should not be compared (the same below)
+                        if (status == NodeStatus::UNDETERMINED || status == NodeStatus::SKIPPED)
+                        {
+                            continue;
+                        }
+
+                        stack_l.push(kid_l);
+                        stack_r.push(NodeID::NoNode);
+                        stack.push(res_tree.getChild(target, i));
                     }
+                    else
+                    {
+                        const auto kid_r = tree_r.getChild(node_r, i);
+                        const auto status = tree_r.getStatus(kid_r);
 
-                    stack_l.push(kid_l);
-                    stack_r.push(NodeID::NoNode);
-                    stack.push( res_tree.getChild(target, i) );
+                        if (status == NodeStatus::UNDETERMINED || status == NodeStatus::SKIPPED)
+                        {
+                            continue;
+                        }
 
-                  } else {
-                    const auto kid_r = tree_r.getChild(node_r, i);
-                    const auto status = tree_r.getStatus(kid_r);
-
-                    if (status == NodeStatus::UNDETERMINED || status == NodeStatus::SKIPPED) {
-                      continue;
+                        stack_l.push(NodeID::NoNode);
+                        stack_r.push(kid_r);
+                        stack.push(res_tree.getChild(target, i));
                     }
-
-                    stack_l.push(NodeID::NoNode);
-                    stack_r.push(kid_r);
-                    stack.push( res_tree.getChild(target, i) );
-                  }
                 }
 
                 /// For every child in common
-                for (auto i = min_kids - 1; i >= 0; --i) {
-                    stack_l.push( tree_l.getChild(node_l, i));
-                    stack_r.push( tree_r.getChild(node_r, i));
-                    stack.push( res_tree.getChild(target, i) );
+                for (auto i = min_kids - 1; i >= 0; --i)
+                {
+                    stack_l.push(tree_l.getChild(node_l, i));
+                    stack_r.push(tree_r.getChild(node_r, i));
+                    stack.push(res_tree.getChild(target, i));
                 }
-
             }
-
-        } else {
+        }
+        else
+        {
             create_pentagon(res_tree, target, tree_l, node_l, tree_r, node_r);
 
             auto count_left = utils::count_descendants(tree_l, node_l);
@@ -237,14 +270,9 @@ void TreeMerger::run() {
             qDebug() << "right: " << count_right;
 
             merge_result.push_back(pen_item);
-
         }
-
     }
-
-
-
 }
 
-
-}}
+} // namespace analysis
+} // namespace cpprofiler

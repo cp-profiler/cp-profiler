@@ -9,29 +9,37 @@
 
 class QGraphicsScene;
 
-namespace cpprofiler { namespace tree {
-    class NodeTree;
-    class Layout;
-    class SubtreeView;
-}}
+namespace cpprofiler
+{
+namespace tree
+{
+class NodeTree;
+class Layout;
+class SubtreeView;
+} // namespace tree
+} // namespace cpprofiler
 
-namespace cpprofiler { namespace analysis {
+namespace cpprofiler
+{
+namespace analysis
+{
 
-
-enum class SimilarityType {
-  SUBTREE, SHAPE
+enum class SimilarityType
+{
+    SUBTREE,
+    SHAPE
 };
 
 class HistogramScene;
 
-class SimilarSubtreeWindow : public QDialog {
-Q_OBJECT
-private:
-
+class SimilarSubtreeWindow : public QDialog
+{
+    Q_OBJECT
+  private:
     // void analyse_shapes();
 
-    const tree::NodeTree& m_nt;
-    const tree::Layout& m_lo;
+    const tree::NodeTree &m_nt;
+    const tree::Layout &m_lo;
 
     std::unique_ptr<HistogramScene> m_histogram;
 
@@ -40,21 +48,19 @@ private:
     // SimilarityType m_sim_type = SimilarityType::SUBTREE;
     SimilarityType m_sim_type = SimilarityType::SHAPE;
 
-public:
-    SimilarSubtreeWindow(QWidget* parent, const tree::NodeTree& nt, const tree::Layout& lo);
+  public:
+    SimilarSubtreeWindow(QWidget *parent, const tree::NodeTree &nt, const tree::Layout &lo);
 
     ~SimilarSubtreeWindow();
 
     void analyse();
 
-signals:
+  signals:
 
-    void should_be_highlighted(const std::vector<NodeID>& nodes);
-
+    void should_be_highlighted(const std::vector<NodeID> &nodes);
 };
 
-
-}}
-
+} // namespace analysis
+} // namespace cpprofiler
 
 #endif

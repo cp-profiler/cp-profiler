@@ -14,48 +14,54 @@
 #include <thread>
 #include <iostream>
 
-namespace cpprofiler { namespace tree {
-
-LayoutComputer::LayoutComputer(const NodeTree& tree, Layout& layout, const VisualFlags& nf)
-: m_tree(tree), m_layout(layout), m_vis_flags(nf)
+namespace cpprofiler
+{
+namespace tree
 {
 
+LayoutComputer::LayoutComputer(const NodeTree &tree, Layout &layout, const VisualFlags &nf)
+    : m_tree(tree), m_layout(layout), m_vis_flags(nf)
+{
 }
 
-bool LayoutComputer::isDirty(NodeID nid) {
+bool LayoutComputer::isDirty(NodeID nid)
+{
     return m_layout.isDirty(nid);
 }
 
-void LayoutComputer::setDirty(NodeID nid) {
+void LayoutComputer::setDirty(NodeID nid)
+{
 
     utils::DebugMutexLocker lock(&m_layout.getMutex());
 
     m_layout.setDirty(nid, true);
 }
 
-
-void LayoutComputer::dirtyUp(NodeID nid) {
+void LayoutComputer::dirtyUp(NodeID nid)
+{
 
     /// Is it necessary to have a tree mutex here?
     utils::DebugMutexLocker layout_lock(&m_layout.getMutex());
 
-    while (nid != NodeID::NoNode && !m_layout.isDirty(nid)) {
+    while (nid != NodeID::NoNode && !m_layout.isDirty(nid))
+    {
         m_layout.setDirty(nid, true);
         nid = m_tree.getParent(nid);
     }
-
 }
 
-
-bool LayoutComputer::compute() {
+bool LayoutComputer::compute()
+{
 
     /// do nothing if there is no nodes
 
-    if (m_tree.nodeCount() == 0) return false;
+    if (m_tree.nodeCount() == 0)
+        return false;
 
     static bool done = false;
 
-    if (!done) {
+    if (!done)
+    {
         debug("thread") << "LayoutComputer:compute thread:" << std::this_thread::get_id() << std::endl;
         done = true;
     }
@@ -76,13 +82,11 @@ bool LayoutComputer::compute() {
 
     // perfHelper.end();
 
-
     static int counter = 0;
     // std::cerr << "computed layout " << ++counter   << " times\n";
 
     return true;
-
 }
 
-
-}}
+} // namespace tree
+} // namespace cpprofiler

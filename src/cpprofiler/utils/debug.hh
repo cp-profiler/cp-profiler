@@ -6,44 +6,53 @@
 #include <QDebug>
 #include <sstream>
 
-namespace cpprofiler {
+namespace cpprofiler
+{
 
-std::ostream& debug(std::string str = "");
+std::ostream &debug(std::string str = "");
 
-std::ostream& operator<<(std::ostream& os, const QString& str);
+std::ostream &operator<<(std::ostream &os, const QString &str);
 
-template<typename T>
-std::string to_string(const std::vector<T>& vec) {
-    if (vec.size() == 0) {
+template <typename T>
+std::string to_string(const std::vector<T> &vec)
+{
+    if (vec.size() == 0)
+    {
         return "[]";
     }
 
     std::ostringstream oss;
     oss << "[";
-    for (auto i = 0u; i < vec.size() - 1; ++ i) {
+    for (auto i = 0u; i < vec.size() - 1; ++i)
+    {
         oss << vec[i] << ",";
     }
     oss << vec.back() << "]";
     return oss.str();
 }
 
-template<typename T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec)
+{
     return os << to_string(vec);
 }
 
-inline std::string format(const char* temp) {
+inline std::string format(const char *temp)
+{
     return temp;
 }
 
-template<typename T, typename ... Types>
-std::string format(const char* temp, T value, Types ... args) {
+template <typename T, typename... Types>
+std::string format(const char *temp, T value, Types... args)
+{
     std::ostringstream oss;
-    for (;*temp != '\0'; ++temp) {
+    for (; *temp != '\0'; ++temp)
+    {
 
-        if (*temp == '{') {
+        if (*temp == '{')
+        {
             oss << value;
-            oss << format(temp+2, args...);
+            oss << format(temp + 2, args...);
             break;
         }
         oss << *temp;
@@ -52,10 +61,10 @@ std::string format(const char* temp, T value, Types ... args) {
     return oss.str();
 }
 
-template<typename ...Types>
-void print(const char* temp, Types ... args) {
+template <typename... Types>
+void print(const char *temp, Types... args)
+{
     std::cerr << format(temp, args...) << std::endl;
 }
 
-
-}
+} // namespace cpprofiler

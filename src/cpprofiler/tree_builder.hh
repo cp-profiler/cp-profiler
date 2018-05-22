@@ -2,34 +2,30 @@
 
 #include <QObject>
 
-namespace cpprofiler {
+namespace cpprofiler
+{
 
 class Message;
 class Execution;
 
-class TreeBuilder : public QObject{
+class TreeBuilder : public QObject
+{
     Q_OBJECT
 
-    Execution& m_execution;
+    Execution &m_execution;
 
-public:
-
-    TreeBuilder(Execution& ex);
+  public:
+    TreeBuilder(Execution &ex);
 
     void startBuilding();
 
     void finishBuilding();
 
-    void handleNode(Message* node);
+    void handleNode(Message *node);
 
-signals:
+  signals:
 
     void buildingDone();
-
-
-
 };
 
-
-
-}
+} // namespace cpprofiler

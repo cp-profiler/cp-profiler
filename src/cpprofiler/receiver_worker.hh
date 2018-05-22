@@ -8,27 +8,30 @@
 
 class QTcpSocket;
 
-namespace cpprofiler {
+namespace cpprofiler
+{
 
 class Conductor;
 class Execution;
 class Message;
 class Settings;
 
-class ReceiverWorker : public QObject {
-Q_OBJECT
+class ReceiverWorker : public QObject
+{
+    Q_OBJECT
 
     /// number of messages to read before resetting the buffer
     static constexpr int MSG_PER_BUFFER = 10000;
-    /// the number of bytes per field size 
+    /// the number of bytes per field size
     static constexpr int FIELD_SIZE_NBYTES = 4;
 
     /// read buffer
     QByteArray m_buffer;
 
-    QTcpSocket& m_socket;
+    QTcpSocket &m_socket;
 
-    struct ReadState {
+    struct ReadState
+    {
         /// whether the size has been read
         bool size_read = false;
         // size of the current message in bytes
@@ -43,28 +46,24 @@ Q_OBJECT
 
     cpprofiler::MessageMarshalling marshalling;
 
-    void handleStart(const cpprofiler::Message& msg);
+    void handleStart(const cpprofiler::Message &msg);
 
-    void handleMessage(const cpprofiler::Message& msg);
+    void handleMessage(const cpprofiler::Message &msg);
 
-    const Settings& m_settings;
+    const Settings &m_settings;
 
-signals:
+  signals:
 
-    void notifyStart(const std::string& ex_name, int ex_id, bool restarts);
-    void newNode(Message* node);
+    void notifyStart(const std::string &ex_name, int ex_id, bool restarts);
+    void newNode(Message *node);
     void doneReceiving();
 
-public:
-
-    ReceiverWorker(QTcpSocket& socket, const Settings& s);
-public slots:
+  public:
+    ReceiverWorker(QTcpSocket &socket, const Settings &s);
+  public slots:
     void doRead();
-
 };
 
-
-}
-
+} // namespace cpprofiler
 
 #endif
