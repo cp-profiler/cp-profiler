@@ -16,7 +16,6 @@ namespace tree {
 
 namespace cpprofiler { namespace analysis {
 
-
     class TreeMerger : public QThread {
 
         const Execution& ex_l;
@@ -32,7 +31,10 @@ namespace cpprofiler { namespace analysis {
 protected:
         void run() override;
 public:
-        TreeMerger(const Execution& ex_l, const Execution& ex_r, tree::NodeTree& nt, MergeResult& res);
+        TreeMerger(const Execution& ex_l,
+                   const Execution& ex_r,
+                   tree::NodeTree& nt,
+                   MergeResult& res);
         ~TreeMerger();
 
 

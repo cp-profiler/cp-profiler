@@ -74,8 +74,6 @@ static bool compareNodes(NodeID n1, const NodeTree& nt1,
 
   if (n1 == NodeID::NoNode || n2 == NodeID::NoNode) return false;
 
-  if (nt1.childrenCount(n1) != nt2.childrenCount(n2)) return false;
-
   if (nt1.getStatus(n1) != nt2.getStatus(n2)) return false;
 
   if (with_labels) {
@@ -122,17 +120,17 @@ void create_pentagon(NodeTree& nt, NodeID nid,
     nt.promoteNode(nid, 2, NodeStatus::MERGED);
 
     /// copy the subtree of nt_l into target_l
-    auto target_l = nt.getChild(nid, 0);
-
-    copy_tree_into(nt, target_l, nt_l, nid_l);
+    if (nid_l != NodeID::NoNode) {
+        auto target_l = nt.getChild(nid, 0);
+        copy_tree_into(nt, target_l, nt_l, nid_l);
+    }
 
     /// copy the subtree of nt_r into target_r
-    auto target_r = nt.getChild(nid, 1);
-
-    copy_tree_into(nt, target_r, nt_r, nid_r);
+    if (nid_r != NodeID::NoNode) {
+        auto target_r = nt.getChild(nid, 1);
+        copy_tree_into(nt, target_r, nt_r, nid_r);
+    }
 }
-
-
 
 void TreeMerger::run() {
 
@@ -156,26 +154,76 @@ void TreeMerger::run() {
 
     while(stack_l.size() > 0) {
 
-        // utils::sleep_for_ms(300);
-
         auto node_l = stack_l.pop();
         auto node_r = stack_r.pop();
         auto target = stack.pop();
+
+        print("merging {} and {}", node_l, node_r);
 
         bool equal = compareNodes(node_l, tree_l, node_r, tree_r, false);
 
         if (equal) {
 
-            auto kids = tree_l.childrenCount(node_l);
+            const auto kids_l = tree_l.childrenCount(node_l);
+            const auto kids_r = tree_r.childrenCount(node_r);
 
-            auto status = tree_l.getStatus(node_l);
-            auto label = tree_l.getLabel(node_l);
-            res_tree.promoteNode(target, kids, status, label);
+            const auto min_kids = std::min(kids_l, kids_r);
+            const auto max_kids = std::max(kids_l, kids_r);
 
-            for (auto i = kids - 1; i >= 0; --i) {
-                stack_l.push( tree_l.getChild(node_l, i) );
-                stack_r.push( tree_r.getChild(node_r, i) );
-                stack.push( res_tree.getChild(target, i) );
+            { /// The merged tree will always have the number of children of the 'larger' tree
+                auto status = tree_l.getStatus(node_l);
+                auto label = tree_l.getLabel(node_l);
+                res_tree.promoteNode(target, max_kids, status, label);
+            }
+
+            if (min_kids == max_kids) {
+                /// ----- MERGE COMPLETELY -----
+                for (auto i = max_kids - 1; i >= 0; --i) {
+                    stack_l.push( tree_l.getChild(node_l, i) );
+                    stack_r.push( tree_r.getChild(node_r, i) );
+                    stack.push( res_tree.getChild(target, i) );
+                }
+            } else {
+                /// ----- MERGE PARTIALLY -----
+
+                /// For every "extra" child
+                for (auto i = max_kids - 1; i >= min_kids; --i) {
+
+                  if (kids_l > kids_r) {
+                    const auto kid_l = tree_l.getChild(node_l, i);
+                    const auto status = tree_l.getStatus(kid_l);
+
+                    /// NOTE(maxim): this is most likely the case of replaying with skipped nodes,
+                    /// so should not be compared (the same below)
+                    if (status == NodeStatus::UNDETERMINED || status == NodeStatus::SKIPPED) {
+                      continue;
+                    }
+
+                    stack_l.push(kid_l);
+                    stack_r.push(NodeID::NoNode);
+                    stack.push( res_tree.getChild(target, i) );
+
+                  } else {
+                    const auto kid_r = tree_r.getChild(node_r, i);
+                    const auto status = tree_r.getStatus(kid_r);
+
+                    if (status == NodeStatus::UNDETERMINED || status == NodeStatus::SKIPPED) {
+                      continue;
+                    }
+
+                    stack_l.push(NodeID::NoNode);
+                    stack_r.push(kid_r);
+                    stack.push( res_tree.getChild(target, i) );
+                  }
+                }
+
+                /// For every child in common
+                for (auto i = min_kids - 1; i >= 0; --i) {
+                    stack_l.push( tree_l.getChild(node_l, i));
+                    stack_r.push( tree_r.getChild(node_r, i));
+                    stack.push( res_tree.getChild(target, i) );
+                }
+
             }
 
         } else {

@@ -10,6 +10,9 @@ namespace cpprofiler { namespace utils {
 
 int count_descendants(const NodeTree& nt, NodeID nid) {
 
+    /// NoNode has 0 descendants (as opposed to a leaf node, which counts itself)
+    if (nid == NodeID::NoNode) return 0;
+
     int count = 0;
 
     auto fun = [&count](NodeID n) {
