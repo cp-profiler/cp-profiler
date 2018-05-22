@@ -147,6 +147,21 @@ namespace cpprofiler { namespace tree {
         return m_parent;
     }
 
+    void Node::removeChild(int alt) {
+        auto kids = childrenCount();
+
+        /// Note: only works for two kids for now
+        if (kids == 2) {
+            /// move second child to first position
+            if (alt == 0) {
+                const auto rkid = getChild(1);
+                setChild(rkid, 0);
+            }
+
+            setTag(Tag::ONE_CHILD);
+        }
+    }
+
     Node::~Node() {
         if (getTag() == Tag::MORE_CHILDREN) {
             free( getPtr() );

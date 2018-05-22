@@ -25,10 +25,10 @@
 namespace cpprofiler {
 
     ExecutionWindow::ExecutionWindow(Execution& ex)
-    : m_execution(ex)
+    : execution_(ex)
     {
         const auto& tree = ex.tree();
-        m_traditional_view.reset(new tree::TraditionalView(tree, ex.userData(), ex.solver_data()));
+        traditional_view_.reset(new tree::TraditionalView(tree, ex.userData(), ex.solver_data()));
 
         auto layout = new QGridLayout();
 
@@ -43,7 +43,7 @@ namespace cpprofiler {
             auto widget = new QWidget();
             setCentralWidget(widget);
             widget->setLayout(layout);
-            layout->addWidget(m_traditional_view->widget(), 0, 0, 2, 1);
+            layout->addWidget(traditional_view_->widget(), 0, 0, 2, 1);
         }
 
         {
@@ -57,17 +57,17 @@ namespace cpprofiler {
             sb->setValue(start_scale);
             layout->addWidget(sb, 1, 1, Qt::AlignHCenter);
 
-            m_traditional_view->setScale(start_scale);
+            traditional_view_->setScale(start_scale);
 
             connect(sb, &QSlider::valueChanged,
-                m_traditional_view.get(), &tree::TraditionalView::setScale);
+                traditional_view_.get(), &tree::TraditionalView::setScale);
             
 
-            // connect(m_traditional_view.get(), &tree::TraditionalView::nodeClicked,
+            // connect(traditional_view_.get(), &tree::TraditionalView::nodeClicked,
             //     this, &ExecutionWindow::selectNode);
 
-            connect(&m_execution.tree(), &tree::NodeTree::structureUpdated,
-                    m_traditional_view.get(), &tree::TraditionalView::setLayoutOutdated);
+            connect(&execution_.tree(), &tree::NodeTree::structureUpdated,
+                    traditional_view_.get(), &tree::TraditionalView::setLayoutOutdated);
 
             {
                 auto statsUpdateTimer = new QTimer(this);
@@ -92,42 +92,42 @@ namespace cpprofiler {
                 auto centerNode = new QAction{"Center current node", this};
                 centerNode->setShortcut(QKeySequence("C"));
                 nodeMenu->addAction(centerNode);
-                connect(centerNode, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::centerCurrentNode);
+                connect(centerNode, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::centerCurrentNode);
 
                 auto toggleShowLabel = new QAction{"Show labels down", this};
                 toggleShowLabel->setShortcut(QKeySequence("L"));
                 nodeMenu->addAction(toggleShowLabel);
-                connect(toggleShowLabel, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::showLabelsDown);
+                connect(toggleShowLabel, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::showLabelsDown);
 
                 auto toggleShowLabelsUp = new QAction{"Show labels down", this};
                 toggleShowLabelsUp->setShortcut(QKeySequence("Shift+L"));
                 nodeMenu->addAction(toggleShowLabelsUp);
-                connect(toggleShowLabelsUp, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::showLabelsUp);
+                connect(toggleShowLabelsUp, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::showLabelsUp);
 
                 auto hideFailed = new QAction{"Hide failed", this};
                 hideFailed->setShortcut(QKeySequence("F"));
                 nodeMenu->addAction(hideFailed);
-                connect(hideFailed, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::hideFailed);
+                connect(hideFailed, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::hideFailed);
 
                 auto unhideAll = new QAction{"Unhide all", this};
                 unhideAll->setShortcut(QKeySequence("U"));
                 nodeMenu->addAction(unhideAll);
-                connect(unhideAll, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::unhideAll);
+                connect(unhideAll, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::unhideAll);
 
                 auto toggleHighlighted = new QAction{"Toggle highlight subtree", this};
                 toggleHighlighted->setShortcut(QKeySequence("H"));
                 nodeMenu->addAction(toggleHighlighted);
-                connect(toggleHighlighted, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::toggleHighlighted);
+                connect(toggleHighlighted, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::toggleHighlighted);
 
                 auto bookmarkNode = new  QAction{"Add/remove bookmark", this};
                 bookmarkNode->setShortcut(QKeySequence("Shift+B"));
                 nodeMenu->addAction(bookmarkNode);
-                connect(bookmarkNode, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::bookmarkCurrentNode);
+                connect(bookmarkNode, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::bookmarkCurrentNode);
 
                 auto showNogoods = new QAction{"Show nogoods", this};
                 showNogoods->setShortcut(QKeySequence("Shift+N"));
                 nodeMenu->addAction(showNogoods);
-                connect(showNogoods, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::showNogoods);
+                connect(showNogoods, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::showNogoods);
             }
 
             {
@@ -137,32 +137,32 @@ namespace cpprofiler {
                 auto navRoot = new QAction{"Go to the root", this};
                 navRoot->setShortcut(QKeySequence("R"));
                 navMenu->addAction(navRoot);
-                connect(navRoot, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navRoot);
+                connect(navRoot, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navRoot);
 
                 auto navDown = new QAction{"Go to the left-most child", this};
                 navDown->setShortcut(QKeySequence("Down"));
                 navMenu->addAction(navDown);
-                connect(navDown, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navDown);
+                connect(navDown, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navDown);
 
                 auto navDownAlt = new QAction{"Go to the right-most child", this};
                 navDownAlt->setShortcut(QKeySequence("Alt+Down"));
                 navMenu->addAction(navDownAlt);
-                connect(navDownAlt, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navDownAlt);
+                connect(navDownAlt, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navDownAlt);
 
                 auto navUp = new QAction{"Go up", this};
                 navUp->setShortcut(QKeySequence("Up"));
                 navMenu->addAction(navUp);
-                connect(navUp, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navUp);
+                connect(navUp, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navUp);
 
                 auto navLeft = new QAction{"Go left", this};
                 navLeft->setShortcut(QKeySequence("Left"));
                 navMenu->addAction(navLeft);
-                connect(navLeft, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navLeft);
+                connect(navLeft, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navLeft);
 
                 auto navRight = new QAction{"Go right", this};
                 navRight->setShortcut(QKeySequence("Right"));
                 navMenu->addAction(navRight);
-                connect(navRight, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::navRight);
+                connect(navRight, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::navRight);
             }
 
 
@@ -171,16 +171,21 @@ namespace cpprofiler {
 
                 auto computeLayout = new QAction{"Compute layout", this};
                 debugMenu->addAction(computeLayout);
-                connect(computeLayout, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::forceComputeLayout);
+                connect(computeLayout, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::forceComputeLayout);
 
                 auto dirtyNodesUp = new QAction{"Dirty Nodes Up", this};
                 debugMenu->addAction(dirtyNodesUp);
-                connect(dirtyNodesUp, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::dirtyCurrentNodeUp);
+                connect(dirtyNodesUp, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::dirtyCurrentNodeUp);
 
                 auto getNodeInfo = new QAction{"Print node info", this};
                 getNodeInfo->setShortcut(QKeySequence("I"));
                 debugMenu->addAction(getNodeInfo);
-                connect(getNodeInfo, &QAction::triggered, m_traditional_view.get(), &tree::TraditionalView::printNodeInfo);
+                connect(getNodeInfo, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::printNodeInfo);
+
+                auto removeNode = new QAction{"Remove node", this};
+                removeNode->setShortcut(QKeySequence("Del"));
+                debugMenu->addAction(removeNode);
+                connect(removeNode, &QAction::triggered, this, &ExecutionWindow::removeSelectedNode);
             }
 
             {
@@ -197,19 +202,19 @@ namespace cpprofiler {
                 similarSubtree->setShortcut(QKeySequence("Shift+S"));
                 analysisMenu->addAction(similarSubtree);
 
-                const auto& tree_layout = m_traditional_view->layout();
+                const auto& tree_layout = traditional_view_->layout();
 
                 connect(similarSubtree, &QAction::triggered, [this, &ex, &tree_layout]() {
                     auto ssw = new analysis::SimilarSubtreeWindow(this, ex.tree(), tree_layout);
                     ssw->show();
 
                     connect(ssw, &analysis::SimilarSubtreeWindow::should_be_highlighted,
-                        m_traditional_view.get(), &tree::TraditionalView::highlightSubtrees);
+                        traditional_view_.get(), &tree::TraditionalView::highlightSubtrees);
                 });
 
                 auto saveSearch = new QAction{"Save Search (for replaying)", this};
                 analysisMenu->addAction(saveSearch);
-                connect(saveSearch, &QAction::triggered, [this]() { emit needToSaveSearch(&m_execution); });
+                connect(saveSearch, &QAction::triggered, [this]() { emit needToSaveSearch(&execution_); });
             }
 
             // auto debugText = new QTextEdit{this};
@@ -224,7 +229,7 @@ namespace cpprofiler {
     ExecutionWindow::~ExecutionWindow() = default;
 
     tree::TraditionalView& ExecutionWindow::traditional_view() {
-        return *m_traditional_view;
+        return *traditional_view_;
     }
 
     void ExecutionWindow::showBookmarks() const {
@@ -244,7 +249,7 @@ namespace cpprofiler {
         bm_table->setModel(bm_model);
 
         {
-            const auto& ud = m_execution.userData();
+            const auto& ud = execution_.userData();
 
             const auto nodes = ud.bookmarkedNodes();
 
@@ -262,6 +267,26 @@ namespace cpprofiler {
         b_window->show();
 
         // QTableView
+
+    }
+
+    /// TODO: this should only be active when the tree is done building
+    void ExecutionWindow::removeSelectedNode() {
+
+        auto nid = execution_.userData().getSelectedNode();
+        if (nid == NodeID::NoNode) return;
+
+        const auto pid = execution_.tree().getParent(nid);
+        execution_.userData().setSelectedNode(pid);
+
+        execution_.tree().removeNode(nid);
+
+        if (pid != NodeID::NoNode) {
+            traditional_view_->dirtyUp(pid);
+        }
+
+        traditional_view_->setLayoutOutdated();
+        traditional_view_->redraw();
 
     }
 

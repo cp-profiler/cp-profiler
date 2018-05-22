@@ -45,13 +45,13 @@ static bool labelsEqual(std::string lhs, std::string rhs) {
     /// for parsing logbrancher while Chuffed uses them as a delimiter
     /// between literals)
 
-    // if (lhs.substr(0,3) == "[i]" || lhs.substr(0,3) == "[f]") {
-    //   lhs = lhs.substr(3);
-    // }
+    if (lhs.substr(0,3) == "[i]" || lhs.substr(0,3) == "[f]") {
+      lhs = lhs.substr(3);
+    }
 
-    // if (rhs.substr(0,3) == "[i]" || rhs.substr(0,3) == "[f]") {
-    //   rhs = rhs.substr(3);
-    // }
+    if (rhs.substr(0,3) == "[i]" || rhs.substr(0,3) == "[f]") {
+      rhs = rhs.substr(3);
+    }
 
     lhs.erase(remove_if(lhs.begin(), lhs.end(), isspace), lhs.end());
     rhs.erase(remove_if(rhs.begin(), rhs.end(), isspace), rhs.end());

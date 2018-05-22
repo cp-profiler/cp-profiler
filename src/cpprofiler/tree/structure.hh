@@ -77,6 +77,9 @@ public:
     /// Add `kids` children to an open node
     void addChildren(NodeID nid, int kids);
 
+    /// Remove `alt` child of `pid`
+    void removeChild(NodeID pid, int alt);
+
 
 /// ************ Building a tree from a database ************
 

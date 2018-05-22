@@ -284,6 +284,17 @@ void NodeTree::setLabel(NodeID nid, const Label& label) {
     labels_[nid] = label;
 }
 
+void NodeTree::removeNode(NodeID nid) {
+
+    const auto pid = getParent(nid);
+    if (pid == NodeID::NoNode) return;
+
+    const auto alt = getAlternative(nid);
+    /// should this really remove the node?
+    structure_->removeChild(pid, alt);
+
+}
+
 void NodeTree::db_initialize(int size) {
     structure_->db_initialize(size);
 }

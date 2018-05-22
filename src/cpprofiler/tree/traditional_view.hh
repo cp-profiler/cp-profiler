@@ -51,9 +51,6 @@ class TraditionalView : public QObject {
     /// Sets nid as the currently selected node
     void setNode(NodeID nid);
 
-private slots:
-
-    void redraw();
 public:
 
     TraditionalView(const NodeTree& tree, UserData& ud, SolverData& sd);
@@ -81,6 +78,9 @@ signals:
     void curNodeChanged(NodeID nid);
 
 public slots:
+
+    /// Update scrollarea's viewport
+    void redraw();
 
     /// Updates the tree at 60hz (layout etc.)
     void autoUpdate();

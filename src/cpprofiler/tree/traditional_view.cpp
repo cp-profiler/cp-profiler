@@ -491,6 +491,7 @@ void TraditionalView::printNodeInfo() {
     print("has solved kids: {}, ", tree_.hasSolvedChildren(nid));
     print("has open kids: {}", tree_.hasOpenChildren(nid));
     print("nogood: {}", tree_.getNogood(nid).get());
+    print("alt: {}", tree_.getAlternative(nid));
 }
 
 void TraditionalView::highlightSubtrees(const std::vector<NodeID>& nodes) {

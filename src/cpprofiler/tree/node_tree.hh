@@ -89,6 +89,9 @@ public:
 
     void setLabel(NodeID nid, const Label& label);
 
+    /// Remove node `nid` from the tree
+    void removeNode(NodeID nid);
+
     /// ********************************************************************
     /// *************************** Tree Queries ***************************
 

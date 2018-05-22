@@ -329,6 +329,8 @@ namespace cpprofiler { namespace tree {
 
                 shape->setBoundingBox(kid_s.boundingBox());
 
+                m_layout.setChildOffset(kid, 0);
+
                 m_layout.setShape(nid, std::move(shape));
             } else if (nkids == 2) {
                 computeForNodeBinary(nid, m_layout, tree_, label_shown);

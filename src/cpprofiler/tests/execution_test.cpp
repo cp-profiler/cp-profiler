@@ -428,7 +428,7 @@ namespace cpprofiler { namespace tests { namespace execution {
             print("could not load the execution");
         } else {
             c.addNewExecution(ex);
-            c.showTraditionalView(ex.get());
+            // c.showTraditionalView(ex.get());
         }
 
 
@@ -439,8 +439,10 @@ namespace cpprofiler { namespace tests { namespace execution {
             print("could not load the execution");
         } else {
             c.addNewExecution(ex2);
-            c.showTraditionalView(ex2.get());
+            // c.showTraditionalView(ex2.get());
         }
+
+        c.mergeTrees(ex.get(), ex2.get());
 
     }
 
@@ -450,7 +452,6 @@ namespace cpprofiler { namespace tests { namespace execution {
         // binary_test_1_for_identical_subtrees(c);
 
         // binary_test_2_for_identical_subtrees(c);
-
 
         // binary_tree_execution(c);
         // simple_nary_execution(c);

@@ -63,6 +63,9 @@ public:
     /// Get the identifier of the parent
     NodeID getParent() const;
 
+    /// Remove `alt` child
+    void removeChild(int alt);
+
     ~Node();
     Node& operator=(const Node&) = delete;
     Node(const Node&) = delete;

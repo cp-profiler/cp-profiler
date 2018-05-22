@@ -18,8 +18,8 @@ class Execution;
 class ExecutionWindow : public QMainWindow {
     Q_OBJECT
 
-    Execution& m_execution;
-    std::unique_ptr<tree::TraditionalView> m_traditional_view;
+    Execution& execution_;
+    std::unique_ptr<tree::TraditionalView> traditional_view_;
 
 public:
 
@@ -32,6 +32,9 @@ public:
     ~ExecutionWindow();
 
 public slots:
+
+    /// Remove currently selected node; then select its parent
+    void removeSelectedNode();
 
     void print_log(const std::string& str);
 

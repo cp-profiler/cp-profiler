@@ -70,6 +70,11 @@ namespace cpprofiler { namespace tree {
         }
     }
 
+    /// Remove `alt` child of `pid`
+    void Structure::removeChild(NodeID pid, int alt) {
+        nodes_[pid]->removeChild(alt);
+    }
+
     NodeID Structure::getChild(NodeID pid, int alt) const {
         return nodes_[pid]->getChild(alt);
     }
