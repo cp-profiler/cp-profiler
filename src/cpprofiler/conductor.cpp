@@ -19,6 +19,8 @@
 #include "execution_list.hh"
 #include "execution_window.hh"
 
+#include "tree/node_tree.hh"
+
 #include "analysis/merge_window.hh"
 #include "analysis/tree_merger.hh"
 
@@ -321,19 +323,38 @@ void Conductor::mergeTrees(Execution *e1, Execution *e2)
 
     // QProgressDialog dialog;
 
-    auto window = new analysis::MergeWindow();
-
-    auto &new_tree = window->getTree();
-    auto &res = window->mergeResult();
+    auto tree = std::make_shared<tree::NodeTree>();
+    auto result = std::make_shared<analysis::MergeResult>();
 
     /// Note: TreeMerger will delete itself when finished
-    auto merger = new analysis::TreeMerger(*e1, *e2, new_tree, res);
+    auto merger = new analysis::TreeMerger(*e1, *e2, tree, result);
 
-    connect(merger, &analysis::TreeMerger::finished,
-            window, &analysis::MergeWindow::finalize);
+    connect(merger, &analysis::TreeMerger::finished, this,
+            [tree, result]() {
+                auto window = new analysis::MergeWindow(tree, result);
+                window->show();
+            });
+
     merger->start();
+}
 
-    window->show();
+void Conductor::runNogoodAnalysis(Execution *e1, Execution *e2)
+{
+
+    auto tree = std::make_shared<tree::NodeTree>();
+    auto result = std::make_shared<analysis::MergeResult>();
+
+    /// Note: TreeMerger will delete itself when finished
+    auto merger = new analysis::TreeMerger(*e1, *e2, tree, result);
+
+    connect(merger, &analysis::TreeMerger::finished, this,
+            [tree, result]() {
+                auto window = new analysis::MergeWindow(tree, result);
+                window->show();
+                window->runNogoodAnalysis();
+            });
+
+    merger->start();
 }
 
 void Conductor::saveSearch(Execution *e, const char *path) const
@@ -346,7 +367,7 @@ void Conductor::saveSearch(Execution *e, const char *path) const
     QFile file(path);
     if (!file.open(QFile::WriteOnly | QFile::Truncate))
     {
-        print("Error: could not open \"{}\" to save search, path");
+        print("Error: could not open \"{}\" to save search", path);
         return;
     }
 

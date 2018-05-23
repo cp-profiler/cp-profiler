@@ -16,11 +16,11 @@ namespace analysis
 using namespace tree;
 
 TreeMerger::TreeMerger(const Execution &ex_l_, const Execution &ex_r_,
-                       tree::NodeTree &nt, MergeResult &res)
+                       std::shared_ptr<tree::NodeTree> tree, std::shared_ptr<analysis::MergeResult> res)
     : ex_l(ex_l_), ex_r(ex_r_),
       tree_l(ex_l.tree()),
       tree_r(ex_r.tree()),
-      res_tree(nt),
+      res_tree(tree),
       merge_result(res)
 {
 
@@ -29,8 +29,6 @@ TreeMerger::TreeMerger(const Execution &ex_l_, const Execution &ex_r_,
 
 TreeMerger::~TreeMerger()
 {
-
-    qDebug() << "Merging: done";
 }
 
 static void find_and_replace_all(std::string &str, std::string substr_old, std::string substr_new)
@@ -154,12 +152,12 @@ void create_pentagon(NodeTree &nt, NodeID nid,
 void TreeMerger::run()
 {
 
-    qDebug() << "Merging: running...";
+    print("Merging: running...");
 
     /// It is quite unlikely, but this can dead-lock (needs consistent ordering)
     utils::MutexLocker locker_l(&tree_l.treeMutex());
     utils::MutexLocker locker_r(&tree_r.treeMutex());
-    utils::MutexLocker locker_res(&res_tree.treeMutex());
+    utils::MutexLocker locker_res(&res_tree->treeMutex());
 
     QStack<NodeID> stack_l, stack_r, stack;
 
@@ -169,7 +167,7 @@ void TreeMerger::run()
     stack_l.push(root_l);
     stack_r.push(root_r);
 
-    auto root = res_tree.createRoot(0);
+    auto root = res_tree->createRoot(0);
 
     stack.push(root);
 
@@ -179,8 +177,6 @@ void TreeMerger::run()
         auto node_l = stack_l.pop();
         auto node_r = stack_r.pop();
         auto target = stack.pop();
-
-        print("merging {} and {}", node_l, node_r);
 
         bool equal = compareNodes(node_l, tree_l, node_r, tree_r, false);
 
@@ -196,7 +192,7 @@ void TreeMerger::run()
             { /// The merged tree will always have the number of children of the 'larger' tree
                 auto status = tree_l.getStatus(node_l);
                 auto label = tree_l.getLabel(node_l);
-                res_tree.promoteNode(target, max_kids, status, label);
+                res_tree->promoteNode(target, max_kids, status, label);
             }
 
             if (min_kids == max_kids)
@@ -206,7 +202,7 @@ void TreeMerger::run()
                 {
                     stack_l.push(tree_l.getChild(node_l, i));
                     stack_r.push(tree_r.getChild(node_r, i));
-                    stack.push(res_tree.getChild(target, i));
+                    stack.push(res_tree->getChild(target, i));
                 }
             }
             else
@@ -231,7 +227,7 @@ void TreeMerger::run()
 
                         stack_l.push(kid_l);
                         stack_r.push(NodeID::NoNode);
-                        stack.push(res_tree.getChild(target, i));
+                        stack.push(res_tree->getChild(target, i));
                     }
                     else
                     {
@@ -245,7 +241,7 @@ void TreeMerger::run()
 
                         stack_l.push(NodeID::NoNode);
                         stack_r.push(kid_r);
-                        stack.push(res_tree.getChild(target, i));
+                        stack.push(res_tree->getChild(target, i));
                     }
                 }
 
@@ -254,24 +250,23 @@ void TreeMerger::run()
                 {
                     stack_l.push(tree_l.getChild(node_l, i));
                     stack_r.push(tree_r.getChild(node_r, i));
-                    stack.push(res_tree.getChild(target, i));
+                    stack.push(res_tree->getChild(target, i));
                 }
             }
         }
         else
         {
-            create_pentagon(res_tree, target, tree_l, node_l, tree_r, node_r);
+            create_pentagon(*res_tree, target, tree_l, node_l, tree_r, node_r);
 
             auto count_left = utils::count_descendants(tree_l, node_l);
             auto count_right = utils::count_descendants(tree_r, node_r);
             auto pen_item = PentagonItem{target, count_left, count_right};
 
-            qDebug() << "left: " << count_left;
-            qDebug() << "right: " << count_right;
-
-            merge_result.push_back(pen_item);
+            merge_result->push_back(pen_item);
         }
     }
+
+    print("Merging: done");
 }
 
 } // namespace analysis

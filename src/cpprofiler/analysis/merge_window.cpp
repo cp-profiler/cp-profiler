@@ -11,20 +11,21 @@
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QCheckBox>
+#include <QDialog>
 
 namespace cpprofiler
 {
 namespace analysis
 {
 
-MergeWindow::MergeWindow()
+MergeWindow::MergeWindow(std::shared_ptr<tree::NodeTree> nt, std::shared_ptr<MergeResult> res)
+    : nt_(nt), merge_result_(res)
 {
-
     user_data_.reset(new UserData);
     solver_data_.reset(new SolverData);
-    m_view.reset(new tree::TraditionalView(m_nt, *user_data_, *solver_data_));
+    view_.reset(new tree::TraditionalView(*nt_, *user_data_, *solver_data_));
 
-    m_view->setScale(50);
+    view_->setScale(50);
 
     auto layout = new QGridLayout();
 
@@ -44,9 +45,9 @@ MergeWindow::MergeWindow()
     // };
 
     // pent_list = new PentagonListWidget(this, *dummy_result);
-    pent_list = new PentagonListWidget(this, m_merge_result);
+    pent_list = new PentagonListWidget(this, *merge_result_);
 
-    connect(pent_list, &PentagonListWidget::pentagonClicked, m_view.get(), &tree::TraditionalView::setCurrentNode);
+    connect(pent_list, &PentagonListWidget::pentagonClicked, view_.get(), &tree::TraditionalView::setCurrentNode);
 
     auto sort_cb = new QCheckBox("sorted", this);
     sort_cb->setChecked(true);
@@ -59,7 +60,7 @@ MergeWindow::MergeWindow()
         auto widget = new QWidget();
         setCentralWidget(widget);
         widget->setLayout(layout);
-        layout->addWidget(m_view->widget(), 0, 1, 2, 1);
+        layout->addWidget(view_->widget(), 0, 1, 2, 1);
     }
 
     auto menuBar = new QMenuBar(0);
@@ -69,8 +70,8 @@ MergeWindow::MergeWindow()
     setMenuBar(menuBar);
 #endif
 
-    connect(&m_nt, &tree::NodeTree::structureUpdated,
-            m_view.get(), &tree::TraditionalView::setLayoutOutdated);
+    connect(nt_.get(), &tree::NodeTree::structureUpdated,
+            view_.get(), &tree::TraditionalView::setLayoutOutdated);
 
     {
         auto nodeMenu = menuBar->addMenu("&Node");
@@ -78,57 +79,57 @@ MergeWindow::MergeWindow()
         auto centerNode = new QAction{"Center current node", this};
         centerNode->setShortcut(QKeySequence("C"));
         nodeMenu->addAction(centerNode);
-        connect(centerNode, &QAction::triggered, m_view.get(), &tree::TraditionalView::centerCurrentNode);
+        connect(centerNode, &QAction::triggered, view_.get(), &tree::TraditionalView::centerCurrentNode);
 
         auto navRoot = new QAction{"Go to the root", this};
         navRoot->setShortcut(QKeySequence("R"));
         nodeMenu->addAction(navRoot);
-        connect(navRoot, &QAction::triggered, m_view.get(), &tree::TraditionalView::navRoot);
+        connect(navRoot, &QAction::triggered, view_.get(), &tree::TraditionalView::navRoot);
 
         auto navDown = new QAction{"Go down the tree", this};
         navDown->setShortcut(QKeySequence("Down"));
         nodeMenu->addAction(navDown);
-        connect(navDown, &QAction::triggered, m_view.get(), &tree::TraditionalView::navDown);
+        connect(navDown, &QAction::triggered, view_.get(), &tree::TraditionalView::navDown);
 
         auto navUp = new QAction{"Go up the tree", this};
         navUp->setShortcut(QKeySequence("Up"));
         nodeMenu->addAction(navUp);
-        connect(navUp, &QAction::triggered, m_view.get(), &tree::TraditionalView::navUp);
+        connect(navUp, &QAction::triggered, view_.get(), &tree::TraditionalView::navUp);
 
         auto navLeft = new QAction{"Go left the tree", this};
         navLeft->setShortcut(QKeySequence("Left"));
         nodeMenu->addAction(navLeft);
-        connect(navLeft, &QAction::triggered, m_view.get(), &tree::TraditionalView::navLeft);
+        connect(navLeft, &QAction::triggered, view_.get(), &tree::TraditionalView::navLeft);
 
         auto navRight = new QAction{"Go right the tree", this};
         navRight->setShortcut(QKeySequence("Right"));
         nodeMenu->addAction(navRight);
-        connect(navRight, &QAction::triggered, m_view.get(), &tree::TraditionalView::navRight);
+        connect(navRight, &QAction::triggered, view_.get(), &tree::TraditionalView::navRight);
 
         auto toggleShowLabel = new QAction{"Show labels down", this};
         toggleShowLabel->setShortcut(QKeySequence("L"));
         nodeMenu->addAction(toggleShowLabel);
-        connect(toggleShowLabel, &QAction::triggered, m_view.get(), &tree::TraditionalView::showLabelsDown);
+        connect(toggleShowLabel, &QAction::triggered, view_.get(), &tree::TraditionalView::showLabelsDown);
 
         auto toggleShowLabelsUp = new QAction{"Show labels down", this};
         toggleShowLabelsUp->setShortcut(QKeySequence("Shift+L"));
         nodeMenu->addAction(toggleShowLabelsUp);
-        connect(toggleShowLabelsUp, &QAction::triggered, m_view.get(), &tree::TraditionalView::showLabelsUp);
+        connect(toggleShowLabelsUp, &QAction::triggered, view_.get(), &tree::TraditionalView::showLabelsUp);
 
         auto hideFailed = new QAction{"Hide failed", this};
         hideFailed->setShortcut(QKeySequence("F"));
         nodeMenu->addAction(hideFailed);
-        connect(hideFailed, &QAction::triggered, m_view.get(), &tree::TraditionalView::hideFailed);
+        connect(hideFailed, &QAction::triggered, view_.get(), &tree::TraditionalView::hideFailed);
 
         auto unhideAll = new QAction{"Unhide all", this};
         unhideAll->setShortcut(QKeySequence("U"));
         nodeMenu->addAction(unhideAll);
-        connect(unhideAll, &QAction::triggered, m_view.get(), &tree::TraditionalView::unhideAll);
+        connect(unhideAll, &QAction::triggered, view_.get(), &tree::TraditionalView::unhideAll);
 
         auto toggleHighlighted = new QAction{"Toggle highlight subtree", this};
         toggleHighlighted->setShortcut(QKeySequence("H"));
         nodeMenu->addAction(toggleHighlighted);
-        connect(toggleHighlighted, &QAction::triggered, m_view.get(), &tree::TraditionalView::toggleHighlighted);
+        connect(toggleHighlighted, &QAction::triggered, view_.get(), &tree::TraditionalView::toggleHighlighted);
     }
 
     {
@@ -136,31 +137,87 @@ MergeWindow::MergeWindow()
 
         auto computeLayout = new QAction{"Compute layout", this};
         debugMenu->addAction(computeLayout);
-        connect(computeLayout, &QAction::triggered, m_view.get(), &tree::TraditionalView::forceComputeLayout);
+        connect(computeLayout, &QAction::triggered, view_.get(), &tree::TraditionalView::forceComputeLayout);
 
         auto updateView = new QAction{"Update view", this};
         debugMenu->addAction(updateView);
-        connect(updateView, &QAction::triggered, m_view.get(), &tree::TraditionalView::needsRedrawing);
+        connect(updateView, &QAction::triggered, view_.get(), &tree::TraditionalView::needsRedrawing);
     }
+
+    {
+        auto analysisMenu = menuBar->addMenu("&Analysis");
+
+        auto ngAnalysisAction = new QAction{"Nogood analysis", this};
+        analysisMenu->addAction(ngAnalysisAction);
+        connect(ngAnalysisAction, &QAction::triggered, this, &MergeWindow::runNogoodAnalysis);
+    }
+
+    pentagon_bar->update(merge_result_->size());
+    pent_list->updateScene();
 }
 
 MergeWindow::~MergeWindow() = default;
 
 tree::NodeTree &MergeWindow::getTree()
 {
-    return m_nt;
+    return *nt_;
 }
 
 MergeResult &MergeWindow::mergeResult()
 {
-    return m_merge_result;
+    return *merge_result_;
 }
 
-void MergeWindow::finalize()
+void MergeWindow::runNogoodAnalysis() const
 {
-    pentagon_bar->update(m_merge_result.size());
-    pent_list->updateScene();
+
+    print("merge result size: {}", merge_result_->size());
+
+    for (auto &item : *merge_result_)
+    {
+        if (item.size_l == 1)
+        {
+
+            /// See if item.nid is associated with any nogood
+
+            /// get left child
+            auto kid_l = nt_->getChild(item.pen_nid, 0);
+
+            print("1-many pentagon: {}", item.pen_nid);
+
+            // findOriginalId(kid_l);
+
+            /// Should merge window have its own solver data (nogoods?)
+            // solver_data_
+        }
+    }
+
+    print("ng analysis done");
+    // auto nga_dialog = new QDialog();
+
+    // nga_dialog->show();
 }
+
+// NodeID MergeWindow::findOriginalId(NodeID nid) const
+// {
+//     auto iter = nid;
+
+//     /// For now assume the node comes from left tree
+//     bool left_tree = true;
+
+//     while (iter != NodeID::NoNode)
+//     {
+//         const auto status = nt_.getStatus(iter);
+//         if (status == tree::NodeStatus::MERGED)
+//         {
+//             print("found pentagon node: {}", iter);
+
+//             for ()
+//         }
+
+//         iter = nt_.getParent(iter);
+//     }
+// }
 
 } // namespace analysis
 } // namespace cpprofiler

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QThread>
+#include <memory>
 
 #include "merging/merge_result.hh"
 
@@ -23,24 +24,24 @@ namespace analysis
 class TreeMerger : public QThread
 {
 
-    const Execution &ex_l;
-    const Execution &ex_r;
+  const Execution &ex_l;
+  const Execution &ex_r;
 
-    const tree::NodeTree &tree_l;
-    const tree::NodeTree &tree_r;
+  const tree::NodeTree &tree_l;
+  const tree::NodeTree &tree_r;
 
-    tree::NodeTree &res_tree;
-    MergeResult &merge_result;
+  std::shared_ptr<tree::NodeTree> res_tree;
+  std::shared_ptr<MergeResult> merge_result;
 
-  protected:
-    void run() override;
+protected:
+  void run() override;
 
-  public:
-    TreeMerger(const Execution &ex_l,
-               const Execution &ex_r,
-               tree::NodeTree &nt,
-               MergeResult &res);
-    ~TreeMerger();
+public:
+  TreeMerger(const Execution &ex_l,
+             const Execution &ex_r,
+             std::shared_ptr<tree::NodeTree> tree,
+             std::shared_ptr<analysis::MergeResult> res);
+  ~TreeMerger();
 };
 
 } // namespace analysis

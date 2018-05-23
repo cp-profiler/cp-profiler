@@ -13,6 +13,11 @@
 namespace cpprofiler
 {
 
+namespace analysis
+{
+class MergeWindow;
+}
+
 class TcpServer;
 class Execution;
 class ExecutionList;
@@ -54,6 +59,8 @@ class Conductor : public QMainWindow
 
     void saveSearch(Execution *e, const char *path) const;
     void saveSearch(Execution *e) const;
+
+    void runNogoodAnalysis(Execution *e1, Execution *e2);
 
     ExecutionWindow &getExecutionWindow(Execution *e);
 

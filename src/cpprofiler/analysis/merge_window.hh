@@ -22,11 +22,18 @@ namespace analysis
 class PentagonCounter;
 class PentagonListWidget;
 
+/// Original location for a node;
+struct OriginalLoc
+{
+    NodeID nid;
+};
+
 class MergeWindow : public QMainWindow
 {
     Q_OBJECT
 
-    tree::NodeTree m_nt;
+    std::shared_ptr<tree::NodeTree> nt_;
+    std::shared_ptr<MergeResult> merge_result_;
 
     /// Dummy user data (required for traditional view)
     std::unique_ptr<UserData> user_data_;
@@ -34,16 +41,24 @@ class MergeWindow : public QMainWindow
     /// Dummy solver data (required for traditional view)
     std::unique_ptr<SolverData> solver_data_;
 
-    std::unique_ptr<tree::TraditionalView> m_view;
-
-    MergeResult m_merge_result;
+    std::unique_ptr<tree::TraditionalView> view_;
 
     PentagonCounter *pentagon_bar;
 
     PentagonListWidget *pent_list;
 
+    /// Original locations for node `i` (used for nogoods/labels etc)
+    std::vector<OriginalLoc> orig_locations_;
+
+  private:
+    /// find the right data for a node
+    Nogood getNogood();
+
+    /// Find id for a node `nid` of a merged tree
+    // NodeID findOriginalId(NodeID nid) const;
+
   public:
-    MergeWindow();
+    MergeWindow(std::shared_ptr<tree::NodeTree> nt, std::shared_ptr<MergeResult> res);
     ~MergeWindow();
 
     tree::NodeTree &getTree();
@@ -52,8 +67,7 @@ class MergeWindow : public QMainWindow
 
   public slots:
 
-    /// update status bar to show the final result (petagons)
-    void finalize();
+    void runNogoodAnalysis() const;
 };
 
 } // namespace analysis

@@ -470,7 +470,9 @@ static void nogood_dialog(Conductor &c)
         // c.showTraditionalView(ex2.get());
     }
 
-    c.mergeTrees(ex.get(), ex2.get());
+    c.runNogoodAnalysis(ex.get(), ex2.get());
+
+    // c.mergeTrees(ex.get(), ex2.get());
 }
 
 void run(Conductor &c)
