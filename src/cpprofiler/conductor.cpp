@@ -326,12 +326,15 @@ void Conductor::mergeTrees(Execution *e1, Execution *e2)
     auto tree = std::make_shared<tree::NodeTree>();
     auto result = std::make_shared<analysis::MergeResult>();
 
+    /// mapping from merged ids to original ids
+    auto orig_locs = std::make_shared<std::vector<analysis::OriginalLoc>>();
+
     /// Note: TreeMerger will delete itself when finished
-    auto merger = new analysis::TreeMerger(*e1, *e2, tree, result);
+    auto merger = new analysis::TreeMerger(*e1, *e2, tree, result, orig_locs);
 
     connect(merger, &analysis::TreeMerger::finished, this,
-            [tree, result]() {
-                auto window = new analysis::MergeWindow(tree, result);
+            [e1, e2, tree, result]() {
+                auto window = new analysis::MergeWindow(*e1, *e2, tree, result);
                 window->show();
             });
 
@@ -344,12 +347,14 @@ void Conductor::runNogoodAnalysis(Execution *e1, Execution *e2)
     auto tree = std::make_shared<tree::NodeTree>();
     auto result = std::make_shared<analysis::MergeResult>();
 
+    auto orig_locs = std::make_shared<std::vector<analysis::OriginalLoc>>();
+
     /// Note: TreeMerger will delete itself when finished
-    auto merger = new analysis::TreeMerger(*e1, *e2, tree, result);
+    auto merger = new analysis::TreeMerger(*e1, *e2, tree, result, orig_locs);
 
     connect(merger, &analysis::TreeMerger::finished, this,
-            [tree, result]() {
-                auto window = new analysis::MergeWindow(tree, result);
+            [e1, e2, tree, result]() {
+                auto window = new analysis::MergeWindow(*e1, *e2, tree, result);
                 window->show();
                 window->runNogoodAnalysis();
             });

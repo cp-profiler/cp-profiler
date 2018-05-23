@@ -5,22 +5,27 @@
 #include "pentagon_counter.hpp"
 #include "../user_data.hh"
 #include "../solver_data.hh"
+#include "../execution.hh"
+
+#include "nogood_analysis_dialog.hh"
 
 #include <QGridLayout>
 #include <QWidget>
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QCheckBox>
-#include <QDialog>
 
 namespace cpprofiler
 {
 namespace analysis
 {
 
-MergeWindow::MergeWindow(std::shared_ptr<tree::NodeTree> nt, std::shared_ptr<MergeResult> res)
-    : nt_(nt), merge_result_(res)
+MergeWindow::MergeWindow(Execution &ex_l, Execution &ex_r, std::shared_ptr<tree::NodeTree> nt, std::shared_ptr<MergeResult> res)
+    : ex_l_(ex_l), ex_r_(ex_r), nt_(nt), merge_result_(res)
 {
+
+    initOrigLocations();
+
     user_data_.reset(new UserData);
     solver_data_.reset(new SolverData);
     view_.reset(new tree::TraditionalView(*nt_, *user_data_, *solver_data_));
@@ -158,6 +163,86 @@ MergeWindow::MergeWindow(std::shared_ptr<tree::NodeTree> nt, std::shared_ptr<Mer
 
 MergeWindow::~MergeWindow() = default;
 
+/// Find original ids for nodes under a pentagon
+static void linkLocationsPentagon(NodeID n_m,
+                                  const tree::NodeTree &nt_m,
+                                  NodeID n,
+                                  const tree::NodeTree &nt,
+                                  std::vector<OriginalLoc> &locs)
+{
+    std::stack<NodeID> stack_m; /// stack for nodes of the merged tree
+    std::stack<NodeID> stack;   /// stack for nodes of the original tree
+
+    if (n_m == NodeID::NoNode && n == NodeID::NoNode)
+        return;
+
+    stack_m.push(n_m);
+    stack.push(n);
+
+    while (!stack_m.empty())
+    {
+        auto node_m = stack_m.top();
+        stack_m.pop();
+        auto node = stack.top();
+        stack.pop();
+
+        locs[n_m] = {n};
+
+        /// The trees at this point must have the same strucutre
+        for (auto alt = nt_m.childrenCount(node_m) - 1; alt >= 0; --alt)
+        {
+            stack_m.push(nt_m.getChild(node_m, alt));
+            stack.push(nt.getChild(node, alt));
+        }
+    }
+}
+
+void MergeWindow::initOrigLocations()
+{
+    // TODO: Perform DFS traversal of three trees in lockstep assigning ids
+    orig_locations_.resize(nt_->nodeCount());
+
+    std::stack<NodeID> stack_m; /// stack for nodes of the merged tree
+    std::stack<NodeID> stack_l; /// stack for nodes of the left tree
+    std::stack<NodeID> stack_r; /// stack for nodes of the right tree
+
+    auto &nt_l = ex_l_.tree(); /// left tree
+    auto &nt_r = ex_r_.tree(); /// right tree
+
+    stack_m.push(nt_->getRoot());
+    stack_l.push(nt_l.getRoot());
+    stack_r.push(nt_r.getRoot());
+
+    while (!stack_m.empty())
+    {
+        auto n = stack_m.top();
+        stack_m.pop();
+        auto n_l = stack_l.top();
+        stack_l.pop();
+        auto n_r = stack_r.top();
+        stack_r.pop();
+
+        if (nt_->getStatus(n) == tree::NodeStatus::MERGED)
+        {
+            auto left_child = nt_->getChild(n, 0);
+            auto right_child = nt_->getChild(n, 1);
+            linkLocationsPentagon(left_child, *nt_, n_l, nt_l, orig_locations_);
+            linkLocationsPentagon(right_child, *nt_, n_r, nt_r, orig_locations_);
+            continue;
+        }
+
+        orig_locations_[n] = {n_l}; /// arbitrarily link to the node on the left tree
+
+        /// Note: the tree above merged nodes must have the same structure
+        for (auto alt = nt_->childrenCount(n) - 1; alt >= 0; --alt)
+        {
+            stack_m.push(nt_->getChild(n, alt));
+            stack_l.push(nt_l.getChild(n_l, alt));
+            stack_r.push(nt_r.getChild(n_r, alt));
+        }
+    }
+}
+
 tree::NodeTree &MergeWindow::getTree()
 {
     return *nt_;
@@ -173,6 +258,10 @@ void MergeWindow::runNogoodAnalysis() const
 
     print("merge result size: {}", merge_result_->size());
 
+    const auto &tree_l = ex_l_.tree();
+
+    std::vector<NgAnalysisItem> nga_data;
+
     for (auto &item : *merge_result_)
     {
         if (item.size_l == 1)
@@ -182,20 +271,23 @@ void MergeWindow::runNogoodAnalysis() const
 
             /// get left child
             auto kid_l = nt_->getChild(item.pen_nid, 0);
+            auto orig_id = orig_locations_[kid_l].nid;
 
-            print("1-many pentagon: {}", item.pen_nid);
+            const auto &ng = tree_l.getNogood(orig_id);
 
-            // findOriginalId(kid_l);
-
-            /// Should merge window have its own solver data (nogoods?)
-            // solver_data_
+            nga_data.push_back({item.pen_nid, item.size_l, item.size_r, ng});
         }
     }
 
-    print("ng analysis done");
-    // auto nga_dialog = new QDialog();
+    auto ng_window = new NogoodAnalysisDialog(nga_data);
+    ng_window->setAttribute(Qt::WA_DeleteOnClose);
 
-    // nga_dialog->show();
+    connect(ng_window, &NogoodAnalysisDialog::nogoodClicked, [this](NodeID nid) {
+        const_cast<tree::TraditionalView *>(view_.get())->setCurrentNode(nid);
+        const_cast<tree::TraditionalView *>(view_.get())->centerCurrentNode();
+    });
+
+    ng_window->show();
 }
 
 // NodeID MergeWindow::findOriginalId(NodeID nid) const

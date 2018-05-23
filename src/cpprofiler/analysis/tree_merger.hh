@@ -21,6 +21,8 @@ namespace cpprofiler
 namespace analysis
 {
 
+class OriginalLoc;
+
 class TreeMerger : public QThread
 {
 
@@ -33,14 +35,18 @@ class TreeMerger : public QThread
   std::shared_ptr<tree::NodeTree> res_tree;
   std::shared_ptr<MergeResult> merge_result;
 
+  std::shared_ptr<std::vector<OriginalLoc>> orig_locs_;
+
 protected:
-  void run() override;
+  void
+  run() override;
 
 public:
   TreeMerger(const Execution &ex_l,
              const Execution &ex_r,
              std::shared_ptr<tree::NodeTree> tree,
-             std::shared_ptr<analysis::MergeResult> res);
+             std::shared_ptr<analysis::MergeResult> res,
+             std::shared_ptr<std::vector<OriginalLoc>> orig_locs);
   ~TreeMerger();
 };
 

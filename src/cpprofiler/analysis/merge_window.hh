@@ -11,6 +11,7 @@ namespace tree
 class TraditionalView;
 }
 
+class Execution;
 class UserData;
 } // namespace cpprofiler
 
@@ -31,6 +32,10 @@ struct OriginalLoc
 class MergeWindow : public QMainWindow
 {
     Q_OBJECT
+
+    /// The two executions merged
+    Execution &ex_l_;
+    Execution &ex_r_;
 
     std::shared_ptr<tree::NodeTree> nt_;
     std::shared_ptr<MergeResult> merge_result_;
@@ -54,11 +59,13 @@ class MergeWindow : public QMainWindow
     /// find the right data for a node
     Nogood getNogood();
 
+    /// traverse the merged tree to find origins for all nodes
+    void initOrigLocations();
     /// Find id for a node `nid` of a merged tree
     // NodeID findOriginalId(NodeID nid) const;
 
   public:
-    MergeWindow(std::shared_ptr<tree::NodeTree> nt, std::shared_ptr<MergeResult> res);
+    MergeWindow(Execution &ex_l, Execution &ex_r, std::shared_ptr<tree::NodeTree> nt, std::shared_ptr<MergeResult> res);
     ~MergeWindow();
 
     tree::NodeTree &getTree();

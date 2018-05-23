@@ -15,13 +15,17 @@ namespace analysis
 
 using namespace tree;
 
-TreeMerger::TreeMerger(const Execution &ex_l_, const Execution &ex_r_,
-                       std::shared_ptr<tree::NodeTree> tree, std::shared_ptr<analysis::MergeResult> res)
+TreeMerger::TreeMerger(const Execution &ex_l_,
+                       const Execution &ex_r_,
+                       std::shared_ptr<tree::NodeTree> tree,
+                       std::shared_ptr<analysis::MergeResult> res,
+                       std::shared_ptr<std::vector<OriginalLoc>> orig_locs)
     : ex_l(ex_l_), ex_r(ex_r_),
       tree_l(ex_l.tree()),
       tree_r(ex_r.tree()),
       res_tree(tree),
-      merge_result(res)
+      merge_result(res),
+      orig_locs_(orig_locs)
 {
 
     connect(this, &QThread::finished, this, &QObject::deleteLater);

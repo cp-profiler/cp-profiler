@@ -102,6 +102,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/db_handler.hh \
     $$PWD/src/cpprofiler/solver_data.hh \
     $$PWD/src/cpprofiler/nogood_dialog.hh \
+    $$PWD/src/cpprofiler/analysis/nogood_analysis_dialog.hh \
     $$PWD/src/sqlite/sqlite3.h \
 
 SOURCES += \
