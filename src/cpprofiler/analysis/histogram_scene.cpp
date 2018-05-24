@@ -6,8 +6,48 @@ namespace cpprofiler
 namespace analysis
 {
 
+static constexpr int SHAPE_RECT_HEIGHT = 16;
+static constexpr int NUMBER_WIDTH = 50;
+static constexpr int COLUMN_WIDTH = NUMBER_WIDTH + 10;
+
+static constexpr int ROW_HEIGHT = SHAPE_RECT_HEIGHT + V_DISTANCE;
+
+enum class Align
+{
+    CENTER,
+    RIGHT
+};
+
 QColor PatternRect::normal_outline{252, 209, 22};
 QColor PatternRect::highlighted_outline{252, 148, 77};
+
+static void addText(QGraphicsScene &scene, int col, int row,
+                    QGraphicsSimpleTextItem *text_item,
+                    Align alignment = Align::CENTER)
+{
+    int item_width = text_item->boundingRect().width();
+    int item_height = text_item->boundingRect().height();
+
+    // center the item vertically at y
+    int y_offset = item_height / 2;
+    int x_offset = 0;
+
+    switch (alignment)
+    {
+    case Align::CENTER:
+        x_offset = (COLUMN_WIDTH - item_width) / 2;
+        break;
+    case Align::RIGHT:
+        x_offset = COLUMN_WIDTH - item_width;
+        break;
+    }
+
+    int x = col * COLUMN_WIDTH + x_offset;
+    int y = row * ROW_HEIGHT + y_offset;
+
+    text_item->setPos(x, y - y_offset);
+    scene.addItem(text_item);
+}
 
 static std::shared_ptr<PatternRect> addRect(HistogramScene &hist_scene, int row, int val)
 {
@@ -17,7 +57,6 @@ static std::shared_ptr<PatternRect> addRect(HistogramScene &hist_scene, int row,
 
     int width = val * 40;
 
-    /// Note: items will be deleted when the scene is destroyed
     auto item = std::make_shared<PatternRect>(hist_scene, x, y, width, SHAPE_RECT_HEIGHT);
     item->addToScene();
 
@@ -39,7 +78,7 @@ static void addText(QGraphicsScene &scene, int col, int row, int value)
 void HistogramScene::drawPatterns()
 {
 
-    auto &scene = *m_scene;
+    auto &scene = *scene_;
 
     addText(scene, 0, 0, "hight");
     addText(scene, 1, 0, "count");
@@ -56,7 +95,7 @@ void HistogramScene::drawPatterns()
 
         auto item = addRect(*this, row, count);
 
-        m_rects.push_back(item);
+        rects_.push_back(item);
         rect2pattern_.insert(std::make_pair(item, p));
 
         /// number of nodes in the frist subtree represeting a pattern
@@ -80,11 +119,11 @@ void HistogramScene::setPatterns(std::vector<SubtreePattern> &&patterns)
     }
 }
 
-int HistogramScene::findPatternIdx(PatternRect *pattern)
+int HistogramScene::findPatternIdx(PatternRect *pattern) const
 {
-    for (auto i = 0; i < m_rects.size(); ++i)
+    for (auto i = 0; i < rects_.size(); ++i)
     {
-        if (pattern == m_rects[i].get())
+        if (pattern == rects_[i].get())
         {
             return i;
         }
@@ -93,11 +132,11 @@ int HistogramScene::findPatternIdx(PatternRect *pattern)
     return -1;
 }
 
-PatternPtr HistogramScene::rectToPattern(PatternRectPtr prect)
+PatternPtr HistogramScene::rectToPattern(PatternRectPtr prect) const
 {
     if (rect2pattern_.find(prect) != rect2pattern_.end())
     {
-        return rect2pattern_[prect];
+        return rect2pattern_.at(prect);
     }
     return nullptr;
 }
@@ -105,89 +144,87 @@ PatternPtr HistogramScene::rectToPattern(PatternRectPtr prect)
 void HistogramScene::reset()
 {
 
-    if (m_selected)
+    if (selected_rect_)
     {
-        m_selected->setHighlighted(false);
-        m_selected = nullptr;
-        m_selected_idx = -1;
+        selected_rect_->setHighlighted(false);
+        selected_rect_ = nullptr;
+        selected_idx_ = -1;
     }
 
-    m_rects.clear();
+    rects_.clear();
     rect2pattern_.clear();
-    m_scene->clear();
+    scene_->clear();
     patterns_.clear();
 }
 
-void HistogramScene::setPatternSelected(int idx)
+void HistogramScene::changeSelectedPattern(int idx)
 {
 
-    if (idx < 0 || idx >= m_rects.size())
+    if (idx < 0 || idx >= rects_.size())
         return;
 
-    auto prect = m_rects[idx];
+    auto prect = rects_[idx];
 
     auto pattern = rectToPattern(prect);
     if (!pattern)
         return;
 
     emit pattern_selected(pattern->first());
-
     emit should_be_highlighted(pattern->nodes());
 
     {
-        if (idx == m_selected_idx)
+        if (idx == selected_idx_)
         {
-            m_selected->setHighlighted(false);
-            m_selected_idx = -1;
-            m_selected = nullptr;
+            selected_rect_->setHighlighted(false);
+            selected_idx_ = -1;
+            selected_rect_ = nullptr;
         }
         else
         {
-            m_selected_idx = idx;
+            selected_idx_ = idx;
             /// unselect the old one
-            if (m_selected)
+            if (selected_rect_)
             {
-                m_selected->setHighlighted(false);
+                selected_rect_->setHighlighted(false);
             }
             prect->setHighlighted(true);
-            m_selected_idx = idx;
-            m_selected = prect.get();
+            selected_idx_ = idx;
+            selected_rect_ = prect.get();
         }
     }
 }
 
-void HistogramScene::handleClick(PatternRect *prect)
+void HistogramScene::findAndSelect(PatternRect *prect)
 {
-
     auto idx = findPatternIdx(prect);
 
-    setPatternSelected(idx);
+    changeSelectedPattern(idx);
 }
 
 void HistogramScene::prevPattern()
 {
-    if (m_rects.size() == 0)
+    if (rects_.size() == 0)
         return;
 
-    auto new_idx = m_selected_idx - 1;
+    auto new_idx = selected_idx_ - 1;
 
     if (new_idx < 0)
         return;
 
-    setPatternSelected(new_idx);
+    changeSelectedPattern(new_idx);
 }
 
 void HistogramScene::nextPattern()
 {
-    if (m_rects.size() == 0)
+    if (rects_.size() == 0)
         return;
 
-    auto new_idx = m_selected_idx + 1;
+    auto new_idx = selected_idx_ + 1;
 
-    if (new_idx >= m_rects.size())
+    if (new_idx >= rects_.size())
         return;
 
-    setPatternSelected(new_idx);
+    changeSelectedPattern(new_idx);
 }
 
 } // namespace analysis

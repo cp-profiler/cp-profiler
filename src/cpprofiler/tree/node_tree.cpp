@@ -267,7 +267,7 @@ void NodeTree::setHasOpenChildren(NodeID nid, bool val)
 
 const Label NodeTree::getLabel(NodeID nid) const
 {
-    return std::to_string(nid);
+    // return std::to_string(nid);
 
     // auto uid = solver_data_->getSolverID(nid);
     // return uid.toString();

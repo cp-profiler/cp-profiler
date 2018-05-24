@@ -437,7 +437,7 @@ void Conductor::saveSearch(Execution *e) const
 void Conductor::saveExecution(Execution *e)
 {
 
-    const auto file_path = QFileDialog::getOpenFileName(nullptr, "Open Execution").toStdString();
+    const auto file_path = QFileDialog::getSaveFileName(nullptr, "Save Execution To a File").toStdString();
 
     db_handler::save_execution(e, file_path.c_str());
 

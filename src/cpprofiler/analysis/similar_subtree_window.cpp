@@ -27,6 +27,8 @@
 
 using namespace cpprofiler::tree;
 
+using std::vector;
+
 namespace cpprofiler
 {
 namespace analysis
@@ -76,6 +78,9 @@ SimilarSubtreeWindow::SimilarSubtreeWindow(QWidget *parent, const tree::NodeTree
     splitter->setSizes(QList<int>{1, 1});
 
     globalLayout->addWidget(splitter, 1);
+
+    globalLayout->addWidget(&path_line1_);
+    globalLayout->addWidget(&path_line2_);
 
     analyse();
 
@@ -622,12 +627,105 @@ void SimilarSubtreeWindow::analyse()
     connect(m_histogram.get(), &HistogramScene::pattern_selected,
             m_subtree_view.get(), &SubtreeView::setNode);
 
+    connect(m_histogram.get(), &HistogramScene::should_be_highlighted,
+            this, &SimilarSubtreeWindow::updatePathDiff);
+
     // m_histogram->reset();
 }
 
-// void SimilarSubtreeWindow::analyse_shapes() {
+/// A wrapper around std::set_intersection; copying is intended
+static vector<Label> set_intersect(vector<Label> v1, vector<Label> v2)
+{
+    /// set_intersection requires the resulting set to be
+    /// at least as large as the smallest of the two sets
+    vector<Label> res(std::min(v1.size(), v2.size()));
 
-// }
+    std::sort(begin(v1), end(v1));
+    std::sort(begin(v2), end(v2));
+
+    auto it = std::set_intersection(begin(v1), end(v1), begin(v2), end(v2),
+                                    begin(res));
+    res.resize(it - begin(res));
+
+    return res;
+}
+
+/// A wrapper around std::set_symemtric_diff; copying is intended
+static vector<Label> set_symmetric_diff(vector<Label> v1, vector<Label> v2)
+{
+    vector<Label> res(v1.size() + v2.size());
+
+    /// vectors must be sorted
+    std::sort(begin(v1), end(v1));
+    std::sort(begin(v2), end(v2));
+
+    /// fill `res` with elements not present in both v1 and v2
+    auto it = std::set_symmetric_difference(begin(v1), end(v1), begin(v2), end(v2),
+                                            begin(res));
+
+    res.resize(it - begin(res));
+
+    return res;
+}
+
+/// Calculate unique labels for both paths (present in one but not in the other)
+static std::pair<vector<Label>, vector<Label>>
+getLabelDiff(const std::vector<Label> &path1,
+             const std::vector<Label> &path2)
+{
+    auto diff = set_symmetric_diff(path1, path2);
+
+    auto unique_1 = set_intersect(path1, diff);
+
+    auto unique_2 = set_intersect(path2, diff);
+
+    return std::make_pair(std::move(unique_1), std::move(unique_2));
+}
+
+/// Walk up the tree constructing label path
+static std::vector<Label> labelPath(NodeID nid, const tree::NodeTree &tree)
+{
+    std::vector<Label> label_path;
+    while (nid != NodeID::NoNode)
+    {
+        auto label = tree.getLabel(nid);
+        if (label != emptyLabel)
+        {
+            label_path.push_back(label);
+        }
+        nid = tree.getParent(nid);
+    }
+
+    return label_path;
+}
+
+void SimilarSubtreeWindow::updatePathDiff(const std::vector<NodeID> &nodes)
+{
+    if (nodes.size() < 2)
+        return;
+
+    auto path_l = labelPath(nodes[0], m_nt);
+    auto path_r = labelPath(nodes[1], m_nt);
+
+    auto diff_pair = getLabelDiff(path_l, path_r);
+
+    /// unique labels on path_l concatenated
+    std::string text_l;
+
+    for (auto &label : diff_pair.first)
+    {
+        text_l += label + " ";
+    }
+
+    std::string text_r;
+    for (auto &label : diff_pair.second)
+    {
+        text_r += label + " ";
+    }
+
+    path_line1_.setText(text_l.c_str());
+    path_line2_.setText(text_r.c_str());
+}
 
 } // namespace analysis
 } // namespace cpprofiler

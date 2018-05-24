@@ -441,6 +441,23 @@ static void save_search(Conductor &c)
     c.saveSearch(ex1, "test.search");
 }
 
+/// similar subtree
+static void ss_analysis(Conductor &c)
+{
+
+    const char *path = "/home/maxim/dev/cp-profiler2/golomb8.db";
+    auto ex = db_handler::load_execution(path);
+    if (!ex)
+    {
+        print("could not load the execution");
+    }
+    else
+    {
+        c.addNewExecution(ex);
+        c.showTraditionalView(ex.get());
+    }
+}
+
 static void nogood_dialog(Conductor &c)
 {
 
@@ -502,13 +519,13 @@ void run(Conductor &c)
 
     // save_and_load(c, "/home/maxim/dev/cp-profiler2/test.db");
 
-    nogood_dialog(c);
+    // nogood_dialog(c);
 
     // db_create_tree(c);
 
     // save_search(c);
 
-    // TODO: copmarison of two golomb rulers 8 (same) results in a wierd memory error
+    ss_analysis(c);
 }
 
 } // namespace execution

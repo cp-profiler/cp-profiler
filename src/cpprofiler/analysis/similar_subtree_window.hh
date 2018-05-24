@@ -3,6 +3,7 @@
 #define CPPROFILER_ANALYSIS_SIMILAR_SUBTREE_WINDOW_HH
 
 #include <QDialog>
+#include <QLineEdit>
 #include <memory>
 
 #include "../core.hh"
@@ -32,6 +33,16 @@ enum class SimilarityType
 
 class HistogramScene;
 
+/// Text line displaying difference on the path for two subtrees
+class PathDiffLine : public QLineEdit
+{
+  public:
+    PathDiffLine() : QLineEdit()
+    {
+        setReadOnly(true);
+    }
+};
+
 class SimilarSubtreeWindow : public QDialog
 {
     Q_OBJECT
@@ -44,6 +55,10 @@ class SimilarSubtreeWindow : public QDialog
     std::unique_ptr<HistogramScene> m_histogram;
 
     std::unique_ptr<tree::SubtreeView> m_subtree_view;
+
+    /// Text line displaying difference on the path for two subtrees of a pattern
+    PathDiffLine path_line1_;
+    PathDiffLine path_line2_;
 
     // SimilarityType m_sim_type = SimilarityType::SUBTREE;
     SimilarityType m_sim_type = SimilarityType::SHAPE;
@@ -58,6 +73,10 @@ class SimilarSubtreeWindow : public QDialog
   signals:
 
     void should_be_highlighted(const std::vector<NodeID> &nodes);
+
+  public slots:
+    /// Calculate the difference in label paths for the first two nodes
+    void updatePathDiff(const std::vector<NodeID> &nodes);
 };
 
 } // namespace analysis

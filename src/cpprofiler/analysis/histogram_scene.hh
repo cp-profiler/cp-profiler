@@ -14,47 +14,8 @@ namespace cpprofiler
 namespace analysis
 {
 
-static constexpr int SHAPE_RECT_HEIGHT = 16;
-static constexpr int NUMBER_WIDTH = 50;
-static constexpr int COLUMN_WIDTH = NUMBER_WIDTH + 10;
-
 /// vertical distance between two shape rectangles
 static constexpr int V_DISTANCE = 2;
-static constexpr int ROW_HEIGHT = SHAPE_RECT_HEIGHT + V_DISTANCE;
-
-enum class Align
-{
-    CENTER,
-    RIGHT
-};
-
-static void addText(QGraphicsScene &scene, int col, int row,
-                    QGraphicsSimpleTextItem *text_item,
-                    Align alignment = Align::CENTER)
-{
-    int item_width = text_item->boundingRect().width();
-    int item_height = text_item->boundingRect().height();
-
-    // center the item vertically at y
-    int y_offset = item_height / 2;
-    int x_offset = 0;
-
-    switch (alignment)
-    {
-    case Align::CENTER:
-        x_offset = (COLUMN_WIDTH - item_width) / 2;
-        break;
-    case Align::RIGHT:
-        x_offset = COLUMN_WIDTH - item_width;
-        break;
-    }
-
-    int x = col * COLUMN_WIDTH + x_offset;
-    int y = row * ROW_HEIGHT + y_offset;
-
-    text_item->setPos(x, y - y_offset);
-    scene.addItem(text_item);
-}
 
 class PatternRect;
 
@@ -63,56 +24,65 @@ using PatternPtr = std::shared_ptr<SubtreePattern>;
 
 class HistogramScene : public QObject
 {
-    Q_OBJECT
-    std::unique_ptr<QGraphicsScene> m_scene;
+  Q_OBJECT
+  /// Scene used for drawing
+  std::unique_ptr<QGraphicsScene> scene_;
 
-    PatternRect *m_selected = nullptr;
-    int m_selected_idx = -1;
+  /// Selected pattern rectangle (nullptr if no selected)
+  PatternRect *selected_rect_ = nullptr;
+  /// Index of the selected pattern
+  int selected_idx_ = -1;
 
-    /// need a list of rects to enable navigation;
-    std::vector<PatternRectPtr> m_rects;
+  /// A list of visual elements for patterns (used for navigation);
+  std::vector<PatternRectPtr> rects_;
 
-    std::vector<PatternPtr> patterns_;
+  /// The result of the analysis in a form of a list of patterns
+  std::vector<PatternPtr> patterns_;
 
-    std::unordered_map<PatternRectPtr, PatternPtr> rect2pattern_;
+  /// Mapping from a visual element to the pattern it represents
+  std::unordered_map<PatternRectPtr, PatternPtr> rect2pattern_;
 
-    /// find pattern idx in m_rects using PatternRect
-    int findPatternIdx(PatternRect *pattern);
+  /// Find the possition of the rectangle representing `pattern`
+  int findPatternIdx(PatternRect *pattern) const;
 
-    void setPatternSelected(int idx);
+  /// Select `idx` unselecting the previous pattern
+  void changeSelectedPattern(int idx);
 
-    PatternPtr rectToPattern(PatternRectPtr prect);
+  PatternPtr rectToPattern(PatternRectPtr prect) const;
 
-  public:
-    HistogramScene()
-    {
+public:
+  HistogramScene()
+  {
+    scene_.reset(new QGraphicsScene());
+  }
 
-        m_scene.reset(new QGraphicsScene());
-    }
+  /// Prepare the GUI for new patterns
+  void reset();
 
-    void reset();
+  /// Expose underlying scene
+  QGraphicsScene *scene()
+  {
+    return scene_.get();
+  }
 
-    QGraphicsScene *scene()
-    {
-        return m_scene.get();
-    }
+  /// Find the pattern's id and select it
+  void findAndSelect(PatternRect *prect);
 
-    void handleClick(PatternRect *prect);
+  /// Draw the patterns onto the scene
+  void drawPatterns();
 
-    /// Draw the patterns onto the scene
-    void drawPatterns();
+  /// Initialize patterns based on the analysis results
+  void setPatterns(std::vector<SubtreePattern> &&patterns);
 
-    void setPatterns(std::vector<SubtreePattern> &&patterns);
+signals:
 
-  signals:
+  void pattern_selected(NodeID);
+  void should_be_highlighted(const std::vector<NodeID> &);
 
-    void pattern_selected(NodeID);
-    void should_be_highlighted(const std::vector<NodeID> &);
+public slots:
 
-  public slots:
-
-    void prevPattern();
-    void nextPattern();
+  void prevPattern();
+  void nextPattern();
 };
 
 } // namespace analysis

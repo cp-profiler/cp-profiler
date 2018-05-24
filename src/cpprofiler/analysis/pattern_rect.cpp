@@ -21,7 +21,7 @@ PatternRect::PatternRect(HistogramScene &hist_scene, int x, int y, int width, in
 
 void PatternRect::mousePressEvent(QGraphicsSceneMouseEvent *)
 {
-    m_hist_scene.handleClick(this);
+    m_hist_scene.findAndSelect(this);
 }
 
 void PatternRect::setHighlighted(bool val)
