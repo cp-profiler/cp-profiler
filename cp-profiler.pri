@@ -35,6 +35,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/tree/cursors/hide_failed_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/hide_not_highlighted_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hpp \
+    $$PWD/src/cpprofiler/analysis/similar_subtree_analysis.cpp \
     $$PWD/src/cpprofiler/analysis/similar_subtree_window.cpp \
     $$PWD/src/cpprofiler/analysis/merge_window.cpp \
     $$PWD/src/cpprofiler/analysis/merging/pentagon_rect.cpp \
@@ -89,6 +90,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hh \
     $$PWD/src/cpprofiler/core.hh \
     $$PWD/src/cpprofiler/utils/debug_mutex.hh \
+    $$PWD/src/cpprofiler/analysis/similar_subtree_analysis.hh \
     $$PWD/src/cpprofiler/analysis/similar_subtree_window.hh \
     $$PWD/src/cpprofiler/analysis/merge_window.hh \
     $$PWD/src/cpprofiler/analysis/pentagon_counter.hpp \

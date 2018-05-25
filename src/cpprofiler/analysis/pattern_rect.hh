@@ -9,7 +9,6 @@ namespace cpprofiler
 namespace analysis
 {
 
-class SubtreePattern;
 class HistogramScene;
 
 class PatternRect : public QGraphicsRectItem

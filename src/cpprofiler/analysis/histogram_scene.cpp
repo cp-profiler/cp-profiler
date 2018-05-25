@@ -99,7 +99,7 @@ void HistogramScene::drawPatterns()
         rect2pattern_.insert(std::make_pair(item, p));
 
         /// number of nodes in the frist subtree represeting a pattern
-        const auto size = p->size_;
+        const auto size = p->size();
 
         addText(scene, 0, row, height);
         addText(scene, 1, row, count);
@@ -165,6 +165,7 @@ void HistogramScene::changeSelectedPattern(int idx)
 
     auto prect = rects_[idx];
 
+    /// Need to find pattern to get the list of nodes
     auto pattern = rectToPattern(prect);
     if (!pattern)
         return;

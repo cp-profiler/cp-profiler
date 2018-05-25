@@ -1,5 +1,4 @@
 #include "pattern_rect.hh"
-#include "subtree_pattern.hh"
 #include "histogram_scene.hh"
 
 namespace cpprofiler
