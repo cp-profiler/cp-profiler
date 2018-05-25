@@ -18,6 +18,7 @@
 
 #include "cursors/nodevisitor.hh"
 #include "cursors/hide_failed_cursor.hh"
+#include "cursors/hide_not_highlighted_cursor.hh"
 #include "../utils/std_ext.hh"
 #include "node_id.hh"
 #include "shape.hh"
@@ -565,6 +566,17 @@ void TraditionalView::printNodeInfo()
     print("alt: {}", tree_.getAlternative(nid));
 }
 
+/// Show specified subtrees and hide everyting else
+static void showSubtrees(const NodeTree &tree, VisualFlags &vf, LayoutComputer &lc)
+{
+    auto root = tree.getRoot();
+
+    // hideFailed()
+
+    HideNotHighlightedCursor hnhc(root, tree, vf, lc);
+    PostorderNodeVisitor<HideNotHighlightedCursor>(hnhc).run();
+}
+
 void TraditionalView::highlightSubtrees(const std::vector<NodeID> &nodes)
 {
 
@@ -574,6 +586,12 @@ void TraditionalView::highlightSubtrees(const std::vector<NodeID> &nodes)
     {
         vis_flags_->setHighlighted(nid, true);
     }
+
+    unhideAll();
+
+    showSubtrees(tree_, *vis_flags_, *layout_computer_);
+
+    setLayoutOutdated();
 
     emit needsRedrawing();
 }

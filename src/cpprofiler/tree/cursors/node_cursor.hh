@@ -15,12 +15,16 @@ class NodeTree;
 class NodeCursor
 {
 
+  private:
   protected:
     const NodeTree &m_tree;
     const NodeInfo &m_node_info;
     const NodeID m_start_node;
     NodeID m_cur_node;
     int m_cur_alt;
+
+    /// return current node
+    inline NodeID node() const { return m_cur_node; }
 
   public:
     NodeCursor(NodeID start, const NodeTree &tree);

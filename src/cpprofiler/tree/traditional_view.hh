@@ -141,6 +141,7 @@ public slots:
   /// Show nogoods of the nodes under the current node and the node inself
   void showNogoods() const;
 
+  /// Highlight the subtrees and hide the rest
   void highlightSubtrees(const std::vector<NodeID> &nodes);
 };
 

@@ -534,7 +534,8 @@ static std::vector<SubtreePattern> runIdenticalSubtrees(const NodeTree &nt)
     return result;
 }
 
-static vector<SubtreePattern> eliminateSubsumed(const NodeTree &tree, const vector<SubtreePattern> &patterns)
+static vector<SubtreePattern> eliminateSubsumed(const NodeTree &tree,
+                                                const vector<SubtreePattern> &patterns)
 {
 
     std::set<NodeID> marked;

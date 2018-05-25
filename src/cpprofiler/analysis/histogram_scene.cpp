@@ -201,6 +201,7 @@ void HistogramScene::findAndSelect(PatternRect *prect)
     changeSelectedPattern(idx);
 }
 
+/// TODO: this should change scroll bar value as well
 void HistogramScene::prevPattern()
 {
     if (rects_.size() == 0)
