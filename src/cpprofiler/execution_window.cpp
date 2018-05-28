@@ -1,14 +1,18 @@
 #include "execution_window.hh"
 
 #include "tree/traditional_view.hh"
+#include "pixel_tree/canvas.hh"
+
 #include "execution.hh"
 #include "user_data.hh"
 
 #include <QGridLayout>
 #include <QTableView>
+#include <QDockWidget>
 #include <QHeaderView>
 #include <QStandardItemModel>
 #include <QSlider>
+#include <QSplitter>
 #include <QDebug>
 #include <QMenuBar>
 #include <QTextEdit>
@@ -30,6 +34,7 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
 {
     const auto &tree = ex.tree();
     traditional_view_.reset(new tree::TraditionalView(tree, ex.userData(), ex.solver_data()));
+    pixel_tree_.reset(new pixel_tree::Canvas());
 
     auto layout = new QGridLayout();
 
@@ -44,8 +49,9 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
         auto widget = new QWidget();
         setCentralWidget(widget);
         widget->setLayout(layout);
-        layout->addWidget(traditional_view_->widget(), 0, 0, 2, 1);
     }
+
+    layout->addWidget(traditional_view_->widget(), 0, 0, 2, 1);
 
     {
 
@@ -56,7 +62,7 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
 
         constexpr int start_scale = 50;
         sb->setValue(start_scale);
-        layout->addWidget(sb, 1, 1, Qt::AlignHCenter);
+        layout->addWidget(sb, 1, 1);
 
         traditional_view_->setScale(start_scale);
 
@@ -164,25 +170,12 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
         }
 
         {
-            auto debugMenu = menuBar->addMenu("Debu&g");
+            auto viewMenu = menuBar->addMenu("&View");
 
-            auto computeLayout = new QAction{"Compute layout", this};
-            debugMenu->addAction(computeLayout);
-            connect(computeLayout, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::forceComputeLayout);
-
-            auto dirtyNodesUp = new QAction{"Dirty Nodes Up", this};
-            debugMenu->addAction(dirtyNodesUp);
-            connect(dirtyNodesUp, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::dirtyCurrentNodeUp);
-
-            auto getNodeInfo = new QAction{"Print node info", this};
-            getNodeInfo->setShortcut(QKeySequence("I"));
-            debugMenu->addAction(getNodeInfo);
-            connect(getNodeInfo, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::printNodeInfo);
-
-            auto removeNode = new QAction{"Remove node", this};
-            removeNode->setShortcut(QKeySequence("Del"));
-            debugMenu->addAction(removeNode);
-            connect(removeNode, &QAction::triggered, this, &ExecutionWindow::removeSelectedNode);
+            auto showPixelTree = new QAction{"Show/Hide Pixel Tree", this};
+            showPixelTree->setShortcut(QKeySequence("Shift+P"));
+            viewMenu->addAction(showPixelTree);
+            connect(showPixelTree, &QAction::triggered, this, &ExecutionWindow::showPixelTree);
         }
 
         {
@@ -212,6 +205,28 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
             auto saveSearch = new QAction{"Save Search (for replaying)", this};
             analysisMenu->addAction(saveSearch);
             connect(saveSearch, &QAction::triggered, [this]() { emit needToSaveSearch(&execution_); });
+        }
+
+        {
+            auto debugMenu = menuBar->addMenu("Debu&g");
+
+            auto computeLayout = new QAction{"Compute layout", this};
+            debugMenu->addAction(computeLayout);
+            connect(computeLayout, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::forceComputeLayout);
+
+            auto dirtyNodesUp = new QAction{"Dirty Nodes Up", this};
+            debugMenu->addAction(dirtyNodesUp);
+            connect(dirtyNodesUp, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::dirtyCurrentNodeUp);
+
+            auto getNodeInfo = new QAction{"Print node info", this};
+            getNodeInfo->setShortcut(QKeySequence("I"));
+            debugMenu->addAction(getNodeInfo);
+            connect(getNodeInfo, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::printNodeInfo);
+
+            auto removeNode = new QAction{"Remove node", this};
+            removeNode->setShortcut(QKeySequence("Del"));
+            debugMenu->addAction(removeNode);
+            connect(removeNode, &QAction::triggered, this, &ExecutionWindow::removeSelectedNode);
         }
 
         // auto debugText = new QTextEdit{this};
@@ -302,6 +317,26 @@ static void writeToFile(const QString &path, const QString &str)
     else
     {
         qDebug() << "could not open the file: " << path;
+    }
+}
+
+void ExecutionWindow::showPixelTree()
+{
+    if (!pt_dock_)
+    {
+        pt_dock_ = new QDockWidget("Pixel Tree", this);
+        pt_dock_->setAllowedAreas(Qt::BottomDockWidgetArea);
+        addDockWidget(Qt::BottomDockWidgetArea, pt_dock_);
+        pt_dock_->setWidget(pixel_tree_.get());
+    }
+
+    if (pt_dock_->isHidden())
+    {
+        pt_dock_->show();
+    }
+    else
+    {
+        pt_dock_->hide();
     }
 }
 

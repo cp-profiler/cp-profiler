@@ -14,6 +14,11 @@ namespace tree
 class TraditionalView;
 }
 
+namespace pixel_tree
+{
+class Canvas;
+}
+
 class Execution;
 
 class ExecutionWindow : public QMainWindow
@@ -22,6 +27,11 @@ class ExecutionWindow : public QMainWindow
 
     Execution &execution_;
     std::unique_ptr<tree::TraditionalView> traditional_view_;
+
+    std::unique_ptr<pixel_tree::Canvas> pixel_tree_;
+
+    /// Dockable widget for the pixel tree
+    QDockWidget *pt_dock_ = nullptr;
 
   public:
     tree::TraditionalView &traditional_view();
@@ -38,6 +48,9 @@ class ExecutionWindow : public QMainWindow
     void removeSelectedNode();
 
     void print_log(const std::string &str);
+
+    /// Create and display pixel tree as a dockable widget
+    void showPixelTree();
 
   signals:
 
