@@ -190,5 +190,39 @@ std::vector<NodeID> post_order(const NodeTree &tree)
     return result;
 }
 
+std::vector<int> calc_subtree_sizes(const tree::NodeTree &nt)
+{
+    const int nc = nt.nodeCount();
+
+    std::vector<int> sizes(nc);
+
+    std::function<void(NodeID)> countDescendants;
+
+    /// Count descendants plus one (the node itself)
+    countDescendants = [&](NodeID n) {
+        auto nkids = nt.childrenCount(n);
+        if (nkids == 0)
+        {
+            sizes[n] = 1;
+        }
+        else
+        {
+            int count = 1; // the node itself
+            for (auto alt = 0u; alt < nkids; ++alt)
+            {
+                const auto kid = nt.getChild(n, alt);
+                countDescendants(kid);
+                count += sizes[kid];
+            }
+            sizes[n] = count;
+        }
+    };
+
+    const auto root = nt.getRoot();
+    countDescendants(root);
+
+    return sizes;
+}
+
 } // namespace utils
 } // namespace cpprofiler

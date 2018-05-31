@@ -2,6 +2,7 @@
 
 #include "../core.hh"
 #include <set>
+#include <map>
 
 namespace cpprofiler
 {
@@ -21,6 +22,8 @@ class VisualFlags
     /// more efficient for unhighlighting previously highlighted subtrees
     std::set<NodeID> highlighted_shapes_;
 
+    std::map<NodeID, int> lantern_sizes_;
+
     void ensure_id_exists(NodeID id);
 
   public:
@@ -32,6 +35,13 @@ class VisualFlags
 
     void setHighlighted(NodeID nid, bool val);
     bool isHighlighted(NodeID nid) const;
+
+    /// Remove all map entries about lantern sizes
+    void resetLanternSizes();
+    /// Insert a map entry for `nid` to hold `val` as its lantern size
+    void setLanternSize(NodeID nid, int val);
+    /// Get lantern size for `nid`; return 0 if no entry found (not a lantern)
+    int lanternSize(NodeID nid);
 
     void unhighlightAll();
 };

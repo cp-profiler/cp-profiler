@@ -237,41 +237,6 @@ static int calculateHeightOf(NodeID nid, const NodeTree &nt, vector<int> &height
     return cur_max;
 }
 
-static std::vector<int> calculateSubtreeSizes(const NodeTree &nt)
-{
-
-    const int nc = nt.nodeCount();
-
-    std::vector<int> sizes(nc);
-
-    std::function<void(NodeID)> countDescendants;
-
-    /// Count descendants plus one (the node itself)
-    countDescendants = [&](NodeID n) {
-        auto nkids = nt.childrenCount(n);
-        if (nkids == 0)
-        {
-            sizes[n] = 1;
-        }
-        else
-        {
-            int count = 1; // the node itself
-            for (auto alt = 0u; alt < nkids; ++alt)
-            {
-                const auto kid = nt.getChild(n, alt);
-                countDescendants(kid);
-                count += sizes[kid];
-            }
-            sizes[n] = count;
-        }
-    };
-
-    const auto root = nt.getRoot();
-    countDescendants(root);
-
-    return sizes;
-}
-
 /// TODO: make sure the structure isn't changing anymore
 /// TODO: this does not work correctly for n-ary trees yet
 vector<SubtreePattern> runIdenticalSubtrees(const NodeTree &nt)
@@ -287,7 +252,7 @@ vector<SubtreePattern> runIdenticalSubtrees(const NodeTree &nt)
 
     auto cur_height = 1;
 
-    auto sizes = calculateSubtreeSizes(nt);
+    auto sizes = utils::calc_subtree_sizes(nt);
 
     // 0) Initial Partition
     auto partition = initialPartition(nt);
@@ -348,7 +313,7 @@ std::vector<SubtreePattern> runSimilarShapes(const NodeTree &tree, const Layout 
     perfHelper.end();
     perfHelper.begin("similar shapes result");
 
-    auto sizes = calculateSubtreeSizes(tree);
+    auto sizes = utils::calc_subtree_sizes(tree);
 
     std::vector<SubtreePattern> shapes;
 

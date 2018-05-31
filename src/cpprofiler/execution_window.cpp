@@ -29,6 +29,28 @@
 namespace cpprofiler
 {
 
+LanternMenu::LanternMenu() : QWidget()
+{
+    auto layout = new QHBoxLayout(this);
+
+    slider_ = new QSlider(Qt::Horizontal);
+    slider_->setRange(0, 100);
+    layout->addWidget(slider_);
+
+    auto label_desc = new QLabel("limit:");
+    layout->addWidget(label_desc);
+
+    auto label = new QLabel("0");
+    layout->addWidget(label);
+    label->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
+    label->setMinimumWidth(55);
+
+    connect(slider_, &QSlider::valueChanged, [this, label](int val) {
+        label->setText(QString::number(val));
+        emit limit_changed(val);
+    });
+}
+
 ExecutionWindow::ExecutionWindow(Execution &ex)
     : execution_(ex)
 {
@@ -68,9 +90,6 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
         connect(sb, &QSlider::valueChanged,
                 traditional_view_.get(), &tree::TraditionalView::setScale);
 
-        // connect(traditional_view_.get(), &tree::TraditionalView::nodeClicked,
-        //     this, &ExecutionWindow::selectNode);
-
         connect(&execution_.tree(), &tree::NodeTree::structureUpdated,
                 traditional_view_.get(), &tree::TraditionalView::setLayoutOutdated);
 
@@ -79,6 +98,15 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
             connect(statsUpdateTimer, &QTimer::timeout, stats_bar, &NodeStatsBar::update);
             statsUpdateTimer->start(16);
         }
+    }
+
+    {
+        lantern_widget = new LanternMenu();
+        layout->addWidget(lantern_widget, 2, 0);
+        lantern_widget->hide();
+
+        connect(lantern_widget, &LanternMenu::limit_changed,
+                traditional_view_.get(), &tree::TraditionalView::hideBySize);
     }
 
     {
@@ -112,10 +140,10 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
             nodeMenu->addAction(hideFailed);
             connect(hideFailed, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::hideFailed);
 
-            auto unhideAll = new QAction{"Unhide all", this};
+            auto unhideAll = new QAction{"Unhide all below", this};
             unhideAll->setShortcut(QKeySequence("U"));
             nodeMenu->addAction(unhideAll);
-            connect(unhideAll, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::unhideAll);
+            connect(unhideAll, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::unhideAllAtCurrent);
 
             auto toggleHighlighted = new QAction{"Toggle highlight subtree", this};
             toggleHighlighted->setShortcut(QKeySequence("H"));
@@ -169,12 +197,20 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
         }
 
         {
-            auto viewMenu = menuBar->addMenu("&View");
+            auto viewMenu = menuBar->addMenu("Vie&w");
 
-            auto showPixelTree = new QAction{"Show/Hide Pixel Tree", this};
+            auto showPixelTree = new QAction{"Pixel Tree View", this};
+            showPixelTree->setCheckable(true);
             showPixelTree->setShortcut(QKeySequence("Shift+P"));
             viewMenu->addAction(showPixelTree);
             connect(showPixelTree, &QAction::triggered, this, &ExecutionWindow::showPixelTree);
+
+            auto toggleLanternTree = new QAction{"Lantern Tree View", this};
+            toggleLanternTree->setCheckable(true);
+            toggleLanternTree->setShortcut(QKeySequence("Ctrl+L"));
+            viewMenu->addAction(toggleLanternTree);
+
+            connect(toggleLanternTree, &QAction::triggered, this, &ExecutionWindow::toggleLanternView);
         }
 
         {
@@ -343,6 +379,24 @@ void ExecutionWindow::showPixelTree()
     else
     {
         pt_dock_->hide();
+    }
+}
+
+void ExecutionWindow::toggleLanternView(bool checked)
+{
+    print("TODO: lantern tree");
+
+    if (checked)
+    {
+        lantern_widget->show();
+        auto old_value = lantern_widget->value();
+        traditional_view_->hideBySize(old_value);
+    }
+    else
+    {
+        /// Undo lantern tree
+        traditional_view_->unhideAll();
+        lantern_widget->hide();
     }
 }
 

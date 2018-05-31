@@ -122,8 +122,14 @@ public slots:
   /// hide all failed descendants of the current node
   void hideFailed();
 
-  /// unhide all descendants of the current node
+  /// unhide all nodes in the tree
   void unhideAll();
+
+  /// unhide all descendants of the specified node
+  void unhideAllAt(NodeID n);
+
+  /// unhide all descendants of the current node
+  void unhideAllAtCurrent();
 
   void toggleHighlighted();
 
@@ -143,6 +149,9 @@ public slots:
 
   /// Highlight the subtrees and hide the rest
   void highlightSubtrees(const std::vector<NodeID> &nodes);
+
+  /// Transform the tree in to a lantern tree using `limit` as max lantern size
+  void hideBySize(int limit);
 };
 
 } // namespace tree

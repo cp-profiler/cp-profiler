@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <QMainWindow>
+#include <QSlider>
 
 #include "tree/node_id.hh"
 
@@ -21,40 +22,64 @@ class Canvas;
 
 class Execution;
 
+class LanternMenu : public QWidget
+{
+  Q_OBJECT
+
+private:
+  QSlider *slider_;
+
+public:
+  LanternMenu();
+
+  /// Get slider value
+  int value() { return slider_->value(); }
+
+signals:
+  /// indicates that max size for a lantern node changed
+  void limit_changed(int val);
+};
+
 class ExecutionWindow : public QMainWindow
 {
-    Q_OBJECT
+  Q_OBJECT
 
-    Execution &execution_;
-    std::unique_ptr<tree::TraditionalView> traditional_view_;
+  Execution &execution_;
+  std::unique_ptr<tree::TraditionalView> traditional_view_;
 
-    std::unique_ptr<pixel_tree::Canvas> pixel_tree_;
+  std::unique_ptr<pixel_tree::Canvas> pixel_tree_;
 
-    /// Dockable widget for the pixel tree
-    QDockWidget *pt_dock_ = nullptr;
+  /// Dockable widget for the pixel tree
+  QDockWidget *pt_dock_ = nullptr;
 
-  public:
-    tree::TraditionalView &traditional_view();
+  /// Settings widget for lantern tree
+  LanternMenu *lantern_widget = nullptr;
 
-    /// Show a window with all bookmarks
-    void showBookmarks() const;
+public:
+  tree::TraditionalView &traditional_view();
 
-    ExecutionWindow(Execution &ex);
-    ~ExecutionWindow();
+  /// Show a window with all bookmarks
+  void showBookmarks() const;
 
-  public slots:
+  ExecutionWindow(Execution &ex);
+  ~ExecutionWindow();
 
-    /// Remove currently selected node; then select its parent
-    void removeSelectedNode();
+public slots:
 
-    void print_log(const std::string &str);
+  /// Remove currently selected node; then select its parent
+  void removeSelectedNode();
 
-    /// Create and display pixel tree as a dockable widget
-    void showPixelTree();
+  void print_log(const std::string &str);
 
-  signals:
+  /// Create and display pixel tree as a dockable widget
+  void showPixelTree();
 
-    void needToSaveSearch(Execution *e);
+  /// Toggle the tree lantern tree version of the visualisation
+  void toggleLanternView(bool checked);
+
+signals:
+
+  void needToSaveSearch(Execution *e);
 };
 
 } // namespace cpprofiler

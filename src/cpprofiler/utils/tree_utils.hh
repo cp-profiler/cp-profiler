@@ -45,5 +45,8 @@ std::vector<NodeID> pre_order(const tree::NodeTree &tree);
 /// Return node identifires in the order that corresponds to a post-order traversal
 std::vector<NodeID> post_order(const tree::NodeTree &tree);
 
+/// Calculate subtree sizes for every node in the tree
+std::vector<int> calc_subtree_sizes(const tree::NodeTree &tree);
+
 } // namespace utils
 } // namespace cpprofiler

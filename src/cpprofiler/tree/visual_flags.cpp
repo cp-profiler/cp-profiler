@@ -78,5 +78,28 @@ void VisualFlags::unhighlightAll()
     highlighted_shapes_.clear();
 }
 
+void VisualFlags::resetLanternSizes()
+{
+    lantern_sizes_.clear();
+}
+
+void VisualFlags::setLanternSize(NodeID nid, int val)
+{
+    lantern_sizes_.insert({nid, val});
+}
+
+int VisualFlags::lanternSize(NodeID nid)
+{
+    const auto it = lantern_sizes_.find(nid);
+    if (it != lantern_sizes_.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return 0; /// for non-lantern nodes
+    }
+}
+
 } // namespace tree
 } // namespace cpprofiler

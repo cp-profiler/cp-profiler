@@ -407,15 +407,8 @@ void TraditionalView::bookmarkCurrentNode()
     emit needsRedrawing();
 }
 
-void TraditionalView::unhideAll()
+void TraditionalView::unhideAllAt(NodeID n)
 {
-
-    perfHelper.begin("unhide_all");
-
-    auto nid = node();
-    if (nid == NodeID::NoNode)
-        return;
-
     /// indicates if any change was made
     bool modified = false;
 
@@ -428,7 +421,7 @@ void TraditionalView::unhideAll()
         }
     };
 
-    utils::apply_below(tree_, nid, action);
+    utils::apply_below(tree_, n, action);
 
     if (modified)
     {
@@ -437,8 +430,28 @@ void TraditionalView::unhideAll()
     }
 
     centerCurrentNode();
+}
+
+void TraditionalView::unhideAll()
+{
+
+    perfHelper.begin("unhide_all");
+
+    auto n = tree_.getRoot();
+    if (n == NodeID::NoNode)
+        return;
+    unhideAllAt(n);
 
     perfHelper.end();
+}
+
+void TraditionalView::unhideAllAtCurrent()
+{
+    auto nid = node();
+    if (nid == NodeID::NoNode)
+        return;
+
+    unhideAllAt(nid);
 }
 
 void TraditionalView::toggleHighlighted()
@@ -594,6 +607,63 @@ void TraditionalView::highlightSubtrees(const std::vector<NodeID> &nodes)
     setLayoutOutdated();
 
     emit needsRedrawing();
+}
+
+void TraditionalView::hideBySize(int size_limit)
+{
+    utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
+
+    unhideAll();
+
+    vis_flags_->resetLanternSizes();
+
+    const int max_lantern = 127;
+
+    perfHelper.begin("calc subtree sizes");
+
+    const auto sizes = utils::calc_subtree_sizes(tree_);
+
+    const auto root = tree_.getRoot();
+
+    std::stack<NodeID> stack;
+
+    stack.push(root);
+
+    while (!stack.empty())
+    {
+        const auto n = stack.top();
+        stack.pop();
+
+        const auto size = sizes.at(n);
+        const auto nkids = tree_.childrenCount(n);
+
+        if (size > size_limit)
+        {
+            /// visit children
+            for (auto alt = 0u; alt < nkids; ++alt)
+            {
+                stack.push(tree_.getChild(n, alt));
+            }
+        }
+        else
+        {
+            /// turn the node into a "lantern"
+            if (nkids > 0)
+            {
+                vis_flags_->setHidden(n, true);
+                /// lantern size
+                auto lsize = (size * max_lantern) / size_limit;
+                vis_flags_->setLanternSize(n, lsize);
+                layout_->setLayoutDone(n, false);
+                dirtyUp(n);
+            }
+        }
+    }
+
+    setLayoutOutdated();
+    emit needsRedrawing();
+
+    perfHelper.end();
 }
 
 void TraditionalView::showNogoods() const
