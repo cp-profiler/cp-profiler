@@ -18,6 +18,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/utils/array.cpp \
     $$PWD/src/cpprofiler/utils/debug.cpp \
     $$PWD/src/cpprofiler/utils/std_ext.cpp \
+    $$PWD/src/cpprofiler/utils/maybe_caller.cpp \
     $$PWD/src/cpprofiler/tree/node.cpp \
     $$PWD/src/cpprofiler/tree/structure.cpp \
     $$PWD/src/cpprofiler/tree/layout.cpp \
@@ -30,6 +31,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/tree/traditional_view.cpp \
     $$PWD/src/cpprofiler/pixel_tree/canvas.cpp \
     $$PWD/src/cpprofiler/pixel_tree/pixel_image.cpp \
+    $$PWD/src/cpprofiler/pixel_tree/pixel_widget.cpp \
     $$PWD/src/cpprofiler/tree/tree_scroll_area.cpp \
     $$PWD/src/cpprofiler/tree/cursors/node_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.cpp \
@@ -71,6 +73,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/utils/array.hh \
     $$PWD/src/cpprofiler/utils/debug.hh \
     $$PWD/src/cpprofiler/utils/std_ext.hh \
+    $$PWD/src/cpprofiler/utils/maybe_caller.hh \
     $$PWD/src/cpprofiler/tree/node.hh \
     $$PWD/src/cpprofiler/tree/structure.hh \
     $$PWD/src/cpprofiler/tree/layout.hh \
@@ -84,6 +87,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/traditional_view.hh \
     $$PWD/src/cpprofiler/pixel_tree/canvas.hh \
     $$PWD/src/cpprofiler/pixel_tree/pixel_image.hh \
+    $$PWD/src/cpprofiler/pixel_tree/pixel_widget.hh \
     $$PWD/src/cpprofiler/tree/tree_scroll_area.hh \
     $$PWD/src/cpprofiler/tree/subtree_view.hh \
     $$PWD/src/cpprofiler/tree/cursors/node_cursor.hh \

@@ -34,7 +34,6 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
 {
     const auto &tree = ex.tree();
     traditional_view_.reset(new tree::TraditionalView(tree, ex.userData(), ex.solver_data()));
-    pixel_tree_.reset(new pixel_tree::Canvas());
 
     auto layout = new QGridLayout();
 
@@ -322,11 +321,18 @@ static void writeToFile(const QString &path, const QString &str)
 
 void ExecutionWindow::showPixelTree()
 {
+    const auto &tree = execution_.tree();
+
+    /// Can only show pixel tree when the tree is fully built
+    if (!tree.isDone())
+        return;
+
     if (!pt_dock_)
     {
         pt_dock_ = new QDockWidget("Pixel Tree", this);
         pt_dock_->setAllowedAreas(Qt::BottomDockWidgetArea);
         addDockWidget(Qt::BottomDockWidgetArea, pt_dock_);
+        pixel_tree_.reset(new pixel_tree::Canvas(tree));
         pt_dock_->setWidget(pixel_tree_.get());
     }
 

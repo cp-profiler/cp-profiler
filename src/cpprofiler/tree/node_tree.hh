@@ -46,6 +46,9 @@ class NodeTree : public QObject
     /// Count of different types of nodes, tree depth
     NodeStats node_stats_;
 
+    /// Indicates whether the tree is fully built
+    bool is_done_ = false;
+
     /// Ensure all relevant data structures contain this node
     void addEntry(NodeID nid);
 
@@ -74,6 +77,10 @@ class NodeTree : public QObject
     void setSolverData(std::shared_ptr<SolverData> sd);
 
     void setNameMap(std::shared_ptr<const NameMap> nm);
+
+    void setDone() { is_done_ = true; }
+
+    bool isDone() const { return is_done_; }
 
     /// *************************** Tree Modifiers ***************************
 

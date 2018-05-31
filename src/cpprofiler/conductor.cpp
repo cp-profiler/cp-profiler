@@ -153,6 +153,7 @@ static int getRandomExID()
 
 void Conductor::onExecutionDone(Execution *e) const
 {
+    e->tree().setDone();
 
     print("on execution done");
 

@@ -509,6 +509,8 @@ std::shared_ptr<Execution> load_execution(const char *path)
 
     read_nogoods(db.get(), *ex);
 
+    ex->tree().setDone();
+
     return ex;
 }
 } // namespace db_handler
