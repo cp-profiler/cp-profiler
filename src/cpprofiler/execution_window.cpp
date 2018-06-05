@@ -22,6 +22,8 @@
 
 #include "tree/node_tree.hh"
 
+#include "utils/maybe_caller.hh"
+
 #include "analysis/similar_subtree_window.hh"
 
 #include "stats_bar.hpp"
@@ -56,6 +58,8 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
 {
     const auto &tree = ex.tree();
     traditional_view_.reset(new tree::TraditionalView(tree, ex.userData(), ex.solver_data()));
+
+    maybe_caller_.reset(new utils::MaybeCaller(30));
 
     auto layout = new QGridLayout();
 
@@ -105,8 +109,13 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
         layout->addWidget(lantern_widget, 2, 0);
         lantern_widget->hide();
 
-        connect(lantern_widget, &LanternMenu::limit_changed,
-                traditional_view_.get(), &tree::TraditionalView::hideBySize);
+        // connect(lantern_widget, &LanternMenu::limit_changed,
+        //         traditional_view_.get(), &tree::TraditionalView::hideBySize);
+        connect(lantern_widget, &LanternMenu::limit_changed, [this](int limit) {
+            maybe_caller_->call([this, limit]() {
+                traditional_view_->hideBySize(limit);
+            });
+        });
     }
 
     {
@@ -388,6 +397,8 @@ void ExecutionWindow::toggleLanternView(bool checked)
 
     if (checked)
     {
+        const int max_nodes = execution_.tree().nodeCount();
+        lantern_widget->setMax(max_nodes);
         lantern_widget->show();
         auto old_value = lantern_widget->value();
         traditional_view_->hideBySize(old_value);
@@ -395,6 +406,7 @@ void ExecutionWindow::toggleLanternView(bool checked)
     else
     {
         /// Undo lantern tree
+        traditional_view_->undoLanterns();
         traditional_view_->unhideAll();
         lantern_widget->hide();
     }

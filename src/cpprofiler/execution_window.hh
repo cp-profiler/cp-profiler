@@ -10,6 +10,11 @@
 namespace cpprofiler
 {
 
+namespace utils
+{
+class MaybeCaller;
+}
+
 namespace tree
 {
 class TraditionalView;
@@ -35,6 +40,9 @@ public:
   /// Get slider value
   int value() { return slider_->value(); }
 
+  /// Set maximum value of the slider
+  void setMax(int v) { slider_->setMaximum(v); }
+
 signals:
   /// indicates that max size for a lantern node changed
   void limit_changed(int val);
@@ -48,6 +56,8 @@ class ExecutionWindow : public QMainWindow
   std::unique_ptr<tree::TraditionalView> traditional_view_;
 
   std::unique_ptr<pixel_tree::Canvas> pixel_tree_;
+
+  std::unique_ptr<utils::MaybeCaller> maybe_caller_;
 
   /// Dockable widget for the pixel tree
   QDockWidget *pt_dock_ = nullptr;

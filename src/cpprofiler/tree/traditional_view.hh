@@ -152,6 +152,9 @@ public slots:
 
   /// Transform the tree in to a lantern tree using `limit` as max lantern size
   void hideBySize(int limit);
+
+  /// Reset lantern sizes for nodes
+  void undoLanterns();
 };
 
 } // namespace tree

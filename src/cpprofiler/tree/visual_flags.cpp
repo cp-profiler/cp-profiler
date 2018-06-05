@@ -34,6 +34,15 @@ void VisualFlags::setHidden(NodeID nid, bool val)
 {
     ensure_id_exists(nid);
     node_hidden_[nid] = val;
+
+    if (val)
+    {
+        hidden_nodes_.insert(nid);
+    }
+    else
+    {
+        hidden_nodes_.erase(nid);
+    }
 }
 
 bool VisualFlags::isHidden(NodeID nid) const
@@ -41,6 +50,22 @@ bool VisualFlags::isHidden(NodeID nid) const
     if (node_hidden_.size() <= nid)
         return false;
     return node_hidden_.at(nid);
+}
+
+void VisualFlags::unhideAll()
+{
+
+    for (auto &&n : node_hidden_)
+    {
+        n = false;
+    }
+
+    hidden_nodes_.clear();
+}
+
+int VisualFlags::hiddenCount()
+{
+    return hidden_nodes_.size();
 }
 
 void VisualFlags::setHighlighted(NodeID nid, bool val)
@@ -88,7 +113,7 @@ void VisualFlags::setLanternSize(NodeID nid, int val)
     lantern_sizes_.insert({nid, val});
 }
 
-int VisualFlags::lanternSize(NodeID nid)
+int VisualFlags::lanternSize(NodeID nid) const
 {
     const auto it = lantern_sizes_.find(nid);
     if (it != lantern_sizes_.end())
@@ -97,7 +122,7 @@ int VisualFlags::lanternSize(NodeID nid)
     }
     else
     {
-        return 0; /// for non-lantern nodes
+        return -1; /// for non-lantern nodes
     }
 }
 

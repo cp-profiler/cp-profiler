@@ -55,5 +55,15 @@ static_assert(MAX_NODE_W >= PENTAGON_WIDTH);
 constexpr int SHADOW_OFFSET = 3.0;
 } // namespace traditional
 
+namespace lantern
+{
+static constexpr int BASE_HEIGHT = 14;
+static constexpr int HALF_WIDTH = 20;
+static constexpr int PRECISION = 127;
+static constexpr int MAX_LEVELS = 5;
+/// delta height for lanterns with respect to the size increase by 1
+static constexpr float K = (float)(layout::dist_y * (MAX_LEVELS - 1) - BASE_HEIGHT) / PRECISION;
+} // namespace lantern
+
 } // namespace tree
 } // namespace cpprofiler

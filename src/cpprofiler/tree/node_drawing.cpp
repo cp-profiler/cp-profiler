@@ -174,6 +174,31 @@ void big_pentagon(QPainter &painter, int x, int y, bool selected)
     painter.drawConvexPolygon(points, 5);
 }
 
+void lantern(QPainter &painter, int x, int y, int size, bool selected)
+{
+
+    using namespace lantern;
+
+    if (selected)
+    {
+        painter.setBrush(colors::gold);
+    }
+    else
+    {
+        painter.setBrush(colors::red);
+    }
+
+    const int height = K * size;
+
+    QPointF points[5] = {QPointF(x, y),
+                         QPointF(x + HALF_WIDTH, y + BASE_HEIGHT),
+                         QPointF(x + HALF_WIDTH, y + BASE_HEIGHT + height),
+                         QPointF(x - HALF_WIDTH, y + BASE_HEIGHT + height),
+                         QPointF(x - HALF_WIDTH, y + BASE_HEIGHT)};
+
+    painter.drawConvexPolygon(points, 5);
+}
+
 } // namespace draw
 } // namespace tree
 } // namespace cpprofiler

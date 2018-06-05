@@ -206,12 +206,24 @@ void DrawingCursor::processCurrentNode()
             return;
         }
 
-        /// completely failed
-        drawTriangle(m_painter, cur_x, cur_y, selected);
+        /// check if the node is a lantern node
+        const auto lantern_size = m_vis_flags.lanternSize(m_cur_node);
 
-        /// has open nodes
+        if (lantern_size == -1)
+        {
 
-        /// has solutions
+            /// completely failed
+            drawTriangle(m_painter, cur_x, cur_y, selected);
+
+            /// TODO: has open nodes
+
+            /// TODO: has solutions
+        }
+        else
+        {
+            draw::lantern(m_painter, cur_x, cur_y, lantern_size, selected);
+        }
+
         return;
     }
 

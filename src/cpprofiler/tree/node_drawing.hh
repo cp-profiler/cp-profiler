@@ -22,6 +22,8 @@ void skipped(QPainter &painter, int x, int y, bool selected);
 void pentagon(QPainter &painter, int x, int y, bool selected);
 void big_pentagon(QPainter &painter, int x, int y, bool selected);
 
+void lantern(QPainter &painter, int x, int y, int size, bool selected);
+
 } // namespace draw
 } // namespace tree
 } // namespace cpprofiler

@@ -19,6 +19,7 @@
 
 #include <numeric>
 #include <climits>
+#include <cmath>
 
 namespace cpprofiler
 {
@@ -310,29 +311,65 @@ static inline void computeForNodeNary(NodeID nid, int nkids, Layout &layout, con
     layout.setShape(nid, std::move(combined));
 }
 
+/// Calculate shape for sized rectangle (lantern); size is between 0 and 127
+static ShapeUniqPtr calc_for_sized_rect(int size)
+{
+
+    // using namespace lantern;
+
+    int levels = std::ceil((size * lantern::K + lantern::BASE_HEIGHT) / (float)layout::dist_y) + 1;
+
+    auto shape = ShapeUniqPtr(new Shape(levels));
+
+    for (auto i = 0u; i < levels; ++i)
+    {
+        (*shape)[i] = {-lantern::HALF_WIDTH, lantern::HALF_WIDTH};
+    }
+
+    shape->setBoundingBox({-lantern::HALF_WIDTH, lantern::HALF_WIDTH});
+
+    return std::move(shape);
+}
+
 /// Computes layout for nid (shape, bounding box, offsets for its children)
 void LayoutCursor::computeForNode(NodeID nid)
 {
-
     const bool hidden = m_vis_flags.isHidden(nid);
     const bool label_shown = m_vis_flags.isLabelShown(nid);
 
     /// Check if the node is hidden:
     if (hidden)
     {
+        const auto lsize = m_vis_flags.lanternSize(nid);
 
-        if (!label_shown)
+        if (lsize > -1)
         {
-            m_layout.setShape(nid, ShapeUniqPtr(&Shape::hidden));
+            /// Lantern node
+            auto shape = calc_for_sized_rect(lsize);
+            if (label_shown)
+            {
+                /// overriting the first extent in case of a label
+                (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, true);
+                shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
+            }
+            m_layout.setShape(nid, std::move(shape));
         }
         else
         {
+            /// Normal failure node (triangle)
 
-            auto shape = ShapeUniqPtr{new Shape{2}};
-            (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, true);
-            (*shape)[1] = (*shape)[0];
-            shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
-            m_layout.setShape(nid, std::move(shape));
+            if (!label_shown)
+            {
+                m_layout.setShape(nid, ShapeUniqPtr(&Shape::hidden));
+            }
+            else
+            {
+                auto shape = ShapeUniqPtr{new Shape{2}};
+                (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, true);
+                (*shape)[1] = (*shape)[0];
+                shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
+                m_layout.setShape(nid, std::move(shape));
+            }
         }
     }
     else
