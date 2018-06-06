@@ -161,17 +161,16 @@ std::vector<NodeID> any_order(const NodeTree &tree)
 
 std::vector<NodeID> post_order(const NodeTree &tree)
 {
-    /// post-order traversal requires two stacks
     std::stack<NodeID> stk_1;
     std::vector<NodeID> result;
 
     result.reserve(tree.nodeCount());
 
-    NodeID root = NodeID{0};
+    auto root = tree.getRoot();
 
     stk_1.push(root);
 
-    while (stk_1.size() > 0)
+    while (!stk_1.empty())
     {
         auto nid = stk_1.top();
         stk_1.pop();

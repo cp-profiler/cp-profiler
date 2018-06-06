@@ -20,10 +20,11 @@ namespace tree
 class TraditionalView;
 }
 
-namespace pixel_tree
+namespace pixel_view
 {
-class Canvas;
-}
+class PtCanvas;
+class IcicleCanvas;
+} // namespace pixel_view
 
 class Execution;
 
@@ -55,12 +56,17 @@ class ExecutionWindow : public QMainWindow
   Execution &execution_;
   std::unique_ptr<tree::TraditionalView> traditional_view_;
 
-  std::unique_ptr<pixel_tree::Canvas> pixel_tree_;
+  std::unique_ptr<pixel_view::PtCanvas> pixel_tree_;
+
+  std::unique_ptr<pixel_view::IcicleCanvas> icicle_tree_;
 
   std::unique_ptr<utils::MaybeCaller> maybe_caller_;
 
   /// Dockable widget for the pixel tree
   QDockWidget *pt_dock_ = nullptr;
+
+  /// Dockable widget for the icicle tree
+  QDockWidget *it_dock_ = nullptr;
 
   /// Settings widget for lantern tree
   LanternMenu *lantern_widget = nullptr;
@@ -83,6 +89,9 @@ public slots:
 
   /// Create and display pixel tree as a dockable widget
   void showPixelTree();
+
+  /// Create and display icicle tree as a dockable widget
+  void showIcicleTree();
 
   /// Toggle the tree lantern tree version of the visualisation
   void toggleLanternView(bool checked);

@@ -1,4 +1,4 @@
-#include "canvas.hh"
+#include "pt_canvas.hh"
 #include "pixel_image.hh"
 #include "pixel_widget.hh"
 #include "../tree/node_tree.hh"
@@ -12,15 +12,15 @@
 #include <QPainter>
 #include <QPushButton>
 #include <QScrollBar>
-#include <QScrollBar>
+#include <QVBoxLayout>
 
 namespace cpprofiler
 {
 
-namespace pixel_tree
+namespace pixel_view
 {
 
-Canvas::Canvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
+PtCanvas::PtCanvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
 {
     pimage_.reset(new PixelImage());
     pwidget_.reset(new PixelWidget(*pimage_));
@@ -53,11 +53,6 @@ Canvas::Canvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
         });
     }
 
-    const auto sa_width = pwidget_->width();
-    const auto sa_height = pwidget_->height();
-
-    pimage_->resize({sa_width, sa_height});
-
     connect(pwidget_.get(), &PixelWidget::viewport_resized, [this](const QSize &size) {
         pimage_->resize(size);
         redrawAll();
@@ -67,19 +62,19 @@ Canvas::Canvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
         redrawAll();
     });
 
-    connect(pwidget_.get(), &PixelWidget::slices_selected, this, &Canvas::selectNodes);
+    connect(pwidget_.get(), &PixelWidget::slices_selected, this, &PtCanvas::selectNodes);
 
     redrawAll();
 }
 
-Canvas::~Canvas() = default;
+PtCanvas::~PtCanvas() = default;
 
-int Canvas::totalSlices() const
+int PtCanvas::totalSlices() const
 {
     return std::ceil((float)pi_seq_.size() / compression_);
 }
 
-std::vector<PixelItem> Canvas::constructPixelTree() const
+std::vector<PixelItem> PtCanvas::constructPixelTree() const
 {
 
     print("pt: construct tree");
@@ -121,7 +116,7 @@ std::vector<PixelItem> Canvas::constructPixelTree() const
     return pixel_seq;
 }
 
-void Canvas::redrawAll()
+void PtCanvas::redrawAll()
 {
     pimage_->clear();
 
@@ -142,7 +137,7 @@ void Canvas::redrawAll()
     pwidget_->viewport()->update();
 }
 
-void Canvas::drawPixelTree()
+void PtCanvas::drawPixelTree()
 {
 
     static int times_called = 0;
@@ -190,7 +185,7 @@ void Canvas::drawPixelTree()
     }
 }
 
-void Canvas::selectNodes(int vbegin, int vend)
+void PtCanvas::selectNodes(int vbegin, int vend)
 {
     if (vend < vbegin)
     {
@@ -210,5 +205,5 @@ void Canvas::selectNodes(int vbegin, int vend)
     redrawAll();
 }
 
-} // namespace pixel_tree
+} // namespace pixel_view
 } // namespace cpprofiler

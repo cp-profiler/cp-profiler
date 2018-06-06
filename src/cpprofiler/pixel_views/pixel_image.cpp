@@ -8,7 +8,7 @@
 namespace cpprofiler
 {
 
-namespace pixel_tree
+namespace pixel_view
 {
 
 PixelImage::PixelImage()
@@ -77,6 +77,54 @@ void PixelImage::zoomOut()
     }
 }
 
+void PixelImage::drawRect(int x, int y, int width, QRgb color)
+{
+
+    const auto BLACK = qRgb(0, 0, 0);
+    assert(y >= 0 && width > 0);
+
+    /// the rectange
+
+    if (x < 0)
+    {
+        /// the rectangle is cut off
+        width += x;
+        x = 0;
+    }
+
+    const int x_begin = x * pixel_size_;
+    const int y_begin = y * pixel_size_;
+    const int x_end = (x + width) * pixel_size_;
+    const int y_end = (y + 1) * pixel_size_;
+
+    /// Horizontal lines
+    for (auto col = x_begin; col < x_end; ++col)
+    {
+        setPixel(buffer_, col, y_begin, BLACK);
+    }
+
+    for (auto col = x_begin; col < x_end; ++col)
+    {
+        setPixel(buffer_, col, y_end - 1, BLACK);
+    }
+
+    /// Vertical lines
+    for (auto row = y_begin; row < y_end; ++row)
+    {
+        setPixel(buffer_, x_begin, row, BLACK);
+        setPixel(buffer_, x_end - 1, row, BLACK);
+    }
+
+    /// Fill the rect
+    for (auto col = x_begin + 1; col < x_end - 1; ++col)
+    {
+        for (auto row = y_begin + 1; row < y_end - 1; ++row)
+        {
+            setPixel(buffer_, col, row, color);
+        }
+    }
+}
+
 void PixelImage::drawPixel(int x, int y, QRgb color)
 {
     assert(x >= 0 && y >= 0);
@@ -101,5 +149,5 @@ void PixelImage::drawPixel(int x, int y, QRgb color)
     }
 }
 
-} // namespace pixel_tree
+} // namespace pixel_view
 } // namespace cpprofiler

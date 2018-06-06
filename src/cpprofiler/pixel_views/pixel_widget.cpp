@@ -5,7 +5,7 @@
 namespace cpprofiler
 {
 
-namespace pixel_tree
+namespace pixel_view
 {
 
 void PixelWidget::mousePressEvent(QMouseEvent *e)
@@ -29,5 +29,5 @@ void PixelWidget::mouseReleaseEvent(QMouseEvent *e)
         emit slices_selected(vline, pressed_vline_);
 }
 
-} // namespace pixel_tree
+} // namespace pixel_view
 } // namespace cpprofiler

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QScrollArea>
-#include <QVBoxLayout>
 #include <QLabel>
 #include <QWidget>
 
@@ -19,7 +18,7 @@ namespace tree
 class NodeTree;
 }
 
-namespace pixel_tree
+namespace pixel_view
 {
 
 class PixelWidget;
@@ -32,7 +31,7 @@ struct PixelItem
 
 class PixelImage;
 
-class Canvas : public QWidget
+class PtCanvas : public QWidget
 {
     Q_OBJECT
     const tree::NodeTree &tree_;
@@ -61,9 +60,9 @@ class Canvas : public QWidget
     std::vector<PixelItem> constructPixelTree() const;
 
   public:
-    Canvas(const tree::NodeTree &tree);
+    PtCanvas(const tree::NodeTree &tree);
 
-    ~Canvas();
+    ~PtCanvas();
 
   public slots:
 
@@ -71,5 +70,5 @@ class Canvas : public QWidget
     void selectNodes(int vbegin, int vend);
 };
 
-} // namespace pixel_tree
+} // namespace pixel_view
 } // namespace cpprofiler

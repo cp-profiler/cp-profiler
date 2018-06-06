@@ -12,7 +12,7 @@
 namespace cpprofiler
 {
 
-namespace pixel_tree
+namespace pixel_view
 {
 
 class PixelWidget : public QAbstractScrollArea
@@ -58,6 +58,6 @@ class PixelWidget : public QAbstractScrollArea
     void slices_selected(int begin, int end);
 };
 
-} // namespace pixel_tree
+} // namespace pixel_view
 
 } // namespace cpprofiler

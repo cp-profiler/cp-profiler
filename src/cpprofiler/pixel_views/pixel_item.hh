@@ -4,8 +4,8 @@
 namespace cpprofiler
 {
 
-namespace pixel_tree
+namespace pixel_view
 {
 
-} // namespace pixel_tree
+} // namespace pixel_view
 } // namespace cpprofiler

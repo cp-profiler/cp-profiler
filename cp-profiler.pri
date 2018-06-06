@@ -29,9 +29,10 @@ SOURCES += \
     $$PWD/src/cpprofiler/tree/node_info.cpp \
     $$PWD/src/cpprofiler/tree/visual_flags.cpp \
     $$PWD/src/cpprofiler/tree/traditional_view.cpp \
-    $$PWD/src/cpprofiler/pixel_tree/canvas.cpp \
-    $$PWD/src/cpprofiler/pixel_tree/pixel_image.cpp \
-    $$PWD/src/cpprofiler/pixel_tree/pixel_widget.cpp \
+    $$PWD/src/cpprofiler/pixel_views/pt_canvas.cpp \
+    $$PWD/src/cpprofiler/pixel_views/icicle_canvas.cpp \
+    $$PWD/src/cpprofiler/pixel_views/pixel_image.cpp \
+    $$PWD/src/cpprofiler/pixel_views/pixel_widget.cpp \
     $$PWD/src/cpprofiler/tree/tree_scroll_area.cpp \
     $$PWD/src/cpprofiler/tree/cursors/node_cursor.cpp \
     $$PWD/src/cpprofiler/tree/cursors/drawing_cursor.cpp \
@@ -85,9 +86,10 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/node_stats.hh \
     $$PWD/src/cpprofiler/tree/visual_flags.hh \
     $$PWD/src/cpprofiler/tree/traditional_view.hh \
-    $$PWD/src/cpprofiler/pixel_tree/canvas.hh \
-    $$PWD/src/cpprofiler/pixel_tree/pixel_image.hh \
-    $$PWD/src/cpprofiler/pixel_tree/pixel_widget.hh \
+    $$PWD/src/cpprofiler/pixel_views/pt_canvas.hh \
+    $$PWD/src/cpprofiler/pixel_views/icicle_canvas.hh \
+    $$PWD/src/cpprofiler/pixel_views/pixel_image.hh \
+    $$PWD/src/cpprofiler/pixel_views/pixel_widget.hh \
     $$PWD/src/cpprofiler/tree/tree_scroll_area.hh \
     $$PWD/src/cpprofiler/tree/subtree_view.hh \
     $$PWD/src/cpprofiler/tree/cursors/node_cursor.hh \

@@ -1,7 +1,8 @@
 #include "execution_window.hh"
 
 #include "tree/traditional_view.hh"
-#include "pixel_tree/canvas.hh"
+#include "pixel_views/pt_canvas.hh"
+#include "pixel_views/icicle_canvas.hh"
 
 #include "execution.hh"
 #include "user_data.hh"
@@ -214,6 +215,12 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
             viewMenu->addAction(showPixelTree);
             connect(showPixelTree, &QAction::triggered, this, &ExecutionWindow::showPixelTree);
 
+            auto showIcicleTree = new QAction{"Pixel Icicle View", this};
+            showIcicleTree->setCheckable(true);
+            showIcicleTree->setShortcut(QKeySequence("Shift+I"));
+            viewMenu->addAction(showIcicleTree);
+            connect(showIcicleTree, &QAction::triggered, this, &ExecutionWindow::showIcicleTree);
+
             auto toggleLanternTree = new QAction{"Lantern Tree View", this};
             toggleLanternTree->setCheckable(true);
             toggleLanternTree->setShortcut(QKeySequence("Ctrl+L"));
@@ -369,6 +376,7 @@ void ExecutionWindow::showPixelTree()
     const auto &tree = execution_.tree();
 
     /// Can only show pixel tree when the tree is fully built
+    /// TODO: change this to allow partially built trees
     if (!tree.isDone())
         return;
 
@@ -377,7 +385,7 @@ void ExecutionWindow::showPixelTree()
         pt_dock_ = new QDockWidget("Pixel Tree", this);
         pt_dock_->setAllowedAreas(Qt::BottomDockWidgetArea);
         addDockWidget(Qt::BottomDockWidgetArea, pt_dock_);
-        pixel_tree_.reset(new pixel_tree::Canvas(tree));
+        pixel_tree_.reset(new pixel_view::PtCanvas(tree));
         pt_dock_->setWidget(pixel_tree_.get());
     }
 
@@ -388,6 +396,37 @@ void ExecutionWindow::showPixelTree()
     else
     {
         pt_dock_->hide();
+    }
+}
+
+void ExecutionWindow::showIcicleTree()
+{
+
+    const auto &tree = execution_.tree();
+    /// Can only show icicle tree when the tree is fully built
+    /// TODO: change this to allow partially built trees
+    if (!tree.isDone())
+        return;
+
+    if (!it_dock_)
+    {
+        /// Create Icicle Tree Widget
+
+        it_dock_ = new QDockWidget("Icicle Tree", this);
+        it_dock_->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+        addDockWidget(Qt::TopDockWidgetArea, it_dock_);
+
+        icicle_tree_.reset(new pixel_view::IcicleCanvas(tree));
+        it_dock_->setWidget(icicle_tree_.get());
+    }
+
+    if (it_dock_->isHidden())
+    {
+        it_dock_->show();
+    }
+    else
+    {
+        it_dock_->hide();
     }
 }
 
