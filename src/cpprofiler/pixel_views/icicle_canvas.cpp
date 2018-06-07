@@ -18,16 +18,32 @@ namespace cpprofiler
 namespace pixel_view
 {
 
-/// left and right bound in 'pixels'
-struct Bounds
+namespace colors
 {
-    int width;
-};
+QRgb branch = qRgb(50, 50, 230);
+QRgb failure = qRgb(230, 50, 50);
+QRgb solution = qRgb(50, 230, 50);
+} // namespace colors
 
-struct IcicleLayout
+class IcicleLayout
 {
-    // bounds for every node
-    std::vector<Bounds> bounds_;
+  public:
+    // width for every node
+    std::vector<int> width_;
+    /// whether node should represent a solution
+    std::vector<bool> has_sol;
+
+    void resize(size_t n)
+    {
+        width_.resize(n);
+        has_sol.resize(n);
+    }
+
+    inline int width(NodeID n) const { return width_[n]; }
+    inline void setWidth(NodeID n, int v) { width_[n] = v; }
+
+    inline bool hasSol(NodeID n) const { return has_sol[n]; }
+    inline void setHasSol(NodeID n, bool v) { has_sol[n] = v; }
 };
 
 static std::unique_ptr<IcicleLayout> computeLayout(const tree::NodeTree &nt, int compr)
@@ -74,31 +90,40 @@ static std::unique_ptr<IcicleLayout> computeLayout(const tree::NodeTree &nt, int
     perfHelper.begin("icicle layout: rest");
     auto layout = std::unique_ptr<IcicleLayout>(new IcicleLayout());
 
-    auto &bounds = layout->bounds_;
-    bounds.resize(order.size());
+    layout->resize(order.size());
 
     for (auto n : order)
     {
 
         if (generations[n] == compr)
         {
-            bounds[n].width = 1;
+            layout->setWidth(n, 1);
+
+            print("Leaf node: {}", n);
+
+            if (nt.hasSolvedChildren(n))
+            {
+                print("Set {} as solution", n);
+                layout->setHasSol(n, true);
+            }
         }
         else if (generations[n] < compr)
         {
-            bounds[n].width = 0;
+            layout->setWidth(n, 0);
         }
         else
         {
             const auto kid1 = nt.getChild(n, 0);
-            bounds[n].width = bounds[kid1].width;
+
+            int sum_width = layout->width(kid1);
             /// extra kids
             auto nkids = nt.childrenCount(n);
             for (auto alt = 1; alt < nkids; ++alt)
             {
                 const auto kid = nt.getChild(n, alt);
-                bounds[n].width += bounds[kid].width;
+                sum_width += layout->width(kid);
             }
+            layout->setWidth(n, sum_width);
         }
     }
     perfHelper.end();
@@ -188,7 +213,7 @@ void IcicleCanvas::redrawAll()
 
     {
         const auto root = tree_.getRoot();
-        const auto total_width = layout_->bounds_[root].width;
+        const auto total_width = layout_->width_[root];
         /// how many "pixels" fit in one page
         const auto page_width = pwidget_->width();
 
@@ -214,9 +239,37 @@ class IcicleDrawing
     int counter = 0;
 
   private:
+    /// Get the color to be used in the icicle tree for this node
+    QRgb getColor(NodeID n)
+    {
+        /// Note: some nodes are not actually solution nodes, but
+        /// can represent them when the tree is compressed
+        // if (layout_.hasSol(n))
+        if (nt_.hasSolvedChildren(n))
+        {
+            return colors::solution;
+        }
+        else
+        {
+            return colors::failure;
+        }
+        const auto status = nt_.getStatus(n);
+
+        if (status == tree::NodeStatus::BRANCH)
+        {
+            return colors::branch;
+        }
+        else if (status == tree::NodeStatus::FAILED)
+        {
+            return colors::failure;
+        }
+
+        return qRgb(255, 255, 255);
+    }
+
     void drawIcicleSubtree(NodeID n, int cur_x, int cur_y)
     {
-        const auto width = layout_.bounds_[n].width;
+        const auto width = layout_.width_[n];
 
         /// no need to draw the node or its children
         if (cur_x > viewport_width || cur_x + width <= 0 || width == 0)
@@ -225,7 +278,8 @@ class IcicleDrawing
         }
 
         /// draw itself
-        QRgb color = qRgb(30, 40, 30);
+        auto color = getColor(n);
+
         pimage_.drawRect(cur_x, cur_y, width, color);
 
         counter++;
@@ -235,7 +289,7 @@ class IcicleDrawing
         {
             auto kid = nt_.getChild(n, alt);
             drawIcicleSubtree(kid, cur_x, cur_y + 1);
-            cur_x += layout_.bounds_[kid].width;
+            cur_x += layout_.width_[kid];
         }
     }
 
