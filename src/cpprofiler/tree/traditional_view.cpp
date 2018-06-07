@@ -51,7 +51,8 @@ TraditionalView::TraditionalView(const NodeTree &tree, UserData &ud, SolverData 
 
     // std::cerr << "traditional view thread:" << std::this_thread::get_id() << std::endl;
 
-    connect(scroll_area_.get(), &TreeScrollArea::nodeClicked, this, &TraditionalView::setCurrentNode);
+    // connect(scroll_area_.get(), &TreeScrollArea::nodeClicked, this, &TraditionalView::setCurrentNode);
+    connect(scroll_area_.get(), &TreeScrollArea::nodeClicked, this, &TraditionalView::nodeSelected);
     connect(scroll_area_.get(), &TreeScrollArea::nodeDoubleClicked, this, &TraditionalView::handleDoubleClick);
 
     connect(this, &TraditionalView::needsRedrawing, this, &TraditionalView::redraw);
@@ -93,7 +94,7 @@ void TraditionalView::setNode(NodeID nid)
 void TraditionalView::navRoot()
 {
     auto root = tree_.getRoot();
-    setNode(root);
+    emit nodeSelected(root);
     centerCurrentNode(); /// TODO: this should be needed
     emit needsRedrawing();
 }
@@ -114,7 +115,8 @@ void TraditionalView::navDown()
         return;
 
     auto first_kid = tree_.getChild(nid, 0);
-    setNode(first_kid);
+
+    emit nodeSelected(first_kid);
     centerCurrentNode();
     emit needsRedrawing();
 }
@@ -133,7 +135,7 @@ void TraditionalView::navDownAlt()
         return;
 
     auto last_kid = tree_.getChild(nid, kids - 1);
-    setNode(last_kid);
+    emit nodeSelected(last_kid);
     centerCurrentNode();
     emit needsRedrawing();
 }
@@ -150,10 +152,10 @@ void TraditionalView::navUp()
 
     if (pid != NodeID::NoNode)
     {
-        setNode(pid);
+        emit nodeSelected(pid);
         centerCurrentNode();
+        emit needsRedrawing();
     }
-    emit needsRedrawing();
 }
 
 void TraditionalView::navLeft()
@@ -173,11 +175,10 @@ void TraditionalView::navLeft()
     if (cur_alt > 0)
     {
         auto kid = tree_.getChild(pid, cur_alt - 1);
-        setNode(kid);
+        emit nodeSelected(kid);
         centerCurrentNode();
+        emit needsRedrawing();
     }
-
-    emit needsRedrawing();
 }
 
 void TraditionalView::navRight()
@@ -201,11 +202,10 @@ void TraditionalView::navRight()
     if (cur_alt + 1 < kids)
     {
         const auto kid = tree_.getChild(pid, cur_alt + 1);
-        setNode(kid);
+        emit nodeSelected(kid);
         centerCurrentNode();
+        emit needsRedrawing();
     }
-
-    emit needsRedrawing();
 }
 
 void TraditionalView::setLabelShown(NodeID nid, bool val)

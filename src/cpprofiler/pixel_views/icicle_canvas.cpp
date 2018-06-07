@@ -11,6 +11,7 @@
 #include <QPushButton>
 #include <QScrollBar>
 #include <QLabel>
+#include <QPoint>
 
 namespace cpprofiler
 {
@@ -23,6 +24,7 @@ namespace colors
 QRgb branch = qRgb(50, 50, 230);
 QRgb failure = qRgb(230, 50, 50);
 QRgb solution = qRgb(50, 230, 50);
+QRgb selected = qRgb(252, 209, 22);
 } // namespace colors
 
 class IcicleLayout
@@ -99,11 +101,8 @@ static std::unique_ptr<IcicleLayout> computeLayout(const tree::NodeTree &nt, int
         {
             layout->setWidth(n, 1);
 
-            print("Leaf node: {}", n);
-
             if (nt.hasSolvedChildren(n))
             {
-                print("Set {} as solution", n);
                 layout->setHasSol(n, true);
             }
         }
@@ -131,6 +130,53 @@ static std::unique_ptr<IcicleLayout> computeLayout(const tree::NodeTree &nt, int
     return layout;
 }
 
+static NodeID findNode(const tree::NodeTree &nt, const IcicleLayout &lo, int x, int y)
+{
+    auto root = nt.getRoot();
+    std::stack<NodeID> stack;
+    /// stack for starting positions (x) of icicle nodes
+    std::stack<QPoint> start_pos;
+
+    stack.push(root);
+    start_pos.push({0, 0});
+
+    while (!stack.empty())
+    {
+        auto n = stack.top();
+        stack.pop();
+
+        auto pos0 = start_pos.top();
+        start_pos.pop();
+
+        /// if within the node's horizontal boundaries
+        if ((x >= pos0.x()) && (x < pos0.x() + lo.width(n)))
+        {
+            /// is node on the right depth level?
+            if (y == pos0.y())
+            {
+                return n;
+            }
+            else if (pos0.y() < y)
+            {
+                /// check its children
+
+                const auto nkids = nt.childrenCount(n);
+                auto cur_x = pos0.x();
+
+                for (auto alt = 0; alt < nkids; ++alt)
+                {
+                    const auto kid = nt.getChild(n, alt);
+                    stack.push(kid);
+                    start_pos.push({cur_x, pos0.y() + 1});
+                    cur_x += lo.width(kid);
+                }
+            }
+        }
+    }
+
+    return NodeID::NoNode;
+}
+
 IcicleCanvas::IcicleCanvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
 {
 
@@ -154,36 +200,53 @@ IcicleCanvas::IcicleCanvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
         controlLayout->addWidget(new QLabel("Zoom:"));
 
         auto zoomOut = new QPushButton("-", this);
+        auto zoomIn = new QPushButton("+", this);
+
+        zoomOut->setMaximumWidth(40);
         controlLayout->addWidget(zoomOut);
-        connect(zoomOut, &QPushButton::clicked, [this]() {
+        connect(zoomOut, &QPushButton::clicked, [zoomOut, this]() {
             pimage_->zoomOut();
+            if (pimage_->pixel_size() == 1)
+                zoomOut->setEnabled(false);
             redrawAll();
         });
 
-        auto zoomIn = new QPushButton("+", this);
+        zoomIn->setMaximumWidth(40);
         controlLayout->addWidget(zoomIn);
-        connect(zoomIn, &QPushButton::clicked, [this]() {
+        connect(zoomIn, &QPushButton::clicked, [zoomOut, this]() {
+            zoomOut->setEnabled(true);
             pimage_->zoomIn();
             redrawAll();
         });
     }
+
+    controlLayout->addStretch();
 
     {
 
         controlLayout->addWidget(new QLabel("Compression:"));
 
         auto addCompression = new QPushButton("-", this);
+        auto reduceCompression = new QPushButton("+", this);
+
+        addCompression->setMaximumWidth(40);
         controlLayout->addWidget(addCompression);
-        connect(addCompression, &QPushButton::clicked, [this]() {
+        connect(addCompression, &QPushButton::clicked, [reduceCompression, this]() {
             compression_ += 1;
+            reduceCompression->setEnabled(true);
             layout_ = computeLayout(tree_, compression_);
             redrawAll();
         });
 
-        auto reduceCompression = new QPushButton("+", this);
+        reduceCompression->setMaximumWidth(40);
+        reduceCompression->setEnabled(false);
         controlLayout->addWidget(reduceCompression);
-        connect(reduceCompression, &QPushButton::clicked, [this]() {
+        connect(reduceCompression, &QPushButton::clicked, [reduceCompression, this]() {
             compression_ = std::max(1, compression_ - 1);
+
+            if (compression_ == 1)
+                reduceCompression->setEnabled(false);
+
             layout_ = computeLayout(tree_, compression_);
             redrawAll();
         });
@@ -197,6 +260,14 @@ IcicleCanvas::IcicleCanvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
         maybe_caller_->call([this]() {
             redrawAll();
         });
+    });
+
+    connect(pwidget_.get(), &PixelWidget::coordinate_clicked, [this](int x, int y) {
+        auto node = findNode(tree_, *layout_, x, y);
+        if (node != NodeID::NoNode)
+        {
+            emit nodeClicked(node);
+        }
     });
 
     // perfHelper.end();
@@ -235,6 +306,9 @@ class IcicleDrawing
     const IcicleLayout &layout_;
     PixelImage &pimage_;
     const int viewport_width;
+
+    /// currently selected node
+    NodeID selected_;
 
     int counter = 0;
 
@@ -280,6 +354,12 @@ class IcicleDrawing
         /// draw itself
         auto color = getColor(n);
 
+        if (n == selected_)
+        {
+            /// disregard the normal color in favour of "gold" for the selected node
+            color = colors::selected;
+        }
+
         pimage_.drawRect(cur_x, cur_y, width, color);
 
         counter++;
@@ -294,8 +374,8 @@ class IcicleDrawing
     }
 
   public:
-    IcicleDrawing(const tree::NodeTree &nt, IcicleLayout &lo, PixelImage &pi, int viewport_w)
-        : nt_(nt), layout_(lo), pimage_(pi), viewport_width(viewport_w)
+    IcicleDrawing(const tree::NodeTree &nt, IcicleLayout &lo, PixelImage &pi, int viewport_w, NodeID selected)
+        : nt_(nt), layout_(lo), pimage_(pi), viewport_width(viewport_w), selected_(selected)
     {
     }
 
@@ -320,12 +400,18 @@ void IcicleCanvas::drawIcicleTree()
 
     perfHelper.begin("draw icicle");
 
-    IcicleDrawing drawer(tree_, *layout_, *pimage_, pwidget_->width());
+    IcicleDrawing drawer(tree_, *layout_, *pimage_, pwidget_->width(), selected_);
     drawer.run(root, -x_begin, 0);
 
     perfHelper.end();
 
     /// provided every node knows its bounding box
+}
+
+void IcicleCanvas::selectNode(NodeID n)
+{
+    selected_ = n;
+    redrawAll();
 }
 
 } // namespace pixel_view

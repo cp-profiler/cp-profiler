@@ -15,7 +15,7 @@ namespace cpprofiler
 namespace pixel_view
 {
 
-constexpr static int DEFAULT_PIXEL_SIZE = 4;
+constexpr static int DEFAULT_PIXEL_SIZE = 10;
 
 class PixelImage : public QObject
 {

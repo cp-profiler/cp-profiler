@@ -62,7 +62,10 @@ PtCanvas::PtCanvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
         redrawAll();
     });
 
-    connect(pwidget_.get(), &PixelWidget::slices_selected, this, &PtCanvas::selectNodes);
+    connect(pwidget_.get(), &PixelWidget::range_selected, this, &PtCanvas::selectNodes);
+    connect(pwidget_.get(), &PixelWidget::coordinate_clicked, [this](int x, int) {
+        selectNodes(x, x);
+    });
 
     redrawAll();
 }
@@ -187,6 +190,8 @@ void PtCanvas::drawPixelTree()
 
 void PtCanvas::selectNodes(int vbegin, int vend)
 {
+
+    print("vbegin: {}", vbegin);
     if (vend < vbegin)
     {
         print("vend < vbegin");

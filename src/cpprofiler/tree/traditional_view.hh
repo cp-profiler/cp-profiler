@@ -77,8 +77,8 @@ signals:
   /// Triggers a redraw that updates scrollarea's viewport (perhaps a direct call would suffice)
   void needsRedrawing();
 
-  /// A signal that notifies execution to change its current node with that of this view
-  void curNodeChanged(NodeID nid);
+  /// Notify all views to change their current nodes to `n`
+  void nodeSelected(NodeID n);
 
 public slots:
 

@@ -6,6 +6,7 @@
 #include <QSlider>
 
 #include "tree/node_id.hh"
+#include "core.hh"
 
 namespace cpprofiler
 {
@@ -99,6 +100,8 @@ public slots:
 signals:
 
   void needToSaveSearch(Execution *e);
+
+  void nodeSelected(NodeID n);
 };
 
 } // namespace cpprofiler

@@ -60,6 +60,11 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
     const auto &tree = ex.tree();
     traditional_view_.reset(new tree::TraditionalView(tree, ex.userData(), ex.solver_data()));
 
+    connect(traditional_view_.get(), &tree::TraditionalView::nodeSelected,
+            this, &ExecutionWindow::nodeSelected);
+
+    connect(this, &ExecutionWindow::nodeSelected, traditional_view_.get(), &tree::TraditionalView::setCurrentNode);
+
     maybe_caller_.reset(new utils::MaybeCaller(30));
 
     auto layout = new QGridLayout();
@@ -418,6 +423,11 @@ void ExecutionWindow::showIcicleTree()
 
         icicle_tree_.reset(new pixel_view::IcicleCanvas(tree));
         it_dock_->setWidget(icicle_tree_.get());
+
+        connect(icicle_tree_.get(), &pixel_view::IcicleCanvas::nodeClicked, this, &ExecutionWindow::nodeSelected);
+
+        /// Note: nodeSelected can be triggered by some other view
+        connect(this, &ExecutionWindow::nodeSelected, icicle_tree_.get(), &pixel_view::IcicleCanvas::selectNode);
     }
 
     if (it_dock_->isHidden())
