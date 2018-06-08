@@ -13,7 +13,10 @@ namespace cpprofiler
 namespace tree
 {
 
-NodeTree::NodeTree() : structure_{new Structure()}, node_info_(new NodeInfo) {}
+NodeTree::NodeTree() : structure_{new Structure()}, node_info_(new NodeInfo)
+{
+    qRegisterMetaType<NodeID>();
+}
 
 NodeTree::~NodeTree() = default;
 
@@ -319,6 +322,11 @@ void NodeTree::onChildClosed(NodeID nid)
     if (allClosed)
     {
         closeNode(nid);
+
+        if (!hasSolvedChildren(nid))
+        {
+            emit failedSubtreeClosed(nid);
+        }
     }
 }
 

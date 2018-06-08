@@ -34,8 +34,8 @@ namespace cpprofiler
 namespace analysis
 {
 
-SimilarSubtreeWindow::SimilarSubtreeWindow(QWidget *parent, const tree::NodeTree &nt, const tree::Layout &lo)
-    : QDialog(parent), m_nt(nt), m_lo(lo)
+SimilarSubtreeWindow::SimilarSubtreeWindow(QWidget *parent, const tree::NodeTree &nt)
+    : QDialog(parent), m_nt(nt)
 {
 
     m_histogram.reset(new HistogramScene);
@@ -204,6 +204,15 @@ static vector<SubtreePattern> eliminateSubsumed(const NodeTree &tree,
     return result;
 }
 
+static std::unique_ptr<tree::Layout> computeShapes(const NodeTree &tree)
+{
+    auto layout = std::unique_ptr<tree::Layout>(new Layout);
+    tree::VisualFlags vf;
+    tree::LayoutComputer layout_c(tree, *layout, vf);
+    layout_c.compute();
+    return std::move(layout);
+}
+
 void SimilarSubtreeWindow::analyse()
 {
 
@@ -222,7 +231,11 @@ void SimilarSubtreeWindow::analyse()
     break;
     case SimilarityType::SHAPE:
     {
-        patterns = runSimilarShapes(m_nt, m_lo);
+        if (!m_lo)
+        {
+            m_lo = computeShapes(m_nt);
+        }
+        patterns = runSimilarShapes(m_nt, *m_lo);
     }
     }
 

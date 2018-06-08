@@ -166,6 +166,9 @@ class NodeTree : public QObject
     /// Notifies that the structure underneath the node has changed
     /// and requires layout update
     void childrenStructureChanged(NodeID nid);
+
+    /// Notify that all nodes in the subtree have been closed (no undetermined nodes)
+    void failedSubtreeClosed(cpprofiler::tree::NodeID nid);
 };
 
 } // namespace tree

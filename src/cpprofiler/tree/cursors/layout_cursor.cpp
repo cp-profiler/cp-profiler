@@ -32,7 +32,7 @@ LayoutCursor::LayoutCursor(NodeID start, const NodeTree &tree, const VisualFlags
 bool LayoutCursor::mayMoveDownwards()
 {
     return NodeCursor::mayMoveDownwards() &&
-           !m_vis_flags.isHidden(m_cur_node) &&
+           (!m_vis_flags.isHidden(m_cur_node)) &&
            m_layout.isDirty(m_cur_node);
 }
 
@@ -196,8 +196,8 @@ inline static void computeForNodeBinary(NodeID nid, Layout &layout, const NodeTr
     auto kid_l = nt.getChild(nid, 0);
     auto kid_r = nt.getChild(nid, 1);
 
-    const auto &s1 = layout.getShape(kid_l);
-    const auto &s2 = layout.getShape(kid_r);
+    const auto &s1 = *layout.getShape(kid_l);
+    const auto &s2 = *layout.getShape(kid_r);
 
     std::vector<int> offsets(2);
     auto combined = combine_shapes(s1, s2, offsets);
@@ -226,8 +226,8 @@ inline static std::vector<int> compute_distances(NodeID nid, int nkids, Layout &
     {
         auto kid_l = tree.getChild(nid, i);
         auto kid_r = tree.getChild(nid, i + 1);
-        const auto &s1 = lo.getShape(kid_l);
-        const auto &s2 = lo.getShape(kid_r);
+        const auto &s1 = *lo.getShape(kid_l);
+        const auto &s2 = *lo.getShape(kid_r);
         distances[i] = distance_between(s1, s2);
     }
 
@@ -240,7 +240,7 @@ inline static int kids_max_depth(NodeID nid, int nkids, const Layout &lo, const 
     for (auto i = 0; i < nkids; ++i)
     {
         auto kid = tree.getChild(nid, i);
-        const auto &s1 = lo.getShape(kid);
+        const auto &s1 = *lo.getShape(kid);
         max_depth = std::max(max_depth, s1.height());
     }
     return max_depth;
@@ -285,7 +285,7 @@ static inline void computeForNodeNary(NodeID nid, int nkids, Layout &layout, con
         for (auto alt = 0; alt < nkids; ++alt)
         {
             const auto kid = tree.getChild(nid, alt);
-            const auto &shape = layout.getShape(kid);
+            const auto &shape = *layout.getShape(kid);
             if (shape.height() > depth - 1)
             {
                 leftmost_x = std::min(leftmost_x, shape[depth - 1].l + x_offsets[alt]);
@@ -397,7 +397,7 @@ void LayoutCursor::computeForNode(NodeID nid)
         {
 
             const auto kid = tree_.getChild(nid, 0);
-            const auto &kid_s = m_layout.getShape(kid);
+            const auto &kid_s = *m_layout.getShape(kid);
 
             auto shape = ShapeUniqPtr(new Shape(kid_s.height() + 1));
 

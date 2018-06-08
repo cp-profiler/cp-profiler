@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <functional>
 
+#include <QMetaType>
+
 namespace cpprofiler
 {
 namespace tree
@@ -21,6 +23,8 @@ struct NodeID
 
 } // namespace tree
 } // namespace cpprofiler
+
+Q_DECLARE_METATYPE(cpprofiler::tree::NodeID)
 
 namespace std
 {

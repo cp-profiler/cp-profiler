@@ -11,10 +11,9 @@ namespace cpprofiler
 namespace tree
 {
 
-const Shape &Layout::getShape(NodeID nid) const
+const Shape *Layout::getShape(NodeID nid) const
 {
-
-    return *m_shapes[nid];
+    return m_shapes[nid].get();
 }
 
 void Layout::setShape(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape)
@@ -62,12 +61,12 @@ double Layout::getOffset(NodeID nid) const
 
 int Layout::getHeight(NodeID nid) const
 {
-    return getShape(nid).height();
+    return getShape(nid)->height();
 }
 
 const BoundingBox &Layout::getBoundingBox(NodeID nid) const
 {
-    return getShape(nid).boundingBox();
+    return getShape(nid)->boundingBox();
 }
 
 void Layout::growDataStructures(int n_nodes)

@@ -90,7 +90,7 @@ static void drawShape(QPainter &painter, int x, int y, NodeID nid, const Layout 
     painter.setBrush(QColor{0, 0, 0, 50});
     painter.setPen(Qt::NoPen);
 
-    const auto &shape = layout.getShape(nid);
+    const auto &shape = *layout.getShape(nid);
 
     const int height = shape.height();
     QPointF *points = new QPointF[height * 2];

@@ -4,6 +4,8 @@
 #include "../utils/tree_utils.hh"
 #include "../utils/perf_helper.hh"
 #include "../tree/shape.hh"
+#include "../tree/visual_flags.hh"
+#include "../tree/layout_computer.hh"
 
 #include <set>
 
@@ -298,7 +300,6 @@ vector<SubtreePattern> runIdenticalSubtrees(const NodeTree &nt)
 
 std::vector<SubtreePattern> runSimilarShapes(const NodeTree &tree, const Layout &lo)
 {
-
     perfHelper.begin("similar shapes body");
 
     std::multiset<ShapeInfo, CompareShapes> shape_set;
@@ -307,7 +308,7 @@ std::vector<SubtreePattern> runSimilarShapes(const NodeTree &tree, const Layout 
 
     for (const auto nid : node_order)
     {
-        shape_set.insert({nid, lo.getShape(nid)});
+        shape_set.insert({nid, *lo.getShape(nid)});
     }
 
     perfHelper.end();

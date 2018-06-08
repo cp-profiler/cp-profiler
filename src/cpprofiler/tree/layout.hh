@@ -47,7 +47,9 @@ class Layout : public QObject
 
     void setLayoutDone(NodeID nid, bool);
 
-    const Shape &getShape(NodeID nid) const;
+    /// Note: a node might not have a shape (nullptr)
+    /// if it was hidden before layout was run
+    const Shape *getShape(NodeID nid) const;
 
     void setShape(NodeID nid, ShapeUniqPtr shape);
 

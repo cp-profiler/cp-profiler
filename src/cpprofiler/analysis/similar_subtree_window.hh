@@ -50,7 +50,7 @@ class SimilarSubtreeWindow : public QDialog
     // void analyse_shapes();
 
     const tree::NodeTree &m_nt;
-    const tree::Layout &m_lo;
+    std::unique_ptr<tree::Layout> m_lo;
 
     std::unique_ptr<HistogramScene> m_histogram;
 
@@ -64,7 +64,7 @@ class SimilarSubtreeWindow : public QDialog
     SimilarityType m_sim_type = SimilarityType::SHAPE;
 
   public:
-    SimilarSubtreeWindow(QWidget *parent, const tree::NodeTree &nt, const tree::Layout &lo);
+    SimilarSubtreeWindow(QWidget *parent, const tree::NodeTree &nt);
 
     ~SimilarSubtreeWindow();
 

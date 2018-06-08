@@ -29,132 +29,171 @@ class TreeScrollArea;
 
 class TraditionalView : public QObject
 {
-  Q_OBJECT
+    Q_OBJECT
 
-  const NodeTree &tree_;
+    /// Tree structure
+    const NodeTree &tree_;
 
-  /// User data (bookmarks etc.)
-  UserData &user_data_;
+    /// User data (bookmarks etc.)
+    UserData &user_data_;
 
-  /// Nogoods, solver ids
-  SolverData &solver_data_;
+    /// Nogoods, solver ids
+    SolverData &solver_data_;
 
-  /// TODO: make sure node flags is thread-safe?
-  std::unique_ptr<VisualFlags> vis_flags_;
-  std::unique_ptr<Layout> layout_;
+    /// Visual flags (hidden/highlighted etc) per node
+    std::unique_ptr<VisualFlags> vis_flags_;
 
-  std::unique_ptr<LayoutComputer> layout_computer_;
-  std::unique_ptr<TreeScrollArea> scroll_area_;
+    /// Layout: shapes of every node
+    std::unique_ptr<Layout> layout_;
 
-  /// only update layout if it is stale
-  bool layout_stale_ = true;
+    /// Responsible for keeping the layout up to date
+    std::unique_ptr<LayoutComputer> layout_computer_;
 
-  /// Returns currently selected node; can be NodeID::NoNode
-  NodeID node() const;
+    /// The area the tree is actually drawn onto
+    std::unique_ptr<TreeScrollArea> scroll_area_;
 
-  /// Sets nid as the currently selected node
-  void setNode(NodeID nid);
+    /// Only update layout if it is stale
+    bool layout_stale_ = true;
 
-public:
-  TraditionalView(const NodeTree &tree, UserData &ud, SolverData &sd);
-  ~TraditionalView();
+    /// Returns currently selected node; can be NodeID::NoNode
+    NodeID node() const;
 
-  QWidget *widget();
+    /// Sets nid as the currently selected node
+    void setNode(NodeID nid);
 
-  /// Show the label for node `nid` causing layout update
-  void setLabelShown(NodeID nid, bool val);
+  public:
+    TraditionalView(const NodeTree &tree, UserData &ud, SolverData &sd);
+    ~TraditionalView();
 
-  /// Exposes layout info (i.e. shapes needed for shape analysis)
-  const Layout &layout() const;
+    /// Return the scroll area
+    QWidget *widget();
 
-  /// Collapse/uncollapse a pentagon node based on its current state
-  void toggleCollapsePentagon(NodeID nid);
+    /// Show the label for node `nid` causing layout update
+    void setLabelShown(NodeID nid, bool val);
 
-  /// Set `nid` and its predecessors as requiring re-layout
-  void dirtyUp(NodeID nid);
+    /// Exposes layout info (i.e. shapes needed for shape analysis)
+    const Layout &layout() const;
 
-signals:
-  /// Triggers a redraw that updates scrollarea's viewport (perhaps a direct call would suffice)
-  void needsRedrawing();
+    /// Collapse/uncollapse a pentagon node based on its current state
+    void toggleCollapsePentagon(NodeID nid);
 
-  /// Notify all views to change their current nodes to `n`
-  void nodeSelected(NodeID n);
+    /// Set `nid` and its predecessors as requiring re-layout
+    void dirtyUp(NodeID nid);
 
-public slots:
+  signals:
+    /// Triggers a redraw that updates scrollarea's viewport (perhaps a direct call would suffice)
+    void needsRedrawing();
 
-  /// Update scrollarea's viewport
-  void redraw();
+    /// Notify all views to change their current nodes to `n`
+    void nodeSelected(NodeID n);
 
-  /// Updates the tree at 60hz (layout etc.)
-  void autoUpdate();
+  public slots:
 
-  /// Handle double-click on a node
-  void handleDoubleClick();
+    /// Update scrollarea's viewport
+    void redraw();
 
-  void setScale(int scale);
+    /// Updates the tree at 60hz (layout etc.)
+    void autoUpdate();
 
-  void centerNode(NodeID nid);
-  void centerCurrentNode();
+    /// Handle double-click on a node
+    void handleDoubleClick();
 
-  /// Set current node to nid
-  void setCurrentNode(NodeID nid);
+    /// Change zoom level
+    void setScale(int scale);
 
-  void navRoot();
+    /// Center node `nid`
+    void centerNode(NodeID nid);
 
-  void navUp();
-  void navDown();
-  void navDownAlt();
-  void navLeft();
-  void navRight();
+    /// Center currently selected node
+    void centerCurrentNode();
 
-  void toggleShowLabel();
-  void showLabelsDown();
-  void showLabelsUp();
+    /// Set current node to nid
+    void setCurrentNode(NodeID nid);
 
-  void toggleHidden();
-  void unhideNode(NodeID nid);
+    /// ***** NAVIGATION BEGIN *****
+    /// Navigation to a node sets the node as
+    /// selected and centers it in the canvas
 
-  /// Mark a node and attach a note to it
-  void bookmarkCurrentNode();
+    /// Navigate to the root
+    void navRoot();
+    /// Navigate to the parent of the current node
+    void navUp();
+    /// Navigate to the first child of the current node
+    void navDown();
+    /// Navigate to the last child of the current node
+    void navDownAlt();
+    /// Navigate to the next sibling on the left of the current node
+    void navLeft();
+    /// Navigate to the next sibling on the right of the current node
+    void navRight();
 
-  void hideFailedAt(NodeID nid, bool onlyDirty = false);
+    /// ***** NAVIGATION END *****
 
-  /// hide all failed descendants of the current node
-  void hideFailed();
+    /// Show/hide labels for the current node
+    void toggleShowLabel();
 
-  /// unhide all nodes in the tree
-  void unhideAll();
+    /// Show labels for every node below current
+    void showLabelsDown();
 
-  /// unhide all descendants of the specified node
-  void unhideAllAt(NodeID n);
+    /// Show labels for every node on the path form root to current
+    void showLabelsUp();
 
-  /// unhide all descendants of the current node
-  void unhideAllAtCurrent();
+    /// Hide node `n` and trigger layout update
+    void hideNode(NodeID n);
 
-  void toggleHighlighted();
+    /// Show/hide node (not actually used atm)
+    void toggleHidden();
 
-  void forceComputeLayout();
+    /// Set current node as not hidden
+    void unhideNode(NodeID nid);
 
-  // same as forceComputeLayout???
-  void computeLayout();
+    /// Mark a node and attach a note to it
+    void bookmarkCurrentNode();
 
-  void setLayoutOutdated();
+    /// Hide failed subtrees under node `nid`
+    void hideFailedAt(NodeID nid, bool onlyDirty = false);
 
-  void printNodeInfo();
+    /// Hide all failed descendants of the current node
+    void hideFailed(bool onlyDirty = false);
 
-  void dirtyCurrentNodeUp();
+    /// Unhide all nodes in the tree
+    void unhideAll();
 
-  /// Show nogoods of the nodes under the current node and the node inself
-  void showNogoods() const;
+    /// Unhide all descendants of the specified node
+    void unhideAllAt(NodeID n);
 
-  /// Highlight the subtrees and hide the rest
-  void highlightSubtrees(const std::vector<NodeID> &nodes);
+    /// Unhide all descendants of the current node
+    void unhideAllAtCurrent();
 
-  /// Transform the tree in to a lantern tree using `limit` as max lantern size
-  void hideBySize(int limit);
+    /// Highlight/unhighlight subtree
+    void toggleHighlighted();
 
-  /// Reset lantern sizes for nodes
-  void undoLanterns();
+    /// Compute layout ignoring if it is "stale"
+    void computeLayout();
+
+    /// Set layout as stale
+    void setLayoutOutdated();
+
+    /// Print node info for debugging
+    void printNodeInfo();
+
+    /// For debugging: set all nodes on the path from the root to the current node as dirty
+    void dirtyCurrentNodeUp();
+
+    /// Show nogoods of the nodes under the current node and the node itself
+    void showNogoods() const;
+
+    /// Highlight the subtrees and hide the rest
+    void highlightSubtrees(const std::vector<NodeID> &nodes);
+
+    /// Transform the tree in to a lantern tree using `limit` as max lantern size
+    void hideBySize(int limit);
+
+    /// Reset lantern sizes for nodes
+    void undoLanterns();
+
+    /// Check shapes and bounding boxes of all nodes
+    void debugCheckLayout() const;
 };
 
 } // namespace tree

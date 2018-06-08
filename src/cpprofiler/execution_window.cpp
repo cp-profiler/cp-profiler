@@ -103,6 +103,9 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
         connect(&execution_.tree(), &tree::NodeTree::structureUpdated,
                 traditional_view_.get(), &tree::TraditionalView::setLayoutOutdated);
 
+        connect(&execution_.tree(), &tree::NodeTree::failedSubtreeClosed,
+                traditional_view_.get(), &tree::TraditionalView::hideNode);
+
         {
             auto statsUpdateTimer = new QTimer(this);
             connect(statsUpdateTimer, &QTimer::timeout, stats_bar, &NodeStatsBar::update);
@@ -248,10 +251,8 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
             similarSubtree->setShortcut(QKeySequence("Shift+S"));
             analysisMenu->addAction(similarSubtree);
 
-            const auto &tree_layout = traditional_view_->layout();
-
-            connect(similarSubtree, &QAction::triggered, [this, &ex, &tree_layout]() {
-                auto ssw = new analysis::SimilarSubtreeWindow(this, ex.tree(), tree_layout);
+            connect(similarSubtree, &QAction::triggered, [this, &ex]() {
+                auto ssw = new analysis::SimilarSubtreeWindow(this, ex.tree());
                 ssw->show();
 
                 connect(ssw, &analysis::SimilarSubtreeWindow::should_be_highlighted,
@@ -268,7 +269,7 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
 
             auto computeLayout = new QAction{"Compute layout", this};
             debugMenu->addAction(computeLayout);
-            connect(computeLayout, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::forceComputeLayout);
+            connect(computeLayout, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::computeLayout);
 
             auto dirtyNodesUp = new QAction{"Dirty Nodes Up", this};
             debugMenu->addAction(dirtyNodesUp);
@@ -283,6 +284,10 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
             removeNode->setShortcut(QKeySequence("Del"));
             debugMenu->addAction(removeNode);
             connect(removeNode, &QAction::triggered, this, &ExecutionWindow::removeSelectedNode);
+
+            auto checkLayout = new QAction{"Check layout", this};
+            debugMenu->addAction(checkLayout);
+            connect(checkLayout, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::debugCheckLayout);
         }
 
         // auto debugText = new QTextEdit{this};

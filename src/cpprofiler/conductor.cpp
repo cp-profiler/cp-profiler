@@ -155,8 +155,6 @@ void Conductor::onExecutionDone(Execution *e) const
 {
     e->tree().setDone();
 
-    print("on execution done");
-
     if (options_.save_search_path != "")
     {
         print("saving search to: {}", options_.save_search_path);

@@ -215,8 +215,10 @@ NodeID TreeScrollArea::findNodeClicked(int x, int y)
 
         // if node hidden -> different area
 
+        const auto hidden = m_vis_flags.isHidden(node);
+
         QRect node_area;
-        if (m_vis_flags.isHidden(node))
+        if (hidden)
         {
             auto node_pos_tl = node_pos - QPoint{HALF_COLLAPSED_WIDTH, 0};
             node_area = QRect(node_pos_tl, QSize{COLLAPSED_WIDTH, COLLAPSED_DEPTH});
@@ -226,11 +228,12 @@ NodeID TreeScrollArea::findNodeClicked(int x, int y)
             auto node_pos_tl = node_pos - QPoint{MAX_NODE_W / 2, 0};
             node_area = QRect(node_pos_tl, QSize{MAX_NODE_W, MAX_NODE_W});
         }
+
         if (node_area.contains(x, y))
         {
             return node;
         }
-        else
+        else if (!hidden)
         {
 
             auto kids = m_tree.childrenCount(node);

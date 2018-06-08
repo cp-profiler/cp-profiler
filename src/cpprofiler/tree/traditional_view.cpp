@@ -223,8 +223,7 @@ void TraditionalView::toggleShowLabel()
     auto val = !vis_flags_->isLabelShown(nid);
     setLabelShown(nid, val);
     emit needsRedrawing();
-
-    /// TODO: needs re-layout as well
+    layout_computer_->dirtyUp(nid);
 }
 
 void TraditionalView::showLabelsDown()
@@ -275,6 +274,21 @@ static bool is_leaf(const NodeTree &nt, NodeID nid)
     return nt.childrenCount(nid) == 0;
 }
 
+void TraditionalView::hideNode(NodeID n)
+{
+    utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
+    utils::DebugMutexLocker layout_lock(&layout_->getMutex());
+
+    if (is_leaf(tree_, n))
+        return;
+
+    vis_flags_->setHidden(n, true);
+
+    dirtyUp(n);
+    setLayoutOutdated();
+    emit needsRedrawing();
+}
+
 void TraditionalView::toggleHidden()
 {
     auto nid = node();
@@ -296,6 +310,7 @@ void TraditionalView::toggleHidden()
 
 void TraditionalView::hideFailedAt(NodeID n, bool onlyDirty)
 {
+    print("Hide nodes at");
     /// Do nothing if there is no tree
     if (tree_.nodeCount() == 0)
         return;
@@ -312,13 +327,13 @@ void TraditionalView::hideFailedAt(NodeID n, bool onlyDirty)
     }
 }
 
-void TraditionalView::hideFailed()
+void TraditionalView::hideFailed(bool onlyDirty)
 {
     auto nid = node();
     if (nid == NodeID::NoNode)
         return;
 
-    hideFailedAt(nid);
+    hideFailedAt(nid, onlyDirty);
 }
 
 void TraditionalView::autoUpdate()
@@ -555,11 +570,6 @@ void TraditionalView::setCurrentNode(NodeID nid)
     emit needsRedrawing();
 }
 
-void TraditionalView::forceComputeLayout()
-{
-    computeLayout();
-}
-
 void TraditionalView::computeLayout()
 {
 
@@ -575,7 +585,6 @@ void TraditionalView::computeLayout()
 
 void TraditionalView::setLayoutOutdated()
 {
-    debug("layout") << "set layout stale\n";
     layout_stale_ = true;
 }
 
@@ -725,6 +734,18 @@ void TraditionalView::showNogoods() const
     });
 
     ng_dialog->show();
+}
+
+void TraditionalView::debugCheckLayout() const
+{
+    ///
+    const auto order = utils::any_order(tree_);
+
+    for (const auto n : order)
+    {
+        auto bb = layout_->getBoundingBox(n);
+        print("bb for {} is fine", n);
+    }
 }
 
 } // namespace tree
