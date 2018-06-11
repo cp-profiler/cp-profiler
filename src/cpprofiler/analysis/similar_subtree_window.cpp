@@ -6,17 +6,20 @@
 #include <QGraphicsSimpleTextItem>
 #include <QDebug>
 #include <QLabel>
+#include <QSpinBox>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QAction>
 
 #include <iostream>
-#include <algorithm>
 
 #include "../tree/shape.hh"
 #include "../tree/structure.hh"
 #include "../tree/layout.hh"
 #include "../tree/node_tree.hh"
 #include "../utils/tree_utils.hh"
+
+#include "path_comp.hh"
 
 #include "subtree_pattern.hh"
 #include "similar_subtree_analysis.hh"
@@ -35,23 +38,59 @@ namespace analysis
 {
 
 SimilarSubtreeWindow::SimilarSubtreeWindow(QWidget *parent, const tree::NodeTree &nt)
-    : QDialog(parent), m_nt(nt)
+    : QDialog(parent), tree_(nt)
 {
 
-    m_histogram.reset(new HistogramScene);
-    auto hist_view = new QGraphicsView{this};
+    histogram_.reset(new HistogramScene);
+    m_subtree_view.reset(new SubtreeView{tree_});
 
-    hist_view->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    initInterface();
 
-    m_subtree_view.reset(new SubtreeView{nt});
+    detail::PerformanceHelper phelper;
+    phelper.begin("analyse");
+    analyse();
+    phelper.end();
 
-    hist_view->setScene(m_histogram->scene());
+    phelper.begin("display patterns");
+    displayPatterns();
+    phelper.end();
+}
 
+static PatternProp str2Prop(const QString &str)
+{
+    if (str == "size")
+        return PatternProp::SIZE;
+    if (str == "count")
+        return PatternProp::COUNT;
+    if (str == "height")
+        return PatternProp::HEIGHT;
+
+    print("Error:: invalid property name, fall back to defaults.");
+
+    return defaults::SORT_TYPE;
+}
+
+static QString prop2str(PatternProp prop)
+{
+    switch (prop)
+    {
+    case PatternProp::COUNT:
+        return "count";
+    case PatternProp::HEIGHT:
+        return "height";
+    case PatternProp::SIZE:
+        return "size";
+    }
+}
+
+void SimilarSubtreeWindow::initInterface()
+{
     auto globalLayout = new QVBoxLayout{this};
 
     {
         auto settingsLayout = new QHBoxLayout{};
         globalLayout->addLayout(settingsLayout);
+
         settingsLayout->addWidget(new QLabel{"Similarity Criteria:"}, 0, Qt::AlignRight);
 
         auto typeChoice = new QComboBox();
@@ -69,38 +108,127 @@ SimilarSubtreeWindow::SimilarSubtreeWindow(QWidget *parent, const tree::NodeTree
             }
             analyse();
         });
+
+        auto subsumedOption = new QCheckBox{"Keep subsumed"};
+        settingsLayout->addWidget(subsumedOption);
+        connect(subsumedOption, &QCheckBox::stateChanged, [this](int state) {
+            settings_.subsumed = state;
+            displayPatterns();
+        });
+
+        settingsLayout->addStretch();
+
+        settingsLayout->addWidget(new QLabel{"Labels:"}, 0, Qt::AlignRight);
+
+        auto labels_comp = new QComboBox{};
+        labels_comp->addItems({"Ignore", "Vars only", "Full labels"});
+        settingsLayout->addWidget(labels_comp);
+
+        auto hideNotHighlighted = new QCheckBox{"Hide not selected"};
+        hideNotHighlighted->setCheckState(Qt::Checked);
+        settingsLayout->addWidget(hideNotHighlighted);
     }
 
     auto splitter = new QSplitter{this};
+    globalLayout->addWidget(splitter, 1);
+
+    auto hist_view = new QGraphicsView{this};
+    hist_view->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    hist_view->setScene(histogram_->scene());
 
     splitter->addWidget(hist_view);
     splitter->addWidget(m_subtree_view->widget());
     splitter->setSizes(QList<int>{1, 1});
 
-    globalLayout->addWidget(splitter, 1);
+    {
+        globalLayout->addWidget(&path_line1_);
+        globalLayout->addWidget(&path_line2_);
+    }
 
-    globalLayout->addWidget(&path_line1_);
-    globalLayout->addWidget(&path_line2_);
+    /// Filters interface
+    {
+        auto filtersLayout = new QHBoxLayout{};
+        globalLayout->addLayout(filtersLayout);
 
-    analyse();
+        /// Height Filter
+        auto heightFilter = new QSpinBox(this);
+        heightFilter->setMinimum(defaults::MIN_SUBTREE_HEIGHT);
+        heightFilter->setValue(defaults::MIN_SUBTREE_HEIGHT);
+        filtersLayout->addWidget(new QLabel("min height"));
+        filtersLayout->addWidget(heightFilter);
 
-    /// see if I can add action here
+        connect(heightFilter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int v) {
+            filters_.min_height = v;
+            displayPatterns();
+        });
+
+        /// Count Filter
+        auto countFilter = new QSpinBox(this);
+        countFilter->setMinimum(defaults::MIN_SUBTREE_COUNT);
+        countFilter->setValue(defaults::MIN_SUBTREE_COUNT);
+        filtersLayout->addWidget(new QLabel("min count"));
+        filtersLayout->addWidget(countFilter);
+
+        connect(countFilter, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](int v) {
+            filters_.min_count = v;
+            displayPatterns();
+        });
+
+        filtersLayout->addStretch();
+
+        /// Options for sorting
+        auto sortChoiceCB = new QComboBox();
+        sortChoiceCB->addItems({prop2str(PatternProp::SIZE),
+                                prop2str(PatternProp::HEIGHT),
+                                prop2str(PatternProp::COUNT)});
+        sortChoiceCB->setCurrentText(prop2str(defaults::SORT_TYPE));
+        filtersLayout->addWidget(new QLabel{"sort by: "});
+        filtersLayout->addWidget(sortChoiceCB);
+
+        connect(sortChoiceCB, &QComboBox::currentTextChanged, [this](const QString &str) {
+            settings_.sort_type = str2Prop(str);
+            displayPatterns();
+        });
+
+        /// Options for histogram
+        auto histChoiceCB = new QComboBox();
+        histChoiceCB->addItems({prop2str(PatternProp::SIZE),
+                                prop2str(PatternProp::HEIGHT),
+                                prop2str(PatternProp::COUNT)});
+        histChoiceCB->setCurrentText(prop2str(defaults::HIST_TYPE));
+        filtersLayout->addWidget(new QLabel{"histogram: "});
+        filtersLayout->addWidget(histChoiceCB);
+
+        connect(histChoiceCB, &QComboBox::currentTextChanged, [this](const QString &str) {
+            settings_.hist_type = str2Prop(str);
+            displayPatterns();
+        });
+    }
 
     auto keyDown = new QAction{"Press down", this};
     keyDown->setShortcuts({QKeySequence("Down"), QKeySequence("J")});
     addAction(keyDown);
 
-    connect(keyDown, &QAction::triggered, m_histogram.get(), &HistogramScene::nextPattern);
+    connect(keyDown, &QAction::triggered, histogram_.get(), &HistogramScene::nextPattern);
 
     auto keyUp = new QAction{"Press up", this};
     keyUp->setShortcuts({QKeySequence("Up"), QKeySequence("K")});
     addAction(keyUp);
 
-    connect(keyUp, &QAction::triggered, m_histogram.get(), &HistogramScene::prevPattern);
+    connect(keyUp, &QAction::triggered, histogram_.get(), &HistogramScene::prevPattern);
 
     connect(keyUp, &QAction::triggered, [this]() {
         update();
     });
+
+    connect(histogram_.get(), &HistogramScene::should_be_highlighted,
+            this, &SimilarSubtreeWindow::should_be_highlighted);
+
+    connect(histogram_.get(), &HistogramScene::pattern_selected,
+            m_subtree_view.get(), &SubtreeView::setNode);
+
+    connect(histogram_.get(), &HistogramScene::should_be_highlighted,
+            this, &SimilarSubtreeWindow::updatePathDiff);
 }
 
 SimilarSubtreeWindow::~SimilarSubtreeWindow() = default;
@@ -216,106 +344,98 @@ static std::unique_ptr<tree::Layout> computeShapes(const NodeTree &tree)
 void SimilarSubtreeWindow::analyse()
 {
 
-    // analyse_shapes();
-
     /// TODO: make sure building is finished
 
-    auto patterns = std::vector<SubtreePattern>{};
+    result_.reset(new ss_analysis::Result);
 
     switch (m_sim_type)
     {
     case SimilarityType::SUBTREE:
     {
-        patterns = runIdenticalSubtrees(m_nt);
+        *result_ = runIdenticalSubtrees(tree_);
     }
     break;
     case SimilarityType::SHAPE:
     {
-        if (!m_lo)
+        if (!layout_)
         {
-            m_lo = computeShapes(m_nt);
+            layout_ = computeShapes(tree_);
         }
-        patterns = runSimilarShapes(m_nt, *m_lo);
+        *result_ = runSimilarShapes(tree_, *layout_);
     }
     }
 
-    /// make sure there are only patterns of cardinality > 1
+    print("patterns after analysis: {}", result_->size());
 
-    auto new_end = std::remove_if(patterns.begin(), patterns.end(), [](const SubtreePattern &pattern) {
-        return pattern.count() <= 1;
+    /// Always remove trivial patterns
+    detail::PerformanceHelper phelper;
+    phelper.begin("remove trivial");
+    auto new_end = std::remove_if(result_->begin(), result_->end(), [this](const SubtreePattern &pattern) {
+        return pattern.count() < 2 ||
+               pattern.height() < 2;
     });
 
+    result_->resize(std::distance(result_->begin(), new_end));
+
+    print("non-trivial patterns: {}", result_->size());
+    phelper.end();
+}
+
+void SimilarSubtreeWindow::displayPatterns()
+{
+    /// should be initialized, but being defensive here
+    if (!result_)
+        return;
+
+    detail::PerformanceHelper phelper;
+    phelper.begin("make a copy");
+    /// make a copy
+    std::vector<SubtreePattern> patterns = *result_;
+    phelper.end();
+
+    /// apply filters
+    auto new_end = std::remove_if(patterns.begin(), patterns.end(), [this](const SubtreePattern &pattern) {
+        return pattern.count() < filters_.min_count ||
+               pattern.height() < filters_.min_height;
+    });
     patterns.resize(std::distance(patterns.begin(), new_end));
 
-    patterns = eliminateSubsumed(m_nt, patterns);
+    /// See if subsumed patterns should be displayed
+    if (!settings_.subsumed)
+    {
+        phelper.begin("subsumed elimination");
+        /// NOTE: patterns should not contain patterns of cardinality 1
+        /// before eliminating subsumed!
+        patterns = eliminateSubsumed(tree_, patterns);
+        phelper.end();
+    }
 
-    perfHelper.begin("set patterns");
+    /// sort patterns
+    switch (settings_.sort_type)
+    {
+    case PatternProp::COUNT:
+        std::sort(patterns.begin(), patterns.end(),
+                  [](const SubtreePattern &lhs, const SubtreePattern &rhs) {
+                      return lhs.count() > rhs.count();
+                  });
+        break;
+    case PatternProp::SIZE:
+        std::sort(patterns.begin(), patterns.end(),
+                  [](const SubtreePattern &lhs, const SubtreePattern &rhs) {
+                      return lhs.size() > rhs.size();
+                  });
+        break;
+    case PatternProp::HEIGHT:
+        std::sort(patterns.begin(), patterns.end(),
+                  [](const SubtreePattern &lhs, const SubtreePattern &rhs) {
+                      return lhs.height() > rhs.height();
+                  });
+        break;
+    }
 
-    m_histogram->reset();
-    m_histogram->setPatterns(std::move(patterns));
-    m_histogram->drawPatterns();
-
-    perfHelper.end();
-
-    connect(m_histogram.get(), &HistogramScene::should_be_highlighted,
-            this, &SimilarSubtreeWindow::should_be_highlighted);
-
-    connect(m_histogram.get(), &HistogramScene::pattern_selected,
-            m_subtree_view.get(), &SubtreeView::setNode);
-
-    connect(m_histogram.get(), &HistogramScene::should_be_highlighted,
-            this, &SimilarSubtreeWindow::updatePathDiff);
-
-    // m_histogram->reset();
-}
-
-/// A wrapper around std::set_intersection; copying is intended
-static vector<Label> set_intersect(vector<Label> v1, vector<Label> v2)
-{
-    /// set_intersection requires the resulting set to be
-    /// at least as large as the smallest of the two sets
-    vector<Label> res(std::min(v1.size(), v2.size()));
-
-    std::sort(begin(v1), end(v1));
-    std::sort(begin(v2), end(v2));
-
-    auto it = std::set_intersection(begin(v1), end(v1), begin(v2), end(v2),
-                                    begin(res));
-    res.resize(it - begin(res));
-
-    return res;
-}
-
-/// A wrapper around std::set_symemtric_diff; copying is intended
-static vector<Label> set_symmetric_diff(vector<Label> v1, vector<Label> v2)
-{
-    vector<Label> res(v1.size() + v2.size());
-
-    /// vectors must be sorted
-    std::sort(begin(v1), end(v1));
-    std::sort(begin(v2), end(v2));
-
-    /// fill `res` with elements not present in both v1 and v2
-    auto it = std::set_symmetric_difference(begin(v1), end(v1), begin(v2), end(v2),
-                                            begin(res));
-
-    res.resize(it - begin(res));
-
-    return res;
-}
-
-/// Calculate unique labels for both paths (present in one but not in the other)
-static std::pair<vector<Label>, vector<Label>>
-getLabelDiff(const std::vector<Label> &path1,
-             const std::vector<Label> &path2)
-{
-    auto diff = set_symmetric_diff(path1, path2);
-
-    auto unique_1 = set_intersect(path1, diff);
-
-    auto unique_2 = set_intersect(path2, diff);
-
-    return std::make_pair(std::move(unique_1), std::move(unique_2));
+    histogram_->reset();
+    histogram_->setPatterns(std::move(patterns));
+    histogram_->drawPatterns(settings_.hist_type);
 }
 
 /// Walk up the tree constructing label path
@@ -340,8 +460,8 @@ void SimilarSubtreeWindow::updatePathDiff(const std::vector<NodeID> &nodes)
     if (nodes.size() < 2)
         return;
 
-    auto path_l = labelPath(nodes[0], m_nt);
-    auto path_r = labelPath(nodes[1], m_nt);
+    auto path_l = labelPath(nodes[0], tree_);
+    auto path_r = labelPath(nodes[1], tree_);
 
     auto diff_pair = getLabelDiff(path_l, path_r);
 

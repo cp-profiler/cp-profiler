@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "../core.hh"
+#include "subtree_pattern.hh"
 
 class QGraphicsScene;
 
@@ -24,6 +25,8 @@ namespace cpprofiler
 {
 namespace analysis
 {
+
+class SubtreePattern;
 
 enum class SimilarityType
 {
@@ -43,16 +46,29 @@ class PathDiffLine : public QLineEdit
     }
 };
 
+namespace defaults
+{
+static constexpr int MIN_SUBTREE_COUNT = 2;
+static constexpr int MIN_SUBTREE_HEIGHT = 2;
+static constexpr PatternProp SORT_TYPE = PatternProp::SIZE;
+static constexpr PatternProp HIST_TYPE = PatternProp::COUNT;
+} // namespace defaults
+
+namespace ss_analysis
+{
+using Result = std::vector<SubtreePattern>;
+}
+
 class SimilarSubtreeWindow : public QDialog
 {
     Q_OBJECT
   private:
     // void analyse_shapes();
 
-    const tree::NodeTree &m_nt;
-    std::unique_ptr<tree::Layout> m_lo;
+    const tree::NodeTree &tree_;
+    std::unique_ptr<tree::Layout> layout_;
 
-    std::unique_ptr<HistogramScene> m_histogram;
+    std::unique_ptr<HistogramScene> histogram_;
 
     std::unique_ptr<tree::SubtreeView> m_subtree_view;
 
@@ -63,6 +79,33 @@ class SimilarSubtreeWindow : public QDialog
     // SimilarityType m_sim_type = SimilarityType::SUBTREE;
     SimilarityType m_sim_type = SimilarityType::SHAPE;
 
+    struct SubtreeAnalysisFilters
+    {
+        int min_height = defaults::MIN_SUBTREE_HEIGHT;
+        int min_count = defaults::MIN_SUBTREE_COUNT;
+    } filters_;
+
+    struct Settings
+    {
+        /// whether to show subsumed subtrees
+        bool subsumed = false;
+        /// currently selected option for sorting
+        PatternProp sort_type = defaults::SORT_TYPE;
+        /// currently selected option for histogram drawing (rectangle length)
+        PatternProp hist_type = defaults::HIST_TYPE;
+    } settings_;
+
+    std::unique_ptr<ss_analysis::Result> result_;
+
+    void initInterface();
+
+    /// Apply filters, eliminate subsumed and display the result
+    void displayPatterns();
+
+  private slots:
+    /// Calculate the difference in label paths for the first two nodes
+    void updatePathDiff(const std::vector<NodeID> &nodes);
+
   public:
     SimilarSubtreeWindow(QWidget *parent, const tree::NodeTree &nt);
 
@@ -71,12 +114,7 @@ class SimilarSubtreeWindow : public QDialog
     void analyse();
 
   signals:
-
     void should_be_highlighted(const std::vector<NodeID> &nodes);
-
-  public slots:
-    /// Calculate the difference in label paths for the first two nodes
-    void updatePathDiff(const std::vector<NodeID> &nodes);
 };
 
 } // namespace analysis

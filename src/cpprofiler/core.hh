@@ -8,6 +8,7 @@
 #include "utils/debug.hh"
 
 using cpprofiler::tree::NodeID;
+using Label = std::string;
 
 namespace cpprofiler
 {

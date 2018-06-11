@@ -446,6 +446,7 @@ static void ss_analysis(Conductor &c)
 {
 
     const char *path = "/home/maxim/dev/cp-profiler2/golomb6.db";
+    // const char *path = "/home/maxim/dev/cp-profiler2/golomb10.db";
     auto ex = db_handler::load_execution(path);
     if (!ex)
     {

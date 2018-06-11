@@ -5,6 +5,15 @@ namespace cpprofiler
 {
 namespace analysis
 {
+
+/// Pattern properties
+enum class PatternProp
+{
+    HEIGHT,
+    COUNT,
+    SIZE
+};
+
 struct SubtreePattern
 {
   private:

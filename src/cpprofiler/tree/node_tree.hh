@@ -25,7 +25,6 @@ namespace tree
 class Structure;
 class NodeInfo;
 
-using Label = std::string;
 static Label emptyLabel = {};
 
 /// Node tree encapsulates tree structure, node statistics (number of nodes etc.),

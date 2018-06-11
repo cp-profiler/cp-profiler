@@ -42,6 +42,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hpp \
     $$PWD/src/cpprofiler/analysis/similar_subtree_analysis.cpp \
     $$PWD/src/cpprofiler/analysis/similar_subtree_window.cpp \
+    $$PWD/src/cpprofiler/analysis/path_comp.cpp \
     $$PWD/src/cpprofiler/analysis/merge_window.cpp \
     $$PWD/src/cpprofiler/analysis/merging/pentagon_rect.cpp \
     $$PWD/src/cpprofiler/analysis/tree_merger.cpp \
@@ -106,6 +107,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/analysis/pentagon_counter.hpp \
     $$PWD/src/cpprofiler/analysis/tree_merger.hh \
     $$PWD/src/cpprofiler/analysis/subtree_pattern.hh \
+    $$PWD/src/cpprofiler/analysis/path_comp.hh \
     $$PWD/src/cpprofiler/analysis/histogram_scene.hh \
     $$PWD/src/cpprofiler/analysis/pattern_rect.hh \
     $$PWD/src/cpprofiler/analysis/merging/pentagon_list_widget.hh \

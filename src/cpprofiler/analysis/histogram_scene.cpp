@@ -75,7 +75,7 @@ static void addText(QGraphicsScene &scene, int col, int row, int value)
     addText(scene, col, row, int_text_item, Align::RIGHT);
 }
 
-void HistogramScene::drawPatterns()
+void HistogramScene::drawPatterns(PatternProp prop)
 {
 
     auto &scene = *scene_;
@@ -92,14 +92,27 @@ void HistogramScene::drawPatterns()
         const auto nid = p->first();
         const int count = p->count();
         const int height = p->height();
+        /// number of nodes in the frist subtree represeting a pattern
+        const auto size = p->size();
 
-        auto item = addRect(*this, row, count);
+        int val;
+        switch (prop)
+        {
+        case PatternProp::HEIGHT:
+            val = height;
+            break;
+        case PatternProp::COUNT:
+            val = count;
+            break;
+        case PatternProp::SIZE:
+            val = size;
+            break;
+        }
+
+        auto item = addRect(*this, row, val);
 
         rects_.push_back(item);
         rect2pattern_.insert(std::make_pair(item, p));
-
-        /// number of nodes in the frist subtree represeting a pattern
-        const auto size = p->size();
 
         addText(scene, 0, row, height);
         addText(scene, 1, row, count);

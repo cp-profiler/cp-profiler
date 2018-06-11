@@ -300,7 +300,6 @@ vector<SubtreePattern> runIdenticalSubtrees(const NodeTree &nt)
 
 std::vector<SubtreePattern> runSimilarShapes(const NodeTree &tree, const Layout &lo)
 {
-    perfHelper.begin("similar shapes body");
 
     std::multiset<ShapeInfo, CompareShapes> shape_set;
 
@@ -310,9 +309,6 @@ std::vector<SubtreePattern> runSimilarShapes(const NodeTree &tree, const Layout 
     {
         shape_set.insert({nid, *lo.getShape(nid)});
     }
-
-    perfHelper.end();
-    perfHelper.begin("similar shapes result");
 
     auto sizes = utils::calc_subtree_sizes(tree);
 
@@ -337,9 +333,6 @@ std::vector<SubtreePattern> runSimilarShapes(const NodeTree &tree, const Layout 
 
         shapes.push_back(std::move(pattern));
     }
-
-    perfHelper.end();
-    // perfHelper.end();
 
     return shapes;
 }

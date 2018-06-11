@@ -18,6 +18,7 @@ namespace analysis
 static constexpr int V_DISTANCE = 2;
 
 class PatternRect;
+enum class PatternProp;
 
 using PatternRectPtr = std::shared_ptr<PatternRect>;
 using PatternPtr = std::shared_ptr<SubtreePattern>;
@@ -69,7 +70,7 @@ public:
   void findAndSelect(PatternRect *prect);
 
   /// Draw the patterns onto the scene
-  void drawPatterns();
+  void drawPatterns(PatternProp prop);
 
   /// Initialize patterns based on the analysis results
   void setPatterns(std::vector<SubtreePattern> &&patterns);
