@@ -49,6 +49,11 @@ void LayoutComputer::dirtyUp(NodeID nid)
 void LayoutComputer::dirtyUpLater(NodeID nid)
 {
     du_node_set_.insert(nid);
+
+    if (m_layout.ready(nid))
+    {
+        du_node_set_2.insert(nid);
+    }
 }
 
 bool LayoutComputer::compute()
@@ -74,26 +79,15 @@ bool LayoutComputer::compute()
     /// Ensures that sufficient memory is allocated for every node's shape
     m_layout.growDataStructures(m_tree.nodeCount());
 
-    // print("nodes to dirty up: {}", du_node_set_.size());
-    // print("total nodes: {}", m_tree.nodeCount());
-    // perfHelper.begin("dirty up delayed");
-
     for (auto n : du_node_set_)
     {
         dirtyUp(n);
     }
 
     du_node_set_.clear();
-    // perfHelper.end();
 
-    // perfHelper.begin("layout");
     LayoutCursor lc(m_tree.getRoot(), m_tree, m_vis_flags, m_layout);
     PostorderNodeVisitor<LayoutCursor>(lc).run();
-    // perfHelper.end();
-
-    // perfHelper.begin("layout: actually compute");
-
-    // perfHelper.end();
 
     static int counter = 0;
     // std::cerr << "computed layout " << ++counter   << " times\n";

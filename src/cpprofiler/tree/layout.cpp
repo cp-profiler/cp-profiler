@@ -31,16 +31,13 @@ int Layout::getHeight(NodeID nid) const
     return getShape(nid)->height();
 }
 
-bool Layout::ready() const
+bool Layout::ready(NodeID nid) const
 {
-    if (m_layout_done.size() > 0 && m_layout_done[0])
-    {
-        return true;
-    }
-    return false;
+    return (m_layout_done.size() > nid);
 }
 
-bool Layout::getLayoutDone(NodeID nid) const {
+bool Layout::getLayoutDone(NodeID nid) const
+{
     if (m_layout_done.size() <= nid)
         return false;
     return m_layout_done[nid];

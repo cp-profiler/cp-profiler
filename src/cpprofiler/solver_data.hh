@@ -52,6 +52,9 @@ class SolverData
     /// Contributing constraints
     std::unordered_map<NodeID, std::vector<int>> contrib_cs_;
 
+    /// Time since the beginning of solving process;
+    std::unordered_map<NodeID, int> node_time_;
+
   public:
     NodeID getNodeId(SolverID sid) const
     {

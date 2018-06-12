@@ -35,7 +35,6 @@ inline static bool should_hide(const NodeTree &nt, const VisualFlags &vf, NodeID
 
 void HideFailedCursor::processCurrentNode()
 {
-    print("considering hiding node {}", m_cur_node);
     if (should_hide(m_tree, m_vf, m_cur_node))
     {
         modified = true;

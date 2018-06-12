@@ -29,6 +29,8 @@ class LayoutComputer
     /// Nodes to dirty up
     std::set<NodeID> du_node_set_;
 
+    std::set<NodeID> du_node_set_2;
+
     void dirtyUp(NodeID nid);
 
   public:

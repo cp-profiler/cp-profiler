@@ -64,7 +64,7 @@ void TreeScrollArea::paintEvent(QPaintEvent *event)
 
     painter.scale(m_options.scale, m_options.scale);
 
-    if (!m_layout.ready())
+    if (!m_layout.ready(m_start_node) || !m_layout.getLayoutDone(m_start_node))
     {
         return;
     }

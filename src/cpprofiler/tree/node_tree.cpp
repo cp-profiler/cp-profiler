@@ -178,10 +178,11 @@ NodeID NodeTree::promoteNode(NodeID parent_id, int alt, int kids, tree::NodeStat
     node_stats_.subtract_undetermined(1);
     node_stats_.addNode(status);
 
-    if (is_closing(status))
-        closeNode(nid);
     if (status == NodeStatus::SOLVED)
         notifyAncestors(nid);
+
+    if (is_closing(status))
+        closeNode(nid);
 
     if (childrenCount(nid) != kids)
     {
