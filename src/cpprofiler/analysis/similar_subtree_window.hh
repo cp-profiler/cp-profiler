@@ -89,6 +89,8 @@ class SimilarSubtreeWindow : public QDialog
     {
         /// whether to show subsumed subtrees
         bool subsumed = false;
+        /// whether not highlighted subtrees should be hidden
+        bool hide_subtrees = false;
         /// currently selected option for sorting
         PatternProp sort_type = defaults::SORT_TYPE;
         /// currently selected option for histogram drawing (rectangle length)
@@ -114,7 +116,7 @@ class SimilarSubtreeWindow : public QDialog
     void analyse();
 
   signals:
-    void should_be_highlighted(const std::vector<NodeID> &nodes);
+    void should_be_highlighted(const std::vector<NodeID> &nodes, bool hide_rest);
 };
 
 } // namespace analysis

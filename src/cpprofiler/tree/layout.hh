@@ -8,6 +8,7 @@
 #include <QObject>
 
 #include "../core.hh"
+#include "shape.hh"
 
 namespace cpprofiler
 {
@@ -43,17 +44,17 @@ class Layout : public QObject
   public:
     utils::Mutex &getMutex() const;
 
-    void setChildOffset(NodeID nid, double offset);
+    void setChildOffset(NodeID nid, double offset) { m_child_offsets[nid] = offset; }
 
     void setLayoutDone(NodeID nid, bool);
 
     /// Note: a node might not have a shape (nullptr)
     /// if it was hidden before layout was run
-    const Shape *getShape(NodeID nid) const;
+    const Shape *getShape(NodeID nid) const { return m_shapes[nid].get(); }
 
     void setShape(NodeID nid, ShapeUniqPtr shape);
 
-    double getOffset(NodeID nid) const;
+    double getOffset(NodeID nid) const { return m_child_offsets[nid]; }
 
     /// Get the height of the shape of node `nid`
     int getHeight(NodeID nid) const;
@@ -68,7 +69,7 @@ class Layout : public QObject
     void setDirty(NodeID nid, bool val);
 
     /// Get bounding box of node `nid`
-    const BoundingBox &getBoundingBox(NodeID nid) const;
+    const BoundingBox &getBoundingBox(NodeID nid) const { return getShape(nid)->boundingBox(); }
 
     Layout();
     ~Layout();

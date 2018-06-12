@@ -15,6 +15,7 @@
 #include <QMouseEvent>
 #include <QInputDialog>
 #include <QLineEdit>
+#include <QThread>
 
 #include "cursors/nodevisitor.hh"
 #include "cursors/hide_failed_cursor.hh"
@@ -632,21 +633,61 @@ static void showSubtrees(const NodeTree &tree, VisualFlags &vf, LayoutComputer &
     PostorderNodeVisitor<HideNotHighlightedCursor>(hnhc).run();
 }
 
-void TraditionalView::highlightSubtrees(const std::vector<NodeID> &nodes)
+class TreeHighlighter : public QThread
 {
 
+    const NodeTree &tree_;
+    VisualFlags &vf_;
+    Layout &layout_;
+    LayoutComputer &lc_;
+
+  public:
+    TreeHighlighter(const NodeTree &tree, VisualFlags &vf, Layout &lo, LayoutComputer &lc)
+        : tree_(tree), vf_(vf), layout_(lo), lc_(lc) {}
+
+    void run() override
+    {
+        /// TODO: make sure to hold mutexes
+        utils::DebugMutexLocker t_locker(&tree_.treeMutex());
+        utils::DebugMutexLocker l_locker(&layout_.getMutex());
+
+        auto root = tree_.getRoot();
+
+        // hideFailed()
+
+        HideNotHighlightedCursor hnhc(root, tree_, vf_, lc_);
+        PostorderNodeVisitor<HideNotHighlightedCursor>(hnhc).run();
+    }
+};
+
+void TraditionalView::highlightSubtrees(const std::vector<NodeID> &nodes, bool hide_rest)
+{
     vis_flags_->unhighlightAll();
 
+    detail::PerformanceHelper phelper;
     for (auto nid : nodes)
     {
         vis_flags_->setHighlighted(nid, true);
     }
 
-    unhideAll();
+    if (hide_rest)
+    {
+        unhideAll();
 
-    showSubtrees(tree_, *vis_flags_, *layout_computer_);
+        phelper.begin("show subtrees");
 
-    setLayoutOutdated();
+        auto root = tree_.getRoot();
+        HideNotHighlightedCursor hnhc(root, tree_, *vis_flags_, *layout_computer_);
+        PostorderNodeVisitor<HideNotHighlightedCursor>(hnhc).run();
+
+        // {
+        //     auto highlighter = new TreeHighlighter(tree_, *vis_flags_, *layout_, *layout_computer_);
+        //     connect(highlighter, &QThread::finished, highlighter, &QObject::deleteLater);
+        //     highlighter->start();
+        // }
+        phelper.end();
+        setLayoutOutdated();
+    }
 
     emit needsRedrawing();
 }
@@ -744,7 +785,7 @@ void TraditionalView::debugCheckLayout() const
     for (const auto n : order)
     {
         auto bb = layout_->getBoundingBox(n);
-        print("bb for {} is fine", n);
+        // print("bb for {} is fine", n);
     }
 }
 

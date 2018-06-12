@@ -1,5 +1,6 @@
 #include "histogram_scene.hh"
 #include "pattern_rect.hh"
+#include "../utils/perf_helper.hh"
 
 namespace cpprofiler
 {

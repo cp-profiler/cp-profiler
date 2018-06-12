@@ -125,8 +125,12 @@ void SimilarSubtreeWindow::initInterface()
         settingsLayout->addWidget(labels_comp);
 
         auto hideNotHighlighted = new QCheckBox{"Hide not selected"};
-        hideNotHighlighted->setCheckState(Qt::Checked);
+        hideNotHighlighted->setCheckState(Qt::Unchecked);
         settingsLayout->addWidget(hideNotHighlighted);
+
+        connect(hideNotHighlighted, &QCheckBox::stateChanged, [this](int state) {
+            settings_.hide_subtrees = state;
+        });
     }
 
     auto splitter = new QSplitter{this};
@@ -222,7 +226,12 @@ void SimilarSubtreeWindow::initInterface()
     });
 
     connect(histogram_.get(), &HistogramScene::should_be_highlighted,
-            this, &SimilarSubtreeWindow::should_be_highlighted);
+            [this](const std::vector<NodeID> &nodes) {
+                // if (settings_.hide_subtrees)
+                // {
+                emit should_be_highlighted(nodes, settings_.hide_subtrees);
+                // }
+            });
 
     connect(histogram_.get(), &HistogramScene::pattern_selected,
             m_subtree_view.get(), &SubtreeView::setNode);

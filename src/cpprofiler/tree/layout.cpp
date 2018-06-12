@@ -1,5 +1,4 @@
 #include "layout.hh"
-#include "shape.hh"
 
 #include <QDebug>
 #include <iostream>
@@ -11,11 +10,6 @@ namespace cpprofiler
 namespace tree
 {
 
-const Shape *Layout::getShape(NodeID nid) const
-{
-    return m_shapes[nid].get();
-}
-
 void Layout::setShape(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape)
 {
     m_shapes[nid] = std::move(shape);
@@ -24,11 +18,6 @@ void Layout::setShape(NodeID nid, std::unique_ptr<Shape, ShapeDeleter> shape)
 utils::Mutex &Layout::getMutex() const
 {
     return m_layout_mutex;
-}
-
-void Layout::setChildOffset(NodeID nid, double offset)
-{
-    m_child_offsets[nid] = offset;
 }
 
 void Layout::setLayoutDone(NodeID nid, bool val)
@@ -54,19 +43,9 @@ Layout::Layout()
 
 Layout::~Layout() = default;
 
-double Layout::getOffset(NodeID nid) const
-{
-    return m_child_offsets[nid];
-}
-
 int Layout::getHeight(NodeID nid) const
 {
     return getShape(nid)->height();
-}
-
-const BoundingBox &Layout::getBoundingBox(NodeID nid) const
-{
-    return getShape(nid)->boundingBox();
 }
 
 void Layout::growDataStructures(int n_nodes)
@@ -85,6 +64,9 @@ bool Layout::isDirty(NodeID nid) const
 {
     if (nid >= m_dirty.size())
     {
+
+        static int misses = 0;
+        print("is dirty missed: {}", misses);
         return true;
     }
     return m_dirty[nid];
