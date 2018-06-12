@@ -526,7 +526,7 @@ void run(Conductor &c)
 
     // save_search(c);
 
-    ss_analysis(c);
+    // ss_analysis(c);
 }
 
 } // namespace execution

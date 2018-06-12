@@ -63,7 +63,7 @@ TraditionalView::TraditionalView(const NodeTree &tree, UserData &ud, SolverData 
         {
             return;
         }
-        layout_computer_->dirtyUp(nid);
+        layout_computer_->dirtyUpLater(nid);
     });
 
     auto autoHideTimer = new QTimer(this);
@@ -212,7 +212,7 @@ void TraditionalView::navRight()
 void TraditionalView::setLabelShown(NodeID nid, bool val)
 {
     vis_flags_->setLabelShown(nid, val);
-    layout_computer_->dirtyUp(nid);
+    layout_computer_->dirtyUpLater(nid);
 }
 
 void TraditionalView::toggleShowLabel()
@@ -224,7 +224,7 @@ void TraditionalView::toggleShowLabel()
     auto val = !vis_flags_->isLabelShown(nid);
     setLabelShown(nid, val);
     emit needsRedrawing();
-    layout_computer_->dirtyUp(nid);
+    layout_computer_->dirtyUpLater(nid);
 }
 
 void TraditionalView::showLabelsDown()
@@ -591,7 +591,7 @@ void TraditionalView::setLayoutOutdated()
 
 void TraditionalView::dirtyUp(NodeID nid)
 {
-    layout_computer_->dirtyUp(nid);
+    layout_computer_->dirtyUpLater(nid);
 }
 
 void TraditionalView::dirtyCurrentNodeUp()

@@ -5,6 +5,9 @@ class QMutex;
 
 #include "node_id.hh"
 
+#include <set>
+#include <vector>
+
 namespace cpprofiler
 {
 namespace tree
@@ -23,13 +26,18 @@ class LayoutComputer
 
     bool m_needs_update = true;
 
+    /// Nodes to dirty up
+    std::set<NodeID> du_node_set_;
+
+    void dirtyUp(NodeID nid);
+
   public:
     LayoutComputer(const NodeTree &tree, Layout &layout, const VisualFlags &nf);
 
     /// compute the layout and return where any work was required
     bool compute();
 
-    void dirtyUp(NodeID nid);
+    void dirtyUpLater(NodeID nid);
 
     bool isDirty(NodeID nid);
 

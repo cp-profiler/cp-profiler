@@ -40,7 +40,7 @@ void HideFailedCursor::processCurrentNode()
     {
         modified = true;
         m_vf.setHidden(m_cur_node, true);
-        m_lc.dirtyUp(m_cur_node);
+        m_lc.dirtyUpLater(m_cur_node);
     }
 }
 

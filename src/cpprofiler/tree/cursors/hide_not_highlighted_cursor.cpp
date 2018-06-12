@@ -45,7 +45,7 @@ void HideNotHighlightedCursor::processCurrentNode()
     else
     {
         vf_.setHidden(n, true);
-        lc_.dirtyUp(n);
+        lc_.dirtyUpLater(n);
     }
 }
 

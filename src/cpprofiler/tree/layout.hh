@@ -46,7 +46,7 @@ class Layout : public QObject
 
     void setChildOffset(NodeID nid, double offset) { m_child_offsets[nid] = offset; }
 
-    void setLayoutDone(NodeID nid, bool);
+    void setLayoutDone(NodeID nid, bool val) { m_layout_done[nid] = val; }
 
     /// Note: a node might not have a shape (nullptr)
     /// if it was hidden before layout was run
@@ -60,13 +60,16 @@ class Layout : public QObject
     int getHeight(NodeID nid) const;
 
     /// Whether layout is done for node `nid`
-    bool getLayoutDone(NodeID nid) const;
+    bool getLayoutDone(NodeID nid) const { return m_layout_done[nid]; }
+
+    /// Whether layout is (at least partially) ready to be used for drawing
+    bool ready() const;
 
     /// Whether node `nid` is dirty
-    bool isDirty(NodeID nid) const;
+    bool isDirty(NodeID nid) const { return m_dirty[nid]; }
 
     /// Set node `nid` as (dirty) / (not dirty) based on `val`
-    void setDirty(NodeID nid, bool val);
+    void setDirty(NodeID nid, bool val) { m_dirty[nid] = val; }
 
     /// Get bounding box of node `nid`
     const BoundingBox &getBoundingBox(NodeID nid) const { return getShape(nid)->boundingBox(); }

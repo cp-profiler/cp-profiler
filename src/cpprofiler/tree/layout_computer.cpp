@@ -39,15 +39,16 @@ void LayoutComputer::setDirty(NodeID nid)
 
 void LayoutComputer::dirtyUp(NodeID nid)
 {
-
-    /// Is it necessary to have a tree mutex here?
-    utils::DebugMutexLocker layout_lock(&m_layout.getMutex());
-
     while (nid != NodeID::NoNode && !m_layout.isDirty(nid))
     {
         m_layout.setDirty(nid, true);
         nid = m_tree.getParent(nid);
     }
+}
+
+void LayoutComputer::dirtyUpLater(NodeID nid)
+{
+    du_node_set_.insert(nid);
 }
 
 bool LayoutComputer::compute()
@@ -72,6 +73,18 @@ bool LayoutComputer::compute()
 
     /// Ensures that sufficient memory is allocated for every node's shape
     m_layout.growDataStructures(m_tree.nodeCount());
+
+    print("nodes to dirty up: {}", du_node_set_.size());
+    print("total nodes: {}", m_tree.nodeCount());
+    perfHelper.begin("dirty up delayed");
+
+    for (auto n : du_node_set_)
+    {
+        dirtyUp(n);
+    }
+
+    du_node_set_.clear();
+    perfHelper.end();
 
     perfHelper.begin("layout");
     LayoutCursor lc(m_tree.getRoot(), m_tree, m_vis_flags, m_layout);
