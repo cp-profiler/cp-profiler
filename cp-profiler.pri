@@ -128,3 +128,5 @@ SOURCES += \
 HEADERS += \
     $$PWD/src/cpprofiler/tests/tree_test.hh \
     $$PWD/src/cpprofiler/tests/execution_test.hh \
+
+LIBS += -ldl

@@ -8,6 +8,4 @@ CONFIG += c++11
 
 SOURCES += $$PWD/src/main_cpprofiler.cpp
 
-LIBS += -ldl
-
 include(cp-profiler.pri)

@@ -60,7 +60,7 @@ class Layout : public QObject
     int getHeight(NodeID nid) const;
 
     /// Whether layout is done for node `nid`
-    bool getLayoutDone(NodeID nid) const { return m_layout_done[nid]; }
+    bool getLayoutDone(NodeID nid) const;
 
     /// Whether layout is (at least partially) ready to be used for drawing
     bool ready() const;

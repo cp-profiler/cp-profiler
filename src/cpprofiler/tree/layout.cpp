@@ -40,6 +40,12 @@ bool Layout::ready() const
     return false;
 }
 
+bool Layout::getLayoutDone(NodeID nid) const {
+    if (m_layout_done.size() <= nid)
+        return false;
+    return m_layout_done[nid];
+}
+
 void Layout::growDataStructures(int n_nodes)
 {
 

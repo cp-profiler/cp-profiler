@@ -294,6 +294,7 @@ bool DrawingCursor::mayMoveSidewards()
     return NodeCursor::mayMoveSidewards();
 }
 
+
 bool DrawingCursor::mayMoveDownwards()
 {
     /// TODO: this should be about children?
@@ -310,7 +311,7 @@ bool DrawingCursor::mayMoveUpwards()
 
 bool DrawingCursor::isClipped()
 {
-    auto bb = m_layout.getBoundingBox(m_cur_node);
+    const auto bb = m_layout.getBoundingBox(m_cur_node);
 
     if (
         (cur_x + bb.left > clippingRect.x() + clippingRect.width()) ||
@@ -318,7 +319,6 @@ bool DrawingCursor::isClipped()
         (cur_y > clippingRect.y() + clippingRect.height()) ||
         (cur_y + (m_layout.getHeight(m_cur_node) + 1) * layout::dist_y < clippingRect.y()))
     {
-        // qDebug() << "node clipped";
         return true;
     }
 
