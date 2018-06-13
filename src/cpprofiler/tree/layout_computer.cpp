@@ -74,9 +74,9 @@ bool LayoutComputer::compute()
     /// Ensures that sufficient memory is allocated for every node's shape
     m_layout.growDataStructures(m_tree.nodeCount());
 
-    print("nodes to dirty up: {}", du_node_set_.size());
-    print("total nodes: {}", m_tree.nodeCount());
-    perfHelper.begin("dirty up delayed");
+    // print("nodes to dirty up: {}", du_node_set_.size());
+    // print("total nodes: {}", m_tree.nodeCount());
+    // perfHelper.begin("dirty up delayed");
 
     for (auto n : du_node_set_)
     {
@@ -84,12 +84,12 @@ bool LayoutComputer::compute()
     }
 
     du_node_set_.clear();
-    perfHelper.end();
+    // perfHelper.end();
 
-    perfHelper.begin("layout");
+    // perfHelper.begin("layout");
     LayoutCursor lc(m_tree.getRoot(), m_tree, m_vis_flags, m_layout);
     PostorderNodeVisitor<LayoutCursor>(lc).run();
-    perfHelper.end();
+    // perfHelper.end();
 
     // perfHelper.begin("layout: actually compute");
 

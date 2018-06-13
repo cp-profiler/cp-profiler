@@ -165,10 +165,10 @@ void Conductor::onExecutionDone(Execution *e) const
 
 int Conductor::getNextExecId() const
 {
-    int eid = 0;
+    int eid = getRandomExID();
     while (executions_.find(eid) != executions_.end())
     {
-        eid++;
+        eid=getRandomExID();
     }
     return eid;
 }
@@ -179,9 +179,9 @@ void Conductor::setMetaData(int exec_id, const std::string &group_name,
 {
     exec_meta_.insert({exec_id, {group_name, exec_name, nm}});
 
-    debug("force") << "exec_id:" << exec_id << std::endl;
-    debug("force") << "gr_name:" << group_name << std::endl;
-    debug("force") << "ex_name:" << exec_name << std::endl;
+    qDebug() << "exec_id:" << exec_id;
+    qDebug() << "gr_name:" << group_name.c_str();
+    qDebug() << "ex_name:" << exec_name.c_str();
 }
 
 int Conductor::getListenPort() const
@@ -221,6 +221,7 @@ void Conductor::handleStart(ReceiverThread *receiver, const std::string &ex_name
         if (ide_used)
         {
             ex->setNameMap(exec_meta_[ex_id].name_map);
+            print("using name map for {}", ex_id);
         }
         else if (options_.paths != "" && options_.mzn != "")
         {
@@ -281,7 +282,7 @@ Execution *Conductor::addNewExecution(const std::string &ex_name, int ex_id, boo
         ex_id = getRandomExID();
     }
 
-    debug("force") << "EXECUTION_ID: " << ex_id << std::endl;
+    print("EXECUTION_ID: {}", ex_id);
 
     executions_[ex_id] = ex;
     execution_list_->addExecution(*ex);
