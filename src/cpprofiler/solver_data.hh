@@ -49,8 +49,11 @@ class SolverData
 
     std::unordered_map<NodeID, Nogood> nogood_map_;
 
-    /// Contributing constraints
+    /// Constraints contributing to a no-good at NodeID
     std::unordered_map<NodeID, std::vector<int>> contrib_cs_;
+
+    /// Nogoods contributing to the failure at node NodeID
+    std::unordered_map<NodeID, std::vector<NodeID>> contrib_ngs_;
 
     /// Time since the beginning of solving process;
     std::unordered_map<NodeID, int> node_time_;
