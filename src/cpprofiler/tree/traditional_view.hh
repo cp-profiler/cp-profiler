@@ -87,6 +87,8 @@ class TraditionalView : public QObject
     /// Notify all views to change their current nodes to `n`
     void nodeSelected(NodeID n);
 
+    void nogoodsClicked(std::vector<NodeID>) const;
+
   public slots:
 
     /// Update scrollarea's viewport

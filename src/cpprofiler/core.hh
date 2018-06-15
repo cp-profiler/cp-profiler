@@ -9,6 +9,7 @@
 
 using cpprofiler::tree::NodeID;
 using Label = std::string;
+using ExecID = int;
 
 namespace cpprofiler
 {

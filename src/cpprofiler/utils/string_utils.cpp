@@ -32,5 +32,14 @@ vector<string> split(const string &str, char delim,
     return result;
 }
 
+string join(const vector<string>& strs, char sep) {
+    std::stringstream ss;
+    for(size_t i=0; i<strs.size(); i++) {
+        if(i) ss << sep;
+        ss << strs[i];
+    }
+    return ss.str();
+}
+
 } // namespace utils
 } // namespace cpprofiler

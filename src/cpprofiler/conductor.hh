@@ -7,6 +7,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "core.hh"
 #include "options.hh"
 #include "settings.hh"
 
@@ -25,8 +26,6 @@ class ExecutionWindow;
 class ReceiverThread;
 class TreeBuilder;
 class NameMap;
-
-using ExecID = int;
 
 struct ExecMeta
 {
@@ -76,6 +75,9 @@ class Conductor : public QMainWindow
 
     void readyForBuilding(Execution *e);
 
+    /// For a heatmap in the IDE
+    void showNogood(QString url, QString name, bool record);
+
   private:
     void saveExecution(Execution *e);
 
@@ -108,6 +110,10 @@ class Conductor : public QMainWindow
 
     std::unordered_map<const Execution *, std::unique_ptr<ExecutionWindow>>
         execution_windows_;
+
+  public slots:
+
+    void computeHeatMap(ExecID eid, std::vector<NodeID>);
 };
 
 } // namespace cpprofiler

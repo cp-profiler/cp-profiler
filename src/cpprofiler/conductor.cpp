@@ -25,7 +25,9 @@
 #include "analysis/tree_merger.hh"
 
 #include "utils/std_ext.hh"
+#include "utils/string_utils.hh"
 #include "utils/tree_utils.hh"
+#include "utils/path_utils.hh"
 
 #include <random>
 
@@ -101,7 +103,9 @@ Conductor::Conductor(Options opt) : options_(opt)
         if (fileName == "")
             return;
 
-        auto ex = db_handler::load_execution(fileName.c_str());
+        const auto eid = getNextExecId();
+
+        auto ex = db_handler::load_execution(fileName.c_str(), eid);
 
         if (!ex)
         {
@@ -275,12 +279,13 @@ void Conductor::addNewExecution(std::shared_ptr<Execution> ex)
 Execution *Conductor::addNewExecution(const std::string &ex_name, int ex_id, bool restarts)
 {
 
-    auto ex = std::make_shared<Execution>(ex_name, restarts);
 
     if (ex_id == 0)
     {
         ex_id = getRandomExID();
     }
+
+    auto ex = std::make_shared<Execution>(ex_name, ex_id, restarts);
 
     print("EXECUTION_ID: {}", ex_id);
 
@@ -303,13 +308,16 @@ ExecutionWindow &Conductor::getExecutionWindow(Execution *e)
     /// create new one if doesn't already exist
     if (maybe_view == execution_windows_.end())
     {
-
         execution_windows_[e] = utils::make_unique<ExecutionWindow>(*e);
 
         const auto ex_window = execution_windows_[e].get();
 
         connect(ex_window, &ExecutionWindow::needToSaveSearch, [this, e]() {
             saveSearch(e);
+        });
+
+        connect(ex_window, &ExecutionWindow::nogoodsClicked, [this, e] (std::vector<NodeID> ns) {
+            emit computeHeatMap(e->id(), ns);
         });
     }
 
@@ -476,6 +484,110 @@ void Conductor::readSettings()
     }
 
     qDebug() << "settings read";
+}
+
+static std::string getHeatMapUrl(const NameMap& nm,
+                                 const std::unordered_map<int, int>& con_counts,
+                                 int max_count)
+{
+    /// get heat map
+
+    std::unordered_map<std::string, int> loc_intensity;
+
+    for (const auto it : con_counts) {
+        const auto con = std::to_string(it.first);
+        const auto count = it.second;
+
+        const auto& path = nm.getPath(con);
+
+        const auto path_head_elements = utils::getPathPair(path, true).model_level;
+
+        if (path_head_elements.empty()) continue;
+
+        const auto path_head = path_head_elements.back();
+
+        const auto location_etc = utils::split(path_head, utils::minor_sep);
+
+        // print("path: {}", path);
+
+        // for (auto e : new_loc) {
+        //     print("element: {}", e);
+        // }
+
+        /// path plus four ints
+        if (location_etc.size() < 5) continue;
+
+        std::vector<std::string> new_loc(location_etc.begin(), location_etc.begin() + 5);
+
+        int val = std::floor(count * (255.0 / max_count));
+
+        const auto loc_str = utils::join(new_loc, utils::minor_sep);
+
+        loc_intensity[loc_str] = std::max(loc_intensity[loc_str], val);
+    }
+
+    /// highlight url
+    std::stringstream url;
+    url << "highlight://?";
+
+    for(auto it : loc_intensity)
+        url << it.first << utils::minor_sep << it.second << ";";
+
+    return url.str();
+}
+
+void Conductor::computeHeatMap(ExecID eid, std::vector<NodeID> ns) {
+
+    auto it = exec_meta_.find(eid);
+
+    if (it == exec_meta_.end()) {
+        print("No metadata for eid {} (ExecMeta)", eid);
+        return;
+    }
+
+    /// check if namemap is there
+    const auto nm = it->second.name_map;
+
+    if (!nm) {
+        print("no name map for eid: {}", eid);
+        return;
+    }
+
+    const auto exec = executions_.at(eid);
+
+    const auto& sd = exec->solver_data();
+
+    std::unordered_map<int, int> con_counts;
+
+    for (const auto n : ns) {
+        const auto* cs = sd.getContribConstraints(n);
+
+        if (!cs) continue;
+        
+        for (int con_id : *cs) {
+            con_counts[con_id]++;
+        }
+    }
+
+    int max_count = 0;
+    for (const auto p : con_counts) {
+        if (p.second > max_count) {
+            max_count = p.second;
+        }
+    }
+
+    const auto url = getHeatMapUrl(*nm, con_counts, max_count);
+
+    if (url.empty()) return;
+
+    std::stringstream label;
+
+    for (const auto n : ns) {
+        label << std::to_string(n) << ' ';
+    }
+
+    emit showNogood(url.c_str(), label.str().c_str(), false);
+
 }
 
 } // namespace cpprofiler

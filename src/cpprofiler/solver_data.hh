@@ -5,47 +5,7 @@
 
 #include "core.hh"
 
-namespace cpprofiler
-{
-
-/// Mimics UID
-struct SolverID
-{
-    // Node number
-    int32_t nid;
-    // Restart id
-    int32_t rid;
-    // Thread id
-    int32_t tid;
-
-    std::string toString() const
-    {
-        return std::string("{") + std::to_string(nid) +
-               ", " + std::to_string(rid) + ", " + std::to_string(tid) + "}";
-    }
-};
-
-static bool operator==(const SolverID &lhs, const SolverID &rhs)
-{
-    return (lhs.nid == rhs.nid) && (lhs.tid == rhs.tid) && (lhs.rid == rhs.rid);
-}
-
-} // namespace cpprofiler
-
-namespace std
-{
-template <>
-struct hash<cpprofiler::SolverID>
-{
-    size_t operator()(cpprofiler::SolverID const &a) const
-    {
-        const size_t h1(std::hash<int>{}(a.nid));
-        size_t const h2(std::hash<int>{}(a.tid));
-        size_t const h3(std::hash<int>{}(a.rid));
-        return h1 ^ (h2 << 1) ^ (h3 << 1);
-    }
-};
-} // namespace std
+#include "solver_id.hh"
 
 namespace cpprofiler
 {
@@ -89,6 +49,9 @@ class SolverData
 
     std::unordered_map<NodeID, Nogood> nogood_map_;
 
+    /// Contributing constraints
+    std::unordered_map<NodeID, std::vector<int>> contrib_cs_;
+
   public:
     NodeID getNodeId(SolverID sid) const
     {
@@ -103,6 +66,16 @@ class SolverData
     SolverID getSolverID(NodeID nid) const
     {
         return m_id_map.getUID(nid);
+    }
+
+    const std::vector<int> *getContribConstraints(NodeID nid) const
+    {
+
+        const auto it = contrib_cs_.find(nid);
+
+        if (it == contrib_cs_.end())
+            return nullptr;
+        return &(it->second);
     }
 
     /// Associate nogood `ng` with node `nid`
@@ -123,11 +96,11 @@ class SolverData
         }
     }
 
+    /// Process node info looking for reasons, contributing nogoods for failed nodes etc.
+    void processInfo(NodeID nid, const std::string &info_str);
+
     /// Whether the data stores at least one no-good
-    bool hasNogoods() const
-    {
-        return (nogood_map_.size() > 0);
-    }
+    bool hasNogoods() const { return !nogood_map_.empty(); }
 };
 
 } // namespace cpprofiler

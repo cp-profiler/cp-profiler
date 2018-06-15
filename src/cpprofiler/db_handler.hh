@@ -14,7 +14,7 @@ namespace db_handler
 void save_execution(const Execution *ex, const char *path);
 
 /// Create a new execution based on a db file at `path`
-std::shared_ptr<Execution> load_execution(const char *path);
+std::shared_ptr<Execution> load_execution(const char *path, ExecID eid = 0);
 } // namespace db_handler
 
 } // namespace cpprofiler

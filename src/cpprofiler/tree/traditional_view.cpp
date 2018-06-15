@@ -772,6 +772,14 @@ void TraditionalView::showNogoods() const
     connect(ng_dialog, &NogoodDialog::nogoodClicked, [this](NodeID nid) {
         const_cast<TraditionalView *>(this)->setCurrentNode(nid);
         const_cast<TraditionalView *>(this)->centerCurrentNode();
+
+        /// TODO: emit showNogoods connected to conductor
+
+        /// url
+        /// name
+        /// record
+
+        emit nogoodsClicked({nid});
     });
 
     ng_dialog->show();

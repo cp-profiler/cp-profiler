@@ -1,6 +1,7 @@
 #include "name_map.hh"
 #include "utils/debug.hh"
 #include "utils/string_utils.hh"
+#include "utils/path_utils.hh"
 
 #include <QDebug>
 #include <QString>
@@ -50,14 +51,14 @@ std::ostream &operator<<(std::ostream &os, const Location &l)
 static std::pair<Location, bool> getLocation(const string &path)
 {
 
-    auto model_name = path.substr(0, path.find(NameMap::minor_sep));
+    auto model_name = path.substr(0, path.find(utils::minor_sep));
 
     auto name_pos = path.rfind(model_name);
-    auto end_elm = path.find(NameMap::major_sep, name_pos);
+    auto end_elm = path.find(utils::major_sep, name_pos);
 
     auto element = path.substr(name_pos, end_elm - name_pos);
 
-    auto loc_parts = utils::split(element, NameMap::minor_sep);
+    auto loc_parts = utils::split(element, utils::minor_sep);
 
     auto loc = Location(stoi(loc_parts[1]), stoi(loc_parts[2]),
                         stoi(loc_parts[3]), stoi(loc_parts[4]));
@@ -71,7 +72,7 @@ static std::pair<Location, bool> getLocation(const string &path)
     else
     {
         auto rem = path.substr(end_elm + 1);
-        auto loc_parts = utils::split(rem, NameMap::minor_sep, true);
+        auto loc_parts = utils::split(rem, utils::minor_sep, true);
 
         if (stoi(loc_parts[1]) == 0 && stoi(loc_parts[2]) == 0 &&
             stoi(loc_parts[3]) == 0 && stoi(loc_parts[4]) == 0)
@@ -116,10 +117,10 @@ static string extractExpression(const vector<string> &model,
 
 static string getPathUntilDecomp(const string &path)
 {
-    const auto &model_name = path.substr(0, path.find(NameMap::minor_sep));
+    const auto &model_name = path.substr(0, path.find(utils::minor_sep));
 
     const auto last_model_pos = path.rfind(model_name);
-    const auto end_pos = path.find(NameMap::major_sep, last_model_pos);
+    const auto end_pos = path.find(utils::major_sep, last_model_pos);
     return path.substr(0, end_pos);
 }
 
@@ -288,6 +289,17 @@ const NiceName &NameMap::getNiceName(const std::string &ident) const
     if (it != id_map_.end())
     {
         return it->second.nice_name;
+    }
+
+    return empty_string;
+}
+
+const Path& NameMap::getPath(const std::string &ident) const {
+
+    auto it = id_map_.find(ident);
+    if (it != id_map_.end())
+    {
+        return it->second.path;
     }
 
     return empty_string;

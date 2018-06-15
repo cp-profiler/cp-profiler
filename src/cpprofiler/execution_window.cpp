@@ -63,6 +63,8 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
     connect(traditional_view_.get(), &tree::TraditionalView::nodeSelected,
             this, &ExecutionWindow::nodeSelected);
 
+    connect(traditional_view_.get(), &tree::TraditionalView::nogoodsClicked, this, &ExecutionWindow::nogoodsClicked);
+
     connect(this, &ExecutionWindow::nodeSelected, traditional_view_.get(), &tree::TraditionalView::setCurrentNode);
 
     maybe_caller_.reset(new utils::MaybeCaller(30));

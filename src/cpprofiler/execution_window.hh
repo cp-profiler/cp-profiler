@@ -102,6 +102,8 @@ signals:
   void needToSaveSearch(Execution *e);
 
   void nodeSelected(NodeID n);
+
+  void nogoodsClicked(std::vector<NodeID>);
 };
 
 } // namespace cpprofiler

@@ -12,8 +12,8 @@ namespace cpprofiler
 
 std::string Execution::name() { return m_name; }
 
-Execution::Execution(const std::string &name, bool restarts)
-    : m_name{name}, m_tree{new tree::NodeTree()},
+Execution::Execution(const std::string &name, ExecID id, bool restarts)
+    : id_(id), m_name{name}, m_tree{new tree::NodeTree()},
       solver_data_(utils::make_unique<SolverData>()),
       user_data_(utils::make_unique<UserData>()), m_is_restarts(restarts)
 {
@@ -44,22 +44,4 @@ const tree::NodeTree &Execution::tree() const { return *m_tree; }
 
 bool Execution::doesRestarts() const { return m_is_restarts; }
 
-} // namespace cpprofiler
-
-namespace cpprofiler
-{
-
-void IdMap::addPair(SolverID sid, tree::NodeID nid)
-{
-    QWriteLocker locker(&m_lock);
-
-    uid2id_.insert({sid, nid});
-    nid2uid_.insert({nid, sid});
-}
-
-tree::NodeID IdMap::get(SolverID sid) const
-{
-    QReadLocker locker(&m_lock);
-    return uid2id_.at(sid);
-}
 } // namespace cpprofiler

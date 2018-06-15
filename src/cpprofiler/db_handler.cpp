@@ -493,7 +493,7 @@ void save_execution(const Execution *ex, const char *path)
     perfHelper.end();
 }
 
-std::shared_ptr<Execution> load_execution(const char *path)
+std::shared_ptr<Execution> load_execution(const char *path, ExecID eid)
 {
 
     auto db = open_db(path);
@@ -501,7 +501,7 @@ std::shared_ptr<Execution> load_execution(const char *path)
     if (!db)
         return nullptr;
 
-    auto ex = std::make_shared<Execution>(path);
+    auto ex = std::make_shared<Execution>(path, eid);
 
     read_nodes(db.get(), *ex);
 

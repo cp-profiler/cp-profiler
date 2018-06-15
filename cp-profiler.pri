@@ -13,6 +13,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/execution_window.cpp \
     $$PWD/src/cpprofiler/utils/utils.cpp \
     $$PWD/src/cpprofiler/utils/string_utils.cpp \
+    $$PWD/src/cpprofiler/utils/path_utils.cpp \
     $$PWD/src/cpprofiler/utils/tree_utils.cpp \
     $$PWD/src/cpprofiler/utils/perf_helper.cpp \
     $$PWD/src/cpprofiler/utils/array.cpp \
@@ -50,6 +51,7 @@ SOURCES += \
     $$PWD/src/cpprofiler/analysis/pattern_rect.cpp \
     $$PWD/src/cpprofiler/tree/node_drawing.cpp \
     $$PWD/src/cpprofiler/db_handler.cpp \
+    $$PWD/src/cpprofiler/solver_data.cpp \
     $$PWD/src/cpprofiler/nogood_dialog.cpp \
     $$PWD/src/sqlite/sqlite3.c \
 
@@ -70,6 +72,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/execution_window.hh \
     $$PWD/src/cpprofiler/utils/utils.hh \
     $$PWD/src/cpprofiler/utils/string_utils.hh \
+    $$PWD/src/cpprofiler/utils/path_utils.hh \
     $$PWD/src/cpprofiler/utils/tree_utils.hh \
     $$PWD/src/cpprofiler/utils/perf_helper.hh \
     $$PWD/src/cpprofiler/utils/array.hh \
@@ -100,6 +103,7 @@ HEADERS += \
     $$PWD/src/cpprofiler/tree/cursors/hide_not_highlighted_cursor.hh \
     $$PWD/src/cpprofiler/tree/cursors/nodevisitor.hh \
     $$PWD/src/cpprofiler/core.hh \
+    $$PWD/src/cpprofiler/solver_id.hh \
     $$PWD/src/cpprofiler/utils/debug_mutex.hh \
     $$PWD/src/cpprofiler/analysis/similar_subtree_analysis.hh \
     $$PWD/src/cpprofiler/analysis/similar_subtree_window.hh \

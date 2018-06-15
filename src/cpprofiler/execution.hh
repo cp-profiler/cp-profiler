@@ -15,7 +15,10 @@ namespace cpprofiler
 
 class Execution
 {
-    std::string m_name;
+
+    const ExecID id_;
+
+    const std::string m_name;
 
     std::unique_ptr<tree::NodeTree> m_tree;
 
@@ -31,7 +34,9 @@ class Execution
   public:
     std::string name();
 
-    explicit Execution(const std::string &name, bool restarts = false);
+    ExecID id() { return id_; }
+
+    explicit Execution(const std::string &name, ExecID id = 0, bool restarts = false);
 
     void setNameMap(std::shared_ptr<const NameMap> nm);
 

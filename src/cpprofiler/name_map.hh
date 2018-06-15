@@ -41,6 +41,7 @@ using SymbolTable = std::unordered_map<std::string, SymbolRecord>;
 using ExpressionTable = std::unordered_map<std::string, std::string>;
 
 using NiceName = std::string;
+using Path = std::string;
 
 class NameMap
 {
@@ -52,8 +53,6 @@ class NameMap
     void addIdExpressionToMap(const std::vector<std::string> &model, const std::string &ident);
 
   public:
-    static constexpr char minor_sep = '|';
-    static constexpr char major_sep = ';';
 
     NameMap();
 
@@ -62,6 +61,13 @@ class NameMap
     bool initialize(const std::string &path_filename, const std::string &model_filename);
 
     std::string replaceNames(const std::string &text, bool expand = false) const;
+
+
+    const Path& getPath(const std::string &ident) const;
+
+
+
+
 };
 
 } // namespace cpprofiler
