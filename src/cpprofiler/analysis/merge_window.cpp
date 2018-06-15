@@ -14,6 +14,7 @@
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QCheckBox>
+#include <cmath>
 
 namespace cpprofiler
 {
@@ -53,6 +54,7 @@ MergeWindow::MergeWindow(Execution &ex_l, Execution &ex_r, std::shared_ptr<tree:
     pent_list = new PentagonListWidget(this, *merge_result_);
 
     connect(pent_list, &PentagonListWidget::pentagonClicked, view_.get(), &tree::TraditionalView::setCurrentNode);
+    // connect(pent_list, &PentagonListWidget::pentagonClicked, view_.get(), &tree::TraditionalView::setAndCenterNode);
 
     auto sort_cb = new QCheckBox("sorted", this);
     sort_cb->setChecked(true);
@@ -253,6 +255,53 @@ MergeResult &MergeWindow::mergeResult()
     return *merge_result_;
 }
 
+namespace ng_analysis
+{
+
+struct ReductionStats
+{
+    int total_red; /// total reduction by a nogood
+    int count;     /// number of times a nogood contributed to a 1-n pentagon
+};
+
+class ResultBuilder
+{
+
+    using ResType = std::unordered_map<NogoodID, ReductionStats>;
+
+    /// Accumulate nogood contributions here
+    ResType ng_items;
+
+  public:
+    ResultBuilder() {}
+
+    /// Account for search reduction of one 1-n pentagon
+    void addPentagonData(
+        const std::vector<NogoodID> &nogoods, // responsible nogoods
+        int red)                              // node reduction (n-1)
+    {
+        /// reduction attributed to each nogood
+        const auto rel_red = std::ceil((float)red / nogoods.size());
+
+        for (auto ng : nogoods)
+        {
+            if (ng_items.find(ng) == ng_items.end())
+            {
+                /// never seen this nogood before
+                ng_items.insert({ng, {0, 0}});
+            }
+
+            auto &ng_stats = ng_items.at(ng);
+            ng_stats.count++;
+            ng_stats.total_red += rel_red;
+        }
+    }
+
+    const ResType &result() const { return ng_items; }
+};
+
+} // namespace ng_analysis
+
 void MergeWindow::runNogoodAnalysis() const
 {
 
@@ -260,23 +309,47 @@ void MergeWindow::runNogoodAnalysis() const
 
     const auto &tree_l = ex_l_.tree();
 
-    std::vector<NgAnalysisItem> nga_data;
+    ng_analysis::ResultBuilder res_builder;
 
     for (auto &item : *merge_result_)
     {
-        if (item.size_l == 1)
+
+        if (item.size_l != 1)
+            continue;
+
+        /// See what nogoods contribute to the nogood at item.nid
+
+        /// get left child
+        auto kid_l = nt_->getChild(item.pen_nid, 0);
+        auto orig_id = orig_locations_[kid_l].nid;
+
+        const auto &ng = tree_l.getNogood(orig_id);
+
+        const auto &sd = tree_l.solver_data();
+
+        print("nogood: {}", ng.get());
+
+        /// get contributing nogoods:
+
+        const auto *nogoods = sd.getContribNogoods(orig_id);
+
+        if (nogoods)
         {
-
-            /// See if item.nid is associated with any nogood
-
-            /// get left child
-            auto kid_l = nt_->getChild(item.pen_nid, 0);
-            auto orig_id = orig_locations_[kid_l].nid;
-
-            const auto &ng = tree_l.getNogood(orig_id);
-
-            nga_data.push_back({item.pen_nid, item.size_l, item.size_r, ng});
+            print("contributing nogoods: {}", *nogoods);
+            res_builder.addPentagonData(*nogoods, item.size_r - item.size_l);
         }
+    }
+
+    /// construct ng analysis data in the format required by ng dialog
+    std::vector<NgAnalysisItem> nga_data;
+    nga_data.reserve(res_builder.result().size());
+
+    for (auto item : res_builder.result())
+    {
+        const NogoodID id = item.first;
+        const auto &ng_str = tree_l.getNogood(id);
+
+        nga_data.push_back({id, ng_str, item.second.total_red, item.second.count});
     }
 
     auto ng_window = new NogoodAnalysisDialog(nga_data);

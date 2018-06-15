@@ -558,6 +558,12 @@ void TraditionalView::setCurrentNode(NodeID nid)
     emit needsRedrawing();
 }
 
+void TraditionalView::setAndCenterNode(NodeID nid)
+{
+    setCurrentNode(nid);
+    centerNode(nid);
+}
+
 void TraditionalView::computeLayout()
 {
 

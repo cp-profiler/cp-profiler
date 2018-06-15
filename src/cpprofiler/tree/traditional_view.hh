@@ -115,6 +115,9 @@ class TraditionalView : public QObject
     /// Set current node to nid
     void setCurrentNode(NodeID nid);
 
+    /// Set and center node `nid`
+    void setAndCenterNode(NodeID nid);
+
     /// ***** NAVIGATION BEGIN *****
     /// Navigation to a node sets the node as
     /// selected and centers it in the canvas

@@ -11,6 +11,8 @@ using cpprofiler::tree::NodeID;
 using Label = std::string;
 using ExecID = int;
 
+using NogoodID = cpprofiler::tree::NodeID;
+
 namespace cpprofiler
 {
 namespace tree

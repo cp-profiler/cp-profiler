@@ -76,10 +76,20 @@ class SolverData
 
     const std::vector<int> *getContribConstraints(NodeID nid) const
     {
-
         const auto it = contrib_cs_.find(nid);
 
         if (it == contrib_cs_.end())
+            return nullptr;
+        return &(it->second);
+    }
+
+    /// Get nogoods (identified by the NodeID where they were created)
+    /// that contribute to the failure at `nid`;
+    const std::vector<NodeID> *getContribNogoods(NodeID nid) const
+    {
+        const auto it = contrib_ngs_.find(nid);
+
+        if (it == contrib_ngs_.end())
             return nullptr;
         return &(it->second);
     }
