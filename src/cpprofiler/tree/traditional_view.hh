@@ -52,6 +52,9 @@ class TraditionalView : public QObject
     /// The area the tree is actually drawn onto
     std::unique_ptr<TreeScrollArea> scroll_area_;
 
+    /// Whether node ids should be shown instead of true labels (for debugging)
+    bool nid_shown_ = false;
+
     /// Only update layout if it is stale
     bool layout_stale_ = true;
 
@@ -196,6 +199,9 @@ class TraditionalView : public QObject
 
     /// Check shapes and bounding boxes of all nodes
     void debugCheckLayout() const;
+
+    /// Whether labels on nodes are true labels or NodeIDs
+    void setDebugMode(bool v);
 };
 
 } // namespace tree

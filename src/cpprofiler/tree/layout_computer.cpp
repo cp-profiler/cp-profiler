@@ -48,12 +48,10 @@ void LayoutComputer::dirtyUp(NodeID nid)
 
 void LayoutComputer::dirtyUpLater(NodeID nid)
 {
+    // if (m_layout.ready(nid))
+    // {
     du_node_set_.insert(nid);
-
-    if (m_layout.ready(nid))
-    {
-        du_node_set_2.insert(nid);
-    }
+    // }
 }
 
 bool LayoutComputer::compute()
@@ -86,7 +84,8 @@ bool LayoutComputer::compute()
 
     du_node_set_.clear();
 
-    LayoutCursor lc(m_tree.getRoot(), m_tree, m_vis_flags, m_layout);
+    // perfHelper.begin("layout");
+    LayoutCursor lc(m_tree.getRoot(), m_tree, m_vis_flags, m_layout, debug_mode_);
     PostorderNodeVisitor<LayoutCursor>(lc).run();
 
     static int counter = 0;

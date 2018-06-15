@@ -26,10 +26,10 @@ class LayoutComputer
 
     bool m_needs_update = true;
 
-    /// Nodes to dirty up
-    std::set<NodeID> du_node_set_;
+    bool debug_mode_ = false;
 
-    std::set<NodeID> du_node_set_2;
+    /// Nodes to dirty up right before next layout update
+    std::set<NodeID> du_node_set_;
 
     void dirtyUp(NodeID nid);
 
@@ -44,6 +44,8 @@ class LayoutComputer
     bool isDirty(NodeID nid);
 
     void setDirty(NodeID nid);
+
+    void setDebugMode(bool val) { debug_mode_ = val; }
 };
 
 } // namespace tree

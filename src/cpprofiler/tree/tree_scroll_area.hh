@@ -40,6 +40,8 @@ class TreeScrollArea : public QAbstractScrollArea
 
     NodeID m_start_node;
 
+    bool debug_mode_ = false;
+
     QPoint getNodeCoordinate(NodeID nid);
     NodeID findNodeClicked(int x, int y);
 
@@ -60,6 +62,8 @@ class TreeScrollArea : public QAbstractScrollArea
 
     /// center the x coordinate
     void centerPoint(int x, int y);
+
+    void setDebugMode(bool val) { debug_mode_ = val; }
 
     void setScale(int val);
 

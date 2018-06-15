@@ -16,15 +16,16 @@ class NodeCursor
 {
 
   private:
+    NodeID node_;
+    int cur_alt_;
+    const NodeID start_node_;
+
   protected:
-    const NodeTree &m_tree;
-    const NodeInfo &m_node_info;
-    const NodeID m_start_node;
-    NodeID m_cur_node;
-    int m_cur_alt;
+    const NodeTree &tree_;
 
     /// return current node
-    inline NodeID node() const { return m_cur_node; }
+    inline NodeID cur_node() const { return node_; }
+    inline NodeID start_node() const { return start_node_; }
 
   public:
     NodeCursor(NodeID start, const NodeTree &tree);

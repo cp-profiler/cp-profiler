@@ -10,43 +10,44 @@ namespace tree
 {
 
 NodeCursor::NodeCursor(NodeID start, const NodeTree &tree)
-    : m_tree(tree), m_node_info(tree.node_info()), m_start_node(start), m_cur_node(start), m_cur_alt(0)
+    : tree_(tree), start_node_(start), node_(start), cur_alt_(0)
 {
 }
 
 bool NodeCursor::mayMoveDownwards() const
 {
-    auto n = m_tree.childrenCount(m_cur_node);
+    auto n = tree_.childrenCount(node_);
     return (n > 0);
 }
 
 void NodeCursor::moveDownwards()
 {
-    m_cur_alt = 0;
-    m_cur_node = m_tree.getChild(m_cur_node, 0);
+    cur_alt_ = 0;
+    node_ = tree_.getChild(node_, 0);
 }
 
 bool NodeCursor::mayMoveSidewards() const
 {
-    return (m_cur_node != m_start_node) && (m_cur_node != m_tree.getRoot()) && (m_cur_alt < m_tree.getNumberOfSiblings(m_cur_node) - 1);
+    return (node_ != start_node_) &&
+           (node_ != tree_.getRoot()) &&
+           (cur_alt_ < tree_.getNumberOfSiblings(node_) - 1);
 }
 
 void NodeCursor::moveSidewards()
 {
-    auto parent_nid = m_tree.getParent(m_cur_node);
-    m_cur_node = m_tree.getChild(parent_nid, ++m_cur_alt);
+    auto parent_nid = tree_.getParent(node_);
+    node_ = tree_.getChild(parent_nid, ++cur_alt_);
 }
 
 bool NodeCursor::mayMoveUpwards() const
 {
-    return (m_cur_node != m_start_node) && (m_cur_node != m_tree.getRoot());
+    return (node_ != start_node_) && (node_ != tree_.getRoot());
 }
 
 void NodeCursor::moveUpwards()
 {
-
-    m_cur_node = m_tree.getParent(m_cur_node);
-    m_cur_alt = m_tree.getAlternative(m_cur_node);
+    node_ = tree_.getParent(node_);
+    cur_alt_ = tree_.getAlternative(node_);
 }
 
 void NodeCursor::finalize()

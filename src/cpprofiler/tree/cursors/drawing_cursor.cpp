@@ -46,15 +46,22 @@ static QColor lightGreen(11, 118, 70, 120);
 static QColor lightBlue(0, 92, 161, 120);
 } // namespace colors
 
-DrawingCursor::DrawingCursor(NodeID start, const NodeTree &tree,
-                             const Layout &layout, const UserData &user_data, const VisualFlags &flags, QPainter &painter, QPoint start_pos, const QRect &clip)
+DrawingCursor::DrawingCursor(NodeID start,
+                             const NodeTree &tree,
+                             const Layout &layout,
+                             const UserData &user_data,
+                             const VisualFlags &flags,
+                             QPainter &painter,
+                             QPoint start_pos,
+                             const QRect &clip,
+                             bool debug)
     : NodeCursor(start, tree),
-      m_node_tree(tree),
-      m_layout(layout),
+      layout_(layout),
       user_data_(user_data),
-      m_vis_flags(flags),
-      m_painter(painter),
-      clippingRect(clip)
+      vis_flags_(flags),
+      painter_(painter),
+      clippingRect(clip),
+      debug_mode_(debug)
 {
     cur_x = start_pos.x();
     cur_y = start_pos.y();
@@ -133,34 +140,35 @@ void DrawingCursor::processCurrentNode()
 
     bool phantom_node = false;
 
-    m_painter.setPen(QColor{Qt::black});
+    painter_.setPen(QColor{Qt::black});
 
-    if (m_cur_node != m_start_node)
+    const auto node = cur_node();
+
+    if (node != start_node())
     {
-
-        auto parent_x = cur_x - m_layout.getOffset(m_cur_node);
+        auto parent_x = cur_x - layout_.getOffset(node);
         auto parent_y = cur_y - static_cast<double>(layout::dist_y);
 
-        m_painter.drawLine(parent_x, parent_y + BRANCH_WIDTH, cur_x, cur_y);
+        painter_.drawLine(parent_x, parent_y + BRANCH_WIDTH, cur_x, cur_y);
     }
 
-    auto status = m_node_info.getStatus(m_cur_node);
+    auto status = tree_.getStatus(node);
 
     /// NOTE: this should be consisten with the layout
-    if (m_vis_flags.isLabelShown(m_cur_node))
+    if (vis_flags_.isLabelShown(node))
     {
 
-        auto draw_left = !utils::is_right_most_child(m_node_tree, m_cur_node);
-        // m_painter.setPen(QPen{Qt::black, 2});
-        const auto &label = m_node_tree.getLabel(m_cur_node);
+        auto draw_left = !utils::is_right_most_child(tree_, node);
+        // painter_.setPen(QPen{Qt::black, 2});
+        const Label &label = debug_mode_ ? std::to_string(node) : tree_.getLabel(node);
 
-        auto fm = m_painter.fontMetrics();
+        auto fm = painter_.fontMetrics();
         auto label_width = fm.width(label.c_str());
 
         {
-            auto font = m_painter.font();
+            auto font = painter_.font();
             font.setStyleHint(QFont::Monospace);
-            m_painter.setFont(font);
+            painter_.setFont(font);
         }
 
         int label_x;
@@ -173,47 +181,47 @@ void DrawingCursor::processCurrentNode()
             label_x = cur_x + HALF_MAX_NODE_W;
         }
 
-        m_painter.drawText(QPoint{label_x, cur_y}, label.c_str());
+        painter_.drawText(QPoint{label_x, cur_y}, label.c_str());
     }
 
-    if (m_vis_flags.isHighlighted(m_cur_node))
+    if (vis_flags_.isHighlighted(node))
     {
-        drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
+        drawShape(painter_, cur_x, cur_y, node, layout_);
     }
 
     const auto sel_node = user_data_.getSelectedNode();
-    const auto selected = (sel_node == m_cur_node) ? true : false;
+    const auto selected = (sel_node == node) ? true : false;
 
     if (selected)
     {
-        m_painter.setBrush(QColor{0, 0, 0, 20});
+        painter_.setBrush(QColor{0, 0, 0, 20});
 
-        drawBoundingBox(m_painter, cur_x, cur_y, m_cur_node, m_layout);
+        drawBoundingBox(painter_, cur_x, cur_y, node, layout_);
 
-        drawShape(m_painter, cur_x, cur_y, m_cur_node, m_layout);
+        drawShape(painter_, cur_x, cur_y, node, layout_);
     }
 
     /// see if the node is hidden
 
-    auto hidden = m_vis_flags.isHidden(m_cur_node);
+    auto hidden = vis_flags_.isHidden(node);
 
     if (hidden)
     {
 
         if (status == NodeStatus::MERGED)
         {
-            draw::big_pentagon(m_painter, cur_x, cur_y, selected);
+            draw::big_pentagon(painter_, cur_x, cur_y, selected);
             return;
         }
 
         /// check if the node is a lantern node
-        const auto lantern_size = m_vis_flags.lanternSize(m_cur_node);
+        const auto lantern_size = vis_flags_.lanternSize(node);
 
         if (lantern_size == -1)
         {
 
             /// completely failed
-            drawTriangle(m_painter, cur_x, cur_y, selected);
+            drawTriangle(painter_, cur_x, cur_y, selected);
 
             /// TODO: has open nodes
 
@@ -221,7 +229,7 @@ void DrawingCursor::processCurrentNode()
         }
         else
         {
-            draw::lantern(m_painter, cur_x, cur_y, lantern_size, selected);
+            draw::lantern(painter_, cur_x, cur_y, lantern_size, selected);
         }
 
         return;
@@ -231,46 +239,46 @@ void DrawingCursor::processCurrentNode()
     {
     case NodeStatus::SOLVED:
     {
-        draw::solution(m_painter, cur_x, cur_y, selected);
+        draw::solution(painter_, cur_x, cur_y, selected);
     }
     break;
     case NodeStatus::FAILED:
     {
-        draw::failure(m_painter, cur_x, cur_y, selected);
+        draw::failure(painter_, cur_x, cur_y, selected);
     }
     break;
     case NodeStatus::BRANCH:
     {
-        draw::branch(m_painter, cur_x, cur_y, selected);
+        draw::branch(painter_, cur_x, cur_y, selected);
     }
     break;
     case NodeStatus::SKIPPED:
     {
-        draw::skipped(m_painter, cur_x, cur_y, selected);
+        draw::skipped(painter_, cur_x, cur_y, selected);
     }
     break;
     case NodeStatus::MERGED:
     {
-        draw::pentagon(m_painter, cur_x, cur_y, selected);
+        draw::pentagon(painter_, cur_x, cur_y, selected);
     }
     break;
     default:
     {
-        draw::unexplored(m_painter, cur_x, cur_y, selected);
+        draw::unexplored(painter_, cur_x, cur_y, selected);
     }
     break;
     }
 
-    if (user_data_.isBookmarked(m_cur_node))
+    if (user_data_.isBookmarked(node))
     {
-        m_painter.setBrush(Qt::black);
-        m_painter.drawEllipse(cur_x - 10, cur_y, 10.0, 10.0);
+        painter_.setBrush(Qt::black);
+        painter_.drawEllipse(cur_x - 10, cur_y, 10.0, 10.0);
     }
 }
 
 void DrawingCursor::moveUpwards()
 {
-    cur_x -= m_layout.getOffset(m_cur_node);
+    cur_x -= layout_.getOffset(cur_node());
     cur_y -= layout::dist_y;
     NodeCursor::moveUpwards();
 }
@@ -278,15 +286,15 @@ void DrawingCursor::moveUpwards()
 void DrawingCursor::moveDownwards()
 {
     NodeCursor::moveDownwards();
-    cur_x += m_layout.getOffset(m_cur_node);
+    cur_x += layout_.getOffset(cur_node());
     cur_y += layout::dist_y;
 }
 
 void DrawingCursor::moveSidewards()
 {
-    cur_x -= m_layout.getOffset(m_cur_node);
+    cur_x -= layout_.getOffset(cur_node());
     NodeCursor::moveSidewards();
-    cur_x += m_layout.getOffset(m_cur_node);
+    cur_x += layout_.getOffset(cur_node());
 }
 
 bool DrawingCursor::mayMoveSidewards()
@@ -294,13 +302,12 @@ bool DrawingCursor::mayMoveSidewards()
     return NodeCursor::mayMoveSidewards();
 }
 
-
 bool DrawingCursor::mayMoveDownwards()
 {
     /// TODO: this should be about children?
     return NodeCursor::mayMoveDownwards() &&
-           !m_vis_flags.isHidden(m_cur_node) &&
-           m_layout.getLayoutDone(m_cur_node) &&
+           !vis_flags_.isHidden(cur_node()) &&
+           layout_.getLayoutDone(cur_node()) &&
            !isClipped();
 }
 
@@ -311,13 +318,13 @@ bool DrawingCursor::mayMoveUpwards()
 
 bool DrawingCursor::isClipped()
 {
-    const auto bb = m_layout.getBoundingBox(m_cur_node);
+    const auto bb = layout_.getBoundingBox(cur_node());
 
     if (
         (cur_x + bb.left > clippingRect.x() + clippingRect.width()) ||
         (cur_x + bb.right < clippingRect.x()) ||
         (cur_y > clippingRect.y() + clippingRect.height()) ||
-        (cur_y + (m_layout.getHeight(m_cur_node) + 1) * layout::dist_y < clippingRect.y()))
+        (cur_y + (layout_.getHeight(cur_node()) + 1) * layout::dist_y < clippingRect.y()))
     {
         return true;
     }

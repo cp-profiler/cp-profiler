@@ -290,6 +290,12 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
             auto checkLayout = new QAction{"Check layout", this};
             debugMenu->addAction(checkLayout);
             connect(checkLayout, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::debugCheckLayout);
+
+            auto debugMode = new QAction{"Debug mode (show NodeIDs)", this};
+            debugMode->setCheckable(true);
+            debugMode->setShortcut(QKeySequence("Shift+D"));
+            debugMenu->addAction(debugMode);
+            connect(debugMode, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::setDebugMode);
         }
 
         // auto debugText = new QTextEdit{this};

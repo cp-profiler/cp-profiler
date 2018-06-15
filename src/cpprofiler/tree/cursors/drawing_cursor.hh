@@ -29,16 +29,16 @@ class Layout;
 class DrawingCursor : public NodeCursor
 {
 
-    const Layout &m_layout;
-
-    const NodeTree &m_node_tree;
+    const Layout &layout_;
 
     const UserData &user_data_;
 
-    const VisualFlags &m_vis_flags;
+    const VisualFlags &vis_flags_;
 
-    QPainter &m_painter;
-    QRect clippingRect;
+    const bool debug_mode_;
+
+    QPainter &painter_;
+    const QRect clippingRect;
 
     int cur_x, cur_y;
 
@@ -52,7 +52,8 @@ class DrawingCursor : public NodeCursor
                   const VisualFlags &flags,
                   QPainter &painter,
                   QPoint start_pos,
-                  const QRect &clippingRect0);
+                  const QRect &clippingRect0,
+                  bool debug);
 
     void processCurrentNode();
 

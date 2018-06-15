@@ -70,9 +70,8 @@ TraditionalView::TraditionalView(const NodeTree &tree, UserData &ud, SolverData 
 
     connect(autoHideTimer, &QTimer::timeout, this, &TraditionalView::autoUpdate);
 
+    /// speed this timer up when the tree is finished
     autoHideTimer->start(16);
-
-    print("TraditionalView()");
 }
 
 TraditionalView::~TraditionalView() = default;
@@ -339,15 +338,6 @@ void TraditionalView::hideFailed(bool onlyDirty)
 
 void TraditionalView::autoUpdate()
 {
-
-    // {
-    // //     perfHelper.begin("hide failed");
-    //     utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
-    //     auto root = tree_.getRoot();
-    //     hideFailedAt(root, true);
-    // //     perfHelper.end();
-    // }
-
     if (layout_stale_)
     {
         computeLayout();
@@ -391,15 +381,12 @@ void TraditionalView::unhideNode(NodeID nid)
     utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
     utils::DebugMutexLocker layout_lock(&layout_->getMutex());
 
-    print("layout done: {}", layout_->getLayoutDone(nid));
-
     auto hidden = vis_flags_->isHidden(nid);
     if (hidden)
     {
         vis_flags_->setHidden(nid, false);
         layout_->setLayoutDone(nid, false);
 
-        print("layout done: {}", layout_->getLayoutDone(nid));
         dirtyUp(nid);
         setLayoutOutdated();
         emit needsRedrawing();
@@ -795,6 +782,14 @@ void TraditionalView::debugCheckLayout() const
         auto bb = layout_->getBoundingBox(n);
         // print("bb for {} is fine", n);
     }
+}
+
+void TraditionalView::setDebugMode(bool v)
+{
+    scroll_area_->setDebugMode(true);
+    layout_computer_->setDebugMode(true);
+    emit needsRedrawing();
+    computeLayout();
 }
 
 } // namespace tree

@@ -25,7 +25,8 @@ class SubtreeView : public QWidget
     /// Not really used in this view?
     VisualFlags node_flags;
 
-    NodeID m_cur_node = NodeID::NoNode;
+    /// Current node representing the root of the subtree
+    NodeID node_ = NodeID::NoNode;
 
   public:
     SubtreeView(const NodeTree &nt)
@@ -34,7 +35,7 @@ class SubtreeView : public QWidget
         auto layout_computer = LayoutComputer(nt, *m_layout, node_flags);
         layout_computer.compute();
 
-        m_scroll_area.reset(new TreeScrollArea(m_cur_node, nt, *user_data_, *m_layout, node_flags));
+        m_scroll_area.reset(new TreeScrollArea(node_, nt, *user_data_, *m_layout, node_flags));
         m_scroll_area->setScale(50);
         m_scroll_area->viewport()->update();
     }
@@ -48,7 +49,7 @@ class SubtreeView : public QWidget
 
     void setNode(NodeID nid)
     {
-        m_cur_node = nid;
+        node_ = nid;
         m_scroll_area->changeStartNode(nid);
         m_scroll_area->viewport()->update();
     }

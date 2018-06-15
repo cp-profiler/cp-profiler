@@ -26,14 +26,14 @@ namespace cpprofiler
 namespace tree
 {
 
-LayoutCursor::LayoutCursor(NodeID start, const NodeTree &tree, const VisualFlags &nf, Layout &lo)
-    : NodeCursor(start, tree), m_layout(lo), tree_(tree), m_vis_flags(nf) {}
+LayoutCursor::LayoutCursor(NodeID start, const NodeTree &tree, const VisualFlags &nf, Layout &lo, bool debug)
+    : NodeCursor(start, tree), m_layout(lo), tree_(tree), m_vis_flags(nf), debug_mode_(debug) {}
 
 bool LayoutCursor::mayMoveDownwards()
 {
     return NodeCursor::mayMoveDownwards() &&
-           (!m_vis_flags.isHidden(m_cur_node)) &&
-           m_layout.isDirty(m_cur_node);
+           (!m_vis_flags.isHidden(cur_node())) &&
+           m_layout.isDirty(cur_node());
 }
 
 /// Compute the distance between s1 and s2 (that is, how far apart should the
@@ -151,7 +151,7 @@ static Shape merge_left(const Shape &s1, const Shape &s2, int &dist)
     return result;
 }
 
-static Extent calculateForSingleNode(NodeID nid, const NodeTree &nt, bool label_shown, bool hidden)
+static Extent calculateForSingleNode(NodeID nid, const NodeTree &nt, bool label_shown, bool hidden, bool debug)
 {
 
     Extent result{-traditional::HALF_MAX_NODE_W, traditional::HALF_MAX_NODE_W};
@@ -166,7 +166,7 @@ static Extent calculateForSingleNode(NodeID nid, const NodeTree &nt, bool label_
         return result;
 
     /// TODO: use font metrics?
-    const auto &label = nt.getLabel(nid);
+    const auto &label = debug ? std::to_string(nid) : nt.getLabel(nid);
     auto label_width = label.size() * 9;
 
     /// Note: this assumes that the default painter used for drawing text
@@ -190,7 +190,7 @@ static Extent calculateForSingleNode(NodeID nid, const NodeTree &nt, bool label_
     return result;
 }
 
-inline static void computeForNodeBinary(NodeID nid, Layout &layout, const NodeTree &nt, bool label_shown)
+inline static void computeForNodeBinary(NodeID nid, Layout &layout, const NodeTree &nt, bool label_shown, bool debug)
 {
 
     auto kid_l = nt.getChild(nid, 0);
@@ -202,7 +202,7 @@ inline static void computeForNodeBinary(NodeID nid, Layout &layout, const NodeTr
     std::vector<int> offsets(2);
     auto combined = combine_shapes(s1, s2, offsets);
 
-    (*combined)[0] = calculateForSingleNode(nid, nt, label_shown, false);
+    (*combined)[0] = calculateForSingleNode(nid, nt, label_shown, false, debug);
 
     /// Extents for root node changed -> check if bounding box is correct
     const auto &bb = combined->boundingBox();
@@ -246,7 +246,7 @@ inline static int kids_max_depth(NodeID nid, int nkids, const Layout &lo, const 
     return max_depth;
 }
 
-static inline void computeForNodeNary(NodeID nid, int nkids, Layout &layout, const NodeTree &tree)
+static inline void computeForNodeNary(NodeID nid, int nkids, Layout &layout, const NodeTree &tree, bool debug)
 {
 
     /// calculate all distances
@@ -276,6 +276,7 @@ static inline void computeForNodeNary(NodeID nid, int nkids, Layout &layout, con
     }
 
     /// calculate extents
+    /// TODO: does this need to take labels into account?
     (*combined)[0] = {-traditional::HALF_MAX_NODE_W, traditional::HALF_MAX_NODE_W};
     for (auto depth = 1; depth < new_depth; ++depth)
     {
@@ -349,7 +350,7 @@ void LayoutCursor::computeForNode(NodeID nid)
             if (label_shown)
             {
                 /// overriting the first extent in case of a label
-                (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, true);
+                (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, true, debug_mode_);
                 shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
             }
             m_layout.setShape(nid, std::move(shape));
@@ -365,7 +366,7 @@ void LayoutCursor::computeForNode(NodeID nid)
             else
             {
                 auto shape = ShapeUniqPtr{new Shape{2}};
-                (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, true);
+                (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, true, debug_mode_);
                 (*shape)[1] = (*shape)[0];
                 shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
                 m_layout.setShape(nid, std::move(shape));
@@ -387,7 +388,7 @@ void LayoutCursor::computeForNode(NodeID nid)
             else
             {
                 auto shape = ShapeUniqPtr{new Shape{1}};
-                (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, false);
+                (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, false, debug_mode_);
 
                 shape->setBoundingBox({(*shape)[0].l, (*shape)[0].r});
                 m_layout.setShape(nid, std::move(shape));
@@ -401,7 +402,7 @@ void LayoutCursor::computeForNode(NodeID nid)
 
             auto shape = ShapeUniqPtr(new Shape(kid_s.height() + 1));
 
-            (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, false);
+            (*shape)[0] = calculateForSingleNode(nid, tree_, label_shown, false, debug_mode_);
 
             for (auto depth = 0; depth < kid_s.height(); depth++)
             {
@@ -416,26 +417,28 @@ void LayoutCursor::computeForNode(NodeID nid)
         }
         else if (nkids == 2)
         {
-            computeForNodeBinary(nid, m_layout, tree_, label_shown);
+            computeForNodeBinary(nid, m_layout, tree_, label_shown, debug_mode_);
         }
         else if (nkids > 2)
         {
-            computeForNodeNary(nid, nkids, m_layout, tree_);
+            computeForNodeNary(nid, nkids, m_layout, tree_, debug_mode_);
         }
     }
 
+    /// Layout is done for `nid` and its children
     m_layout.setLayoutDone(nid, true);
+    // print("layout done for {}", nid);
 }
 
 void LayoutCursor::processCurrentNode()
 {
 
-    auto dirty = m_layout.isDirty(m_cur_node);
+    auto dirty = m_layout.isDirty(cur_node());
 
     if (dirty)
     {
-        computeForNode(m_cur_node);
-        m_layout.setDirty(m_cur_node, false);
+        computeForNode(cur_node());
+        m_layout.setDirty(cur_node(), false);
     }
 }
 

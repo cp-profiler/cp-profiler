@@ -20,16 +20,16 @@ HideNotHighlightedCursor::HideNotHighlightedCursor(NodeID startNode,
 
 void HideNotHighlightedCursor::processCurrentNode()
 {
-    const auto n = node();
+    const auto n = cur_node();
 
     bool on_hp = vf_.isHighlighted(n);
 
     if (!on_hp)
     {
         /// find a child that is on highlighted path
-        for (auto alt = 0; alt < m_tree.childrenCount(n); ++alt)
+        for (auto alt = 0; alt < tree_.childrenCount(n); ++alt)
         {
-            const auto child = m_tree.getChild(n, alt);
+            const auto child = tree_.getChild(n, alt);
             if (onHighlightPath.contains(child))
             {
                 on_hp = true;
@@ -51,7 +51,7 @@ void HideNotHighlightedCursor::processCurrentNode()
 
 bool HideNotHighlightedCursor::mayMoveDownwards() const
 {
-    const auto n = node();
+    const auto n = cur_node();
     return NodeCursor::mayMoveDownwards() &&
            !vf_.isHighlighted(n) && !vf_.isHidden(n);
 }

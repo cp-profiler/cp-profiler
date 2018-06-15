@@ -22,9 +22,11 @@ class LayoutCursor : public NodeCursor
     /// painter used for dispaying text (labels)
     const QPainter *m_painter = nullptr;
 
+    const bool debug_mode_;
+
   public:
     // Constructor
-    LayoutCursor(NodeID start, const NodeTree &tree, const VisualFlags &nf, Layout &lo);
+    LayoutCursor(NodeID start, const NodeTree &tree, const VisualFlags &nf, Layout &lo, bool debug);
 
     void computeForNode(NodeID nid);
 
