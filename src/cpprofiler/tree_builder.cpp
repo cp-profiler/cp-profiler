@@ -111,10 +111,8 @@ void TreeBuilder::handleNode(Message *node)
 
             if (m_execution.doesRestarts())
             {
-                /// TODO: should not rely on n_uid.rid
-                /// Chuffed always sends 0 for example!
                 tree.addExtraChild(NodeID{0});
-                nid = tree.promoteNode(NodeID{0}, n_uid.rid, kids, status, label);
+                nid = tree.promoteNode(NodeID{0}, restart_count++, kids, status, label);
             }
             else
             {

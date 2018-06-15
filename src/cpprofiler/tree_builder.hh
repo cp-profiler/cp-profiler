@@ -14,6 +14,11 @@ class TreeBuilder : public QObject
 
     Execution &m_execution;
 
+    /// Need to keep track of the number of restarts;
+    /// cannot rely on solvers to send correct restart id
+    /// (e.g. Chuffed doesn't do that)
+    int restart_count = 0;
+
   public:
     TreeBuilder(Execution &ex);
 
