@@ -27,49 +27,49 @@ class Layout : public QObject
 {
   Q_OBJECT
 
-  mutable utils::Mutex m_layout_mutex;
+  mutable utils::Mutex layout_;
 
   /// TODO: make sure this is always protected by a mutex
-  std::vector<ShapeUniqPtr> m_shapes;
+  std::vector<ShapeUniqPtr> shapes_;
 
   /// Relative offset from the parent node along the x axis
-  std::vector<double> m_child_offsets;
+  std::vector<double> child_offsets_;
 
   /// Whether layout for the node and its children is done (indexed by NodeID)
-  std::vector<bool> m_layout_done;
+  std::vector<bool> layout_done_;
 
   /// Whether a node's shape need to be recomputed (indexed by NodeID)
-  std::vector<bool> m_dirty;
+  std::vector<bool> dirty_;
 
 public:
   utils::Mutex &getMutex() const;
 
-  void setChildOffset(NodeID nid, double offset) { m_child_offsets[nid] = offset; }
+  void setChildOffset(NodeID nid, double offset) { child_offsets_[nid] = offset; }
 
-  void setLayoutDone(NodeID nid, bool val) { m_layout_done[nid] = val; }
+  void setLayoutDone(NodeID nid, bool val) { layout_done_[nid] = val; }
 
   /// Note: a node might not have a shape (nullptr)
   /// if it was hidden before layout was run
-  const Shape *getShape(NodeID nid) const { return m_shapes[nid].get(); }
+  const Shape *getShape(NodeID nid) const { return shapes_[nid].get(); }
 
   void setShape(NodeID nid, ShapeUniqPtr shape);
 
-  double getOffset(NodeID nid) const { return m_child_offsets[nid]; }
+  double getOffset(NodeID nid) const { return child_offsets_[nid]; }
 
   /// Get the height of the shape of node `nid`
   int getHeight(NodeID nid) const;
 
-  /// Whether layout is done for node `nid`
+  /// Whether layout is done for the subtree associated with node `nid`
   bool getLayoutDone(NodeID nid) const;
 
   /// Whether layout is information for node exists
   bool ready(NodeID nid) const;
 
   /// Whether node `nid` is dirty
-  bool isDirty(NodeID nid) const { return m_dirty[nid]; }
+  bool isDirty(NodeID nid) const { return dirty_[nid]; }
 
   /// Set node `nid` as (dirty) / (not dirty) based on `val`
-  void setDirty(NodeID nid, bool val) { m_dirty[nid] = val; }
+  void setDirty(NodeID nid, bool val) { dirty_[nid] = val; }
 
   /// Get bounding box of node `nid`
   const BoundingBox &getBoundingBox(NodeID nid) const { return getShape(nid)->boundingBox(); }

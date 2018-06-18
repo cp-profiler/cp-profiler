@@ -57,6 +57,7 @@ TraditionalView::TraditionalView(const NodeTree &tree, UserData &ud, SolverData 
     connect(scroll_area_.get(), &TreeScrollArea::nodeDoubleClicked, this, &TraditionalView::handleDoubleClick);
 
     connect(this, &TraditionalView::needsRedrawing, this, &TraditionalView::redraw);
+    connect(this, &TraditionalView::needsLayoutUpdate, this, &TraditionalView::updateLayout);
 
     connect(&tree, &NodeTree::childrenStructureChanged, [this](NodeID nid) {
         if (nid == NodeID::NoNode)
@@ -64,14 +65,15 @@ TraditionalView::TraditionalView(const NodeTree &tree, UserData &ud, SolverData 
             return;
         }
         layout_computer_->dirtyUpLater(nid);
+        // layout_->setLayoutDone(nid, false);
     });
 
-    auto autoHideTimer = new QTimer(this);
+    auto autoLayoutTimer = new QTimer(this);
 
-    connect(autoHideTimer, &QTimer::timeout, this, &TraditionalView::autoUpdate);
+    connect(autoLayoutTimer, &QTimer::timeout, this, &TraditionalView::autoUpdate);
 
-    /// speed this timer up when the tree is finished
-    autoHideTimer->start(16);
+    /// stop this timer up when the tree is finished?
+    autoLayoutTimer->start(100);
 }
 
 TraditionalView::~TraditionalView() = default;
@@ -238,7 +240,7 @@ void TraditionalView::showLabelsDown()
         setLabelShown(nid, val);
     });
 
-    setLayoutOutdated();
+    emit needsLayoutUpdate();
     emit needsRedrawing();
 }
 
@@ -265,7 +267,7 @@ void TraditionalView::showLabelsUp()
         nid = tree_.getParent(nid);
     }
 
-    setLayoutOutdated();
+    emit needsLayoutUpdate();
     emit needsRedrawing();
 }
 
@@ -274,7 +276,7 @@ static bool is_leaf(const NodeTree &nt, NodeID nid)
     return nt.childrenCount(nid) == 0;
 }
 
-void TraditionalView::hideNode(NodeID n)
+void TraditionalView::hideNode(NodeID n, bool delayed)
 {
     utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
     utils::DebugMutexLocker layout_lock(&layout_->getMutex());
@@ -285,7 +287,15 @@ void TraditionalView::hideNode(NodeID n)
     vis_flags_->setHidden(n, true);
 
     dirtyUp(n);
-    setLayoutOutdated();
+
+    if (delayed)
+    {
+        setLayoutOutdated();
+    }
+    else
+    {
+        emit needsLayoutUpdate();
+    }
     emit needsRedrawing();
 }
 
@@ -304,13 +314,12 @@ void TraditionalView::toggleHidden()
 
     dirtyUp(nid);
 
-    setLayoutOutdated();
+    emit needsLayoutUpdate();
     emit needsRedrawing();
 }
 
 void TraditionalView::hideFailedAt(NodeID n, bool onlyDirty)
 {
-    print("Hide nodes at");
     /// Do nothing if there is no tree
     if (tree_.nodeCount() == 0)
         return;
@@ -322,7 +331,7 @@ void TraditionalView::hideFailedAt(NodeID n, bool onlyDirty)
 
     if (modified)
     {
-        setLayoutOutdated();
+        emit needsLayoutUpdate();
         emit needsRedrawing();
     }
 }
@@ -338,9 +347,13 @@ void TraditionalView::hideFailed(bool onlyDirty)
 
 void TraditionalView::autoUpdate()
 {
-    if (layout_stale_)
+    if (!layout_stale_)
+        return;
+
+    const auto changed = updateLayout();
+    if (changed)
     {
-        computeLayout();
+        emit needsRedrawing();
     }
 }
 
@@ -372,7 +385,7 @@ void TraditionalView::toggleCollapsePentagon(NodeID nid)
     auto val = !vis_flags_->isHidden(nid);
     vis_flags_->setHidden(nid, val);
     dirtyUp(nid);
-    setLayoutOutdated();
+    emit needsLayoutUpdate();
     emit needsRedrawing();
 }
 
@@ -388,7 +401,7 @@ void TraditionalView::unhideNode(NodeID nid)
         layout_->setLayoutDone(nid, false);
 
         dirtyUp(nid);
-        setLayoutOutdated();
+        emit needsLayoutUpdate();
         emit needsRedrawing();
     }
 }
@@ -430,6 +443,8 @@ void TraditionalView::unhideAllAt(NodeID n)
     /// indicates if any change was made
     bool modified = false;
 
+    perfHelper.begin("unhdeAll At");
+
     const auto action = [&](NodeID n) {
         if (vis_flags_->isHidden(n))
         {
@@ -442,9 +457,11 @@ void TraditionalView::unhideAllAt(NodeID n)
 
     utils::apply_below(tree_, n, action);
 
+    perfHelper.end();
+
     if (modified)
     {
-        setLayoutOutdated();
+        emit needsLayoutUpdate();
         emit needsRedrawing();
     }
 
@@ -453,24 +470,27 @@ void TraditionalView::unhideAllAt(NodeID n)
 
 void TraditionalView::unhideAll()
 {
+
     /// faster version for the entire tree
     if (vis_flags_->hiddenCount() == 0)
     {
         return;
     }
-    else
-    {
-        for (auto n : vis_flags_->hidden_nodes())
-        {
-            dirtyUp(n);
-            layout_->setLayoutDone(n, false);
-        }
 
-        vis_flags_->unhideAll();
-        setLayoutOutdated();
-        emit needsRedrawing();
-        centerNode(tree_.getRoot());
+    print("{} nodes to unhide", vis_flags_->hidden_nodes().size());
+    perfHelper.begin("unhideAll");
+
+    for (auto n : vis_flags_->hidden_nodes())
+    {
+        dirtyUp(n);
+        layout_->setLayoutDone(n, false);
     }
+
+    vis_flags_->unhideAll();
+
+    emit needsLayoutUpdate();
+    emit needsRedrawing();
+    centerNode(tree_.getRoot());
 }
 
 void TraditionalView::unhideAllAtCurrent()
@@ -479,14 +499,7 @@ void TraditionalView::unhideAllAtCurrent()
     if (nid == NodeID::NoNode)
         return;
 
-    if (nid == tree_.getRoot())
-    {
-        unhideAll();
-    }
-    else
-    {
-        unhideAllAt(nid);
-    }
+    unhideAllAt(nid);
 }
 
 void TraditionalView::toggleHighlighted()
@@ -564,17 +577,14 @@ void TraditionalView::setAndCenterNode(NodeID nid)
     centerNode(nid);
 }
 
-void TraditionalView::computeLayout()
+bool TraditionalView::updateLayout()
 {
-
     static int counter = 0;
     debug("layout") << "compute Layout:" << ++counter << "\n";
-    auto changed = layout_computer_->compute();
+    const auto changed = layout_computer_->compute();
     layout_stale_ = false;
-    if (changed)
-    {
-        emit needsRedrawing();
-    }
+
+    return changed;
 }
 
 void TraditionalView::setLayoutOutdated()
@@ -609,6 +619,7 @@ void TraditionalView::printNodeInfo()
     print("dirty: {}", layout_->isDirty(nid));
     print("layout done for node: {}", layout_->getLayoutDone(nid));
     print("hidden: {}", vis_flags_->isHidden(nid));
+    print("total kids: {}, ", tree_.childrenCount(nid));
     print("has solved kids: {}, ", tree_.hasSolvedChildren(nid));
     print("has open kids: {}", tree_.hasOpenChildren(nid));
     print("nogood: {}", tree_.getNogood(nid).get());
@@ -619,8 +630,6 @@ void TraditionalView::printNodeInfo()
 static void showSubtrees(const NodeTree &tree, VisualFlags &vf, LayoutComputer &lc)
 {
     auto root = tree.getRoot();
-
-    // hideFailed()
 
     HideNotHighlightedCursor hnhc(root, tree, vf, lc);
     PostorderNodeVisitor<HideNotHighlightedCursor>(hnhc).run();
@@ -640,13 +649,10 @@ class TreeHighlighter : public QThread
 
     void run() override
     {
-        /// TODO: make sure to hold mutexes
         utils::DebugMutexLocker t_locker(&tree_.treeMutex());
         utils::DebugMutexLocker l_locker(&layout_.getMutex());
 
         auto root = tree_.getRoot();
-
-        // hideFailed()
 
         HideNotHighlightedCursor hnhc(root, tree_, vf_, lc_);
         PostorderNodeVisitor<HideNotHighlightedCursor>(hnhc).run();
@@ -679,7 +685,7 @@ void TraditionalView::highlightSubtrees(const std::vector<NodeID> &nodes, bool h
         //     highlighter->start();
         // }
         phelper.end();
-        setLayoutOutdated();
+        emit needsLayoutUpdate();
     }
 
     emit needsRedrawing();
@@ -734,7 +740,7 @@ void TraditionalView::hideBySize(int size_limit)
         }
     }
 
-    computeLayout();
+    emit needsLayoutUpdate();
     emit needsRedrawing();
 
     centerCurrentNode();
@@ -794,8 +800,8 @@ void TraditionalView::setDebugMode(bool v)
 {
     scroll_area_->setDebugMode(true);
     layout_computer_->setDebugMode(true);
+    emit needsLayoutUpdate();
     emit needsRedrawing();
-    computeLayout();
 }
 
 } // namespace tree

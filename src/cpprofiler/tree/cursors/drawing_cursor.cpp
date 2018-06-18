@@ -304,11 +304,20 @@ bool DrawingCursor::mayMoveSidewards()
 
 bool DrawingCursor::mayMoveDownwards()
 {
+    if (tree_.childrenCount(cur_node()) == 0)
+    {
+        return false;
+    }
+
+    if (isClipped() || vis_flags_.isHidden(cur_node()))
+    {
+        return false;
+    }
+
+    const auto kid = tree_.getChild(cur_node(), 0);
+
     /// TODO: this should be about children?
-    return NodeCursor::mayMoveDownwards() &&
-           !vis_flags_.isHidden(cur_node()) &&
-           layout_.getLayoutDone(cur_node()) &&
-           !isClipped();
+    return layout_.getLayoutDone(kid);
 }
 
 bool DrawingCursor::mayMoveUpwards()

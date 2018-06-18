@@ -105,8 +105,9 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
         connect(&execution_.tree(), &tree::NodeTree::structureUpdated,
                 traditional_view_.get(), &tree::TraditionalView::setLayoutOutdated);
 
-        connect(&execution_.tree(), &tree::NodeTree::failedSubtreeClosed,
-                traditional_view_.get(), &tree::TraditionalView::hideNode);
+        connect(&execution_.tree(), &tree::NodeTree::failedSubtreeClosed, [this](NodeID n) {
+            traditional_view_->hideNode(n);
+        });
 
         {
             auto statsUpdateTimer = new QTimer(this);
@@ -269,9 +270,9 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
         {
             auto debugMenu = menuBar->addMenu("Debu&g");
 
-            auto computeLayout = new QAction{"Compute layout", this};
-            debugMenu->addAction(computeLayout);
-            connect(computeLayout, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::computeLayout);
+            auto updateLayoutAction = new QAction{"Update layout", this};
+            debugMenu->addAction(updateLayoutAction);
+            connect(updateLayoutAction, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::updateLayout);
 
             auto dirtyNodesUp = new QAction{"Dirty Nodes Up", this};
             debugMenu->addAction(dirtyNodesUp);

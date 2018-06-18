@@ -142,9 +142,9 @@ MergeWindow::MergeWindow(Execution &ex_l, Execution &ex_r, std::shared_ptr<tree:
     {
         auto debugMenu = menuBar->addMenu("&Debug");
 
-        auto computeLayout = new QAction{"Compute layout", this};
-        debugMenu->addAction(computeLayout);
-        connect(computeLayout, &QAction::triggered, view_.get(), &tree::TraditionalView::computeLayout);
+        auto updateLayoutAction = new QAction{"Update layout", this};
+        debugMenu->addAction(updateLayoutAction);
+        connect(updateLayoutAction, &QAction::triggered, view_.get(), &tree::TraditionalView::updateLayout);
 
         auto updateView = new QAction{"Update view", this};
         debugMenu->addAction(updateView);

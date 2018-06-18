@@ -11,7 +11,6 @@ namespace tree
 HideFailedCursor::HideFailedCursor(NodeID start, const NodeTree &nt, VisualFlags &vf, LayoutComputer &lc, bool dirty, bool &mod)
     : NodeCursor(start, nt), m_vf(vf), m_lc(lc), modified(mod), m_onlyDirty(dirty)
 {
-    print("Hide Failed Cursor");
 }
 
 bool HideFailedCursor::mayMoveDownwards() const

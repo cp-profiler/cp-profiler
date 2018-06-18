@@ -87,6 +87,9 @@ class TraditionalView : public QObject
     /// Triggers a redraw that updates scrollarea's viewport (perhaps a direct call would suffice)
     void needsRedrawing();
 
+    /// Triggers unconditional update of the layout
+    void needsLayoutUpdate();
+
     /// Notify all views to change their current nodes to `n`
     void nodeSelected(NodeID n);
 
@@ -97,7 +100,7 @@ class TraditionalView : public QObject
     /// Update scrollarea's viewport
     void redraw();
 
-    /// Updates the tree at 60hz (layout etc.)
+    /// Updates the layout if it is stale (triggered by timer)
     void autoUpdate();
 
     /// Handle double-click on a node
@@ -146,8 +149,8 @@ class TraditionalView : public QObject
     /// Show labels for every node on the path form root to current
     void showLabelsUp();
 
-    /// Hide node `n` and trigger layout update
-    void hideNode(NodeID n);
+    /// Hides node `n`; immediately updates layout if delayed is false
+    void hideNode(NodeID n, bool delayed = true);
 
     /// Show/hide node (not actually used atm)
     void toggleHidden();
@@ -176,8 +179,9 @@ class TraditionalView : public QObject
     /// Highlight/unhighlight subtree
     void toggleHighlighted();
 
-    /// Compute layout ignoring if it is "stale"
-    void computeLayout();
+    /// Unconditionally update layout (ignoring if it is "stale")
+    /// returns false if no change was required
+    bool updateLayout();
 
     /// Set layout as stale
     void setLayoutOutdated();
