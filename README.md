@@ -122,7 +122,17 @@ The **`Node`** message is sent whenever a new node is explored by the solver and
 - `Alternative`: the node's position relative to its siblings; for the left-most child it is `0`, for the second left-most it is `1` etc.
 - `Number of Children`: the number of children nodes. If not known, can be set to `0` and the node will be extended with extra children later on if necessary. It is, however, advisable to specify the number of children the profiler should expect (for example, the yet to arrive nodes can be visualised to give a better idea about the search).
 - `Status`: allows to distinguish between different types of nodes. Supported values are:
- - *BRANCH*: internal node in the tree;
- - *SOLUTION*: leaf node representing a solution;
- - *FAILURE*: leaf node representing a failure;
- - *SKIPPED*: leaf node representing unexplored search space due to backjumping.
+     - *BRANCH*: internal node in the tree;
+     - *SOLUTION*: leaf node representing a solution;
+     - *FAILURE*: leaf node representing a failure;
+     - *SKIPPED*: leaf node representing unexplored search space due to backjumping.
+
+**Example**. The following sequence of nodes (excluding the `Start` and `Done` messages) produces the simple tree below:
+
+|  `Label` | `Node ID` | `Parent ID` | `Alternative` | `Number of Children` | `Status` |
+|:--------:|:---------:|:-----------:|:-------------:|:--------------------:|:--------:|
+|   Root   |     0     |      -1     |       -1      |           2          |  BRANCH  |
+|  Failure |     1     |      0      |       0       |           0          |  FAILED  |
+| Solution |     2     |      0      |       1       |           0          |  SOLVED  |
+
+![A simple search tree](todo)
