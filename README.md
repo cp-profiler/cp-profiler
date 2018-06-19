@@ -96,7 +96,7 @@ contain all of the subtrees of `P` as descendants.
 Should filtered out patterns be allowed to subsume?
 
 
-### The Protocol
+### The Protocol (high level)
 
 The following describes the protocol that a solver must implement to communicate with the profiler.
 
@@ -136,3 +136,72 @@ The **`Node`** message is sent whenever a new node is explored by the solver and
 | Solution |     2     |      0      |       1       |           0          |  SOLVED  |
 
 ![A simple search tree](todo)
+
+### The Protocol (low level)
+
+Each message starts with a four-byte integer encoding the size of the remainder of the message in bytes. This is followed by a single byte encofing the type of the message. The corresponding values are: **`Node`**: `0`, **`Done`**: `1`, **`Start`**: `2`, **`Restart`**: `3`.
+
+#### `Node` message
+
+In case the message is of the type **`Node`**, the following fields are added in order: `id`, `pid`, `alt`, `children` and `status`.
+
+Node identifiers `id` and `pid` are represented using three four-byte integers: first identifies the identifier of the node within a thread, the second -- the identifier of the restart (in a restart-based search), and the third -- the identifier of the thread.
+The `alt` and `children` fields are represented by a single four byte integer each.
+The `status` field is represented by a single byte; its possible values are: *SOLVED*: 0, *FAILED*: 1, *BRANCH*: 2, *SKIPPED*: 3.
+All multi-byte integer values are encoded using the *two's compliment* notation in the *big-endian order*.
+
+Additionally, each node message can contain the following optional fields:
+- `label`: branching decision (or any arbitrary string to be drawn together with the node);
+- `nogood`: string representation of a newly generated nogood in a learning solver;
+- `info`: arbitrary information about the node (*TODO*).
+
+Field identifiers and their sizes in bytes:
+
+| field name | field id | size (bytes) |
+|:----------:|:--------:|:------------:|
+|    `id`    |    n/a   |      12      |
+|    `pid`   |    n/a   |      12      |
+|    `alt`   |    n/a   |       4      |
+| `children` |    n/a   |       4      |
+|  `status`  |    n/a   |       1      |
+|   `label`  |     0    |      any     |
+|  `nogood`  |     1    |      any     |
+|   `info`   |     2    |      any     |
+
+**Example**. The following is a possible correspondence between a solver and the profiler that generates the simple tree above.The order in which different fields arrive is shown from top to bottom (rows are numbered for convenience).
+
+*Message 1:*
+
+| Row | Bytes                                                                              | Interpretation                |
+|-----|------------------------------------------------------------------------------------|-------------------------------|
+| 1   | `00 00 00 21`                                                                      | message size (33)             |
+| 2   | `02`                                                                               | message type (*START*)        |
+| 3   | `02`                                                                               | field (*info*)                |
+| 4   | `00 00 00 1B`                                                                      | string size (27)              |
+| 5   | `7b 22 6e 61 6d 65 22 3a 20 22 6d 69 6e 69 6d 61 6c 20 65 78 61 6d 70 6c 65 22 7d` | '{"name": "minimal example"}' |
+
+*Message 2:*
+
+| Row | Bytes         | Interpretation          |
+|-----|---------------|-------------------------|
+| 6   | `00 00 00 2B` | message size (43)       |
+| 7   | `00`          | message type (**NODE**) |
+| 8   | `00 00 00 00` | node id (0)             |
+| 9   | `FF FF FF FF` | node restart id (-1)    |
+| 10  | `FF FF FF FF` | node thread id (-1)     |
+| 11  | `FF FF FF FF` | parent id (-1)          |
+| 12  | `FF FF FF FF` | parent restart id (-1)  |
+| 13  | `FF FF FF FF` | parent thread id (-1)   |
+| 14  | `FF FF FF FF` | alternative (-1)        |
+| 15  | `00 00 00 02` | children (2)            |
+| 16  | `02`          | status (*BRANCH*)       |
+| 17  | `00`          | field (label)           |
+| 18  | `00 00 00 04` | string size (4)         |
+| 19  | `52 6f 6f 74` | 'Root'                  |
+
+*Message 3:*
+
+| Row | Bytes         | Interpretation          |
+|-----|---------------|-------------------------|
+| 20  | `00 00 00 01` | message size (1)        |
+| 21  | `01`          | message type (**DONE**) |
