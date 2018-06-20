@@ -134,6 +134,8 @@ void NodeTree::addExtraChild(NodeID pid)
     node_info_->setStatus(nid, NodeStatus::UNDETERMINED);
     node_stats_.add_undetermined(1);
 
+    emit childrenStructureChanged(pid);
+
     emit structureUpdated();
 }
 

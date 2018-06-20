@@ -50,6 +50,7 @@ void LayoutComputer::dirtyUpLater(NodeID nid)
 {
     // if (m_layout.ready(nid))
     // {
+    // print("dirty up {} later", nid);
     du_node_set_.insert(nid);
     // }
 }
@@ -76,6 +77,8 @@ bool LayoutComputer::compute()
 
     /// Ensures that sufficient memory is allocated for every node's shape
     m_layout.growDataStructures(m_tree.nodeCount());
+
+    // print("to dirty up size: {}", du_node_set_.size());
 
     for (auto n : du_node_set_)
     {

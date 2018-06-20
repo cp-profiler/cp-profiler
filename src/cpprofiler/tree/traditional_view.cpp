@@ -477,7 +477,6 @@ void TraditionalView::unhideAll()
         return;
     }
 
-    print("{} nodes to unhide", vis_flags_->hidden_nodes().size());
     perfHelper.begin("unhideAll");
 
     for (auto n : vis_flags_->hidden_nodes())

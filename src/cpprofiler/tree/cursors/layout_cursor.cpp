@@ -31,9 +31,18 @@ LayoutCursor::LayoutCursor(NodeID start, const NodeTree &tree, const VisualFlags
 
 bool LayoutCursor::mayMoveDownwards()
 {
-    return NodeCursor::mayMoveDownwards() &&
-           (!m_vis_flags.isHidden(cur_node())) &&
-           m_layout.isDirty(cur_node());
+    const auto has_children = NodeCursor::mayMoveDownwards();
+    const auto hidden = m_vis_flags.isHidden(cur_node());
+    const auto dirty = m_layout.isDirty(cur_node());
+    const auto layout_done = m_layout.getLayoutDone(cur_node());
+
+    const auto mayMoveDown = has_children && !hidden && dirty;
+
+    return mayMoveDown;
+
+    // return NodeCursor::mayMoveDownwards() &&
+    //        (!m_vis_flags.isHidden(cur_node())) &&
+    //        m_layout.isDirty(cur_node());
 }
 
 /// Compute the distance between s1 and s2 (that is, how far apart should the
@@ -427,13 +436,13 @@ void LayoutCursor::computeForNode(NodeID nid)
 
     /// Layout is done for `nid` and its children
     m_layout.setLayoutDone(nid, true);
-    // print("layout done for {}", nid);
 }
 
 void LayoutCursor::processCurrentNode()
 {
 
-    auto dirty = m_layout.isDirty(cur_node());
+    const auto dirty = m_layout.isDirty(cur_node());
+    // auto layout_done = m_layout.getLayoutDone(cur_node());
 
     if (dirty)
     {

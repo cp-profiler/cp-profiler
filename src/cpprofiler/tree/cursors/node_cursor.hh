@@ -25,6 +25,7 @@ class NodeCursor
 
     /// return current node
     inline NodeID cur_node() const { return node_; }
+    inline int cur_alt() const { return cur_alt_; }
     inline NodeID start_node() const { return start_node_; }
 
   public:

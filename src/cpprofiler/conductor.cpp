@@ -44,7 +44,7 @@ Conductor::Conductor(Options opt) : options_(opt)
 
     setWindowTitle("CP-Profiler");
 
-    readSettings();
+    // readSettings();
 
     auto layout = new QGridLayout();
 
@@ -172,7 +172,7 @@ int Conductor::getNextExecId() const
     int eid = getRandomExID();
     while (executions_.find(eid) != executions_.end())
     {
-        eid=getRandomExID();
+        eid = getRandomExID();
     }
     return eid;
 }
@@ -279,7 +279,6 @@ void Conductor::addNewExecution(std::shared_ptr<Execution> ex)
 Execution *Conductor::addNewExecution(const std::string &ex_name, int ex_id, bool restarts)
 {
 
-
     if (ex_id == 0)
     {
         ex_id = getRandomExID();
@@ -316,7 +315,7 @@ ExecutionWindow &Conductor::getExecutionWindow(Execution *e)
             saveSearch(e);
         });
 
-        connect(ex_window, &ExecutionWindow::nogoodsClicked, [this, e] (std::vector<NodeID> ns) {
+        connect(ex_window, &ExecutionWindow::nogoodsClicked, [this, e](std::vector<NodeID> ns) {
             emit computeHeatMap(e->id(), ns);
         });
     }
@@ -486,23 +485,25 @@ void Conductor::readSettings()
     qDebug() << "settings read";
 }
 
-static std::string getHeatMapUrl(const NameMap& nm,
-                                 const std::unordered_map<int, int>& con_counts,
+static std::string getHeatMapUrl(const NameMap &nm,
+                                 const std::unordered_map<int, int> &con_counts,
                                  int max_count)
 {
     /// get heat map
 
     std::unordered_map<std::string, int> loc_intensity;
 
-    for (const auto it : con_counts) {
+    for (const auto it : con_counts)
+    {
         const auto con = std::to_string(it.first);
         const auto count = it.second;
 
-        const auto& path = nm.getPath(con);
+        const auto &path = nm.getPath(con);
 
         const auto path_head_elements = utils::getPathPair(path, true).model_level;
 
-        if (path_head_elements.empty()) continue;
+        if (path_head_elements.empty())
+            continue;
 
         const auto path_head = path_head_elements.back();
 
@@ -515,7 +516,8 @@ static std::string getHeatMapUrl(const NameMap& nm,
         // }
 
         /// path plus four ints
-        if (location_etc.size() < 5) continue;
+        if (location_etc.size() < 5)
+            continue;
 
         std::vector<std::string> new_loc(location_etc.begin(), location_etc.begin() + 5);
 
@@ -530,17 +532,19 @@ static std::string getHeatMapUrl(const NameMap& nm,
     std::stringstream url;
     url << "highlight://?";
 
-    for(auto it : loc_intensity)
+    for (auto it : loc_intensity)
         url << it.first << utils::minor_sep << it.second << ";";
 
     return url.str();
 }
 
-void Conductor::computeHeatMap(ExecID eid, std::vector<NodeID> ns) {
+void Conductor::computeHeatMap(ExecID eid, std::vector<NodeID> ns)
+{
 
     auto it = exec_meta_.find(eid);
 
-    if (it == exec_meta_.end()) {
+    if (it == exec_meta_.end())
+    {
         print("No metadata for eid {} (ExecMeta)", eid);
         return;
     }
@@ -548,46 +552,53 @@ void Conductor::computeHeatMap(ExecID eid, std::vector<NodeID> ns) {
     /// check if namemap is there
     const auto nm = it->second.name_map;
 
-    if (!nm) {
+    if (!nm)
+    {
         print("no name map for eid: {}", eid);
         return;
     }
 
     const auto exec = executions_.at(eid);
 
-    const auto& sd = exec->solver_data();
+    const auto &sd = exec->solver_data();
 
     std::unordered_map<int, int> con_counts;
 
-    for (const auto n : ns) {
-        const auto* cs = sd.getContribConstraints(n);
+    for (const auto n : ns)
+    {
+        const auto *cs = sd.getContribConstraints(n);
 
-        if (!cs) continue;
-        
-        for (int con_id : *cs) {
+        if (!cs)
+            continue;
+
+        for (int con_id : *cs)
+        {
             con_counts[con_id]++;
         }
     }
 
     int max_count = 0;
-    for (const auto p : con_counts) {
-        if (p.second > max_count) {
+    for (const auto p : con_counts)
+    {
+        if (p.second > max_count)
+        {
             max_count = p.second;
         }
     }
 
     const auto url = getHeatMapUrl(*nm, con_counts, max_count);
 
-    if (url.empty()) return;
+    if (url.empty())
+        return;
 
     std::stringstream label;
 
-    for (const auto n : ns) {
+    for (const auto n : ns)
+    {
         label << std::to_string(n) << ' ';
     }
 
     emit showNogood(url.c_str(), label.str().c_str(), false);
-
 }
 
 } // namespace cpprofiler

@@ -19,11 +19,10 @@ Execution::Execution(const std::string &name, ExecID id, bool restarts)
 {
     m_tree->setSolverData(solver_data_);
 
-    print("Execution()");
-
     /// need to create a dummy root node
     if (restarts)
     {
+        print("restart execution!");
         m_tree->createRoot(0, "root");
     }
 }

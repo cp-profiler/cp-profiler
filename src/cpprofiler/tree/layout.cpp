@@ -51,6 +51,7 @@ void Layout::growDataStructures(int n_nodes)
         child_offsets_.resize(n_nodes, 0);
         shapes_.resize(n_nodes);
         layout_done_.resize(n_nodes, false);
+        /// nodes start as dirty
         dirty_.resize(n_nodes, true);
     }
 }

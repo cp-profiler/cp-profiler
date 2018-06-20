@@ -64,8 +64,6 @@ class DrawingCursor : public NodeCursor
     void moveUpwards();
     void moveDownwards();
     void moveSidewards();
-
-    void finalize();
 };
 
 } // namespace tree

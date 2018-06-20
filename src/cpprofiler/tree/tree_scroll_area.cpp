@@ -7,6 +7,7 @@
 #include <cmath>
 #include <stack>
 #include <queue>
+#include <thread>
 
 #include "shape.hh"
 #include "node_tree.hh"
@@ -15,6 +16,7 @@
 #include "cursors/drawing_cursor.hh"
 
 #include "../utils/perf_helper.hh"
+#include "../utils/utils.hh"
 #include "../config.hh"
 
 namespace cpprofiler
@@ -53,6 +55,15 @@ static void drawGrid(QPainter &painter, QSize size)
 
 void TreeScrollArea::paintEvent(QPaintEvent *event)
 {
+
+    static bool done = false;
+
+    if (!done)
+    {
+        debug("thread") << "Drawing thread:" << std::this_thread::get_id() << std::endl;
+        done = true;
+    }
+
     QPainter painter(this->viewport());
 
     painter.setRenderHint(QPainter::Antialiasing);
@@ -181,7 +192,6 @@ void TreeScrollArea::setScale(int val)
 /// Make sure the layout for nodes is done
 NodeID TreeScrollArea::findNodeClicked(int x, int y)
 {
-
     utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
     utils::DebugMutexLocker layout_lock(&m_layout.getMutex());
 
@@ -213,8 +223,6 @@ NodeID TreeScrollArea::findNodeClicked(int x, int y)
         queue.pop();
         auto node_pos = getNodeCoordinate(node);
 
-        // if node hidden -> different area
-
         const auto hidden = m_vis_flags.isHidden(node);
 
         QRect node_area;
@@ -241,6 +249,10 @@ NodeID TreeScrollArea::findNodeClicked(int x, int y)
             for (auto i = 0; i < kids; ++i)
             {
                 auto kid = m_tree.getChild(node, i);
+
+                /// the kid does not have bounding box yet
+                if (!m_layout.getLayoutDone(kid))
+                    continue;
 
                 auto pair = getRealBB(kid, m_tree, m_layout, m_options);
                 if (pair.first <= x && pair.second >= x)

@@ -14,7 +14,7 @@ std::ostream &debug(std::string type)
 {
 
     static std::vector<std::string> to_print = {
-        "", "force", "done", "error", "perf"
+        "", "force", "done", "error", "perf", "thread"
         // ,"layout"
         ,
         "msg:command", "msg:node"};

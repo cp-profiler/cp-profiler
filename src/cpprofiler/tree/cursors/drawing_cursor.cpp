@@ -135,7 +135,6 @@ static void drawBoundingBox(QPainter &painter, int x, int y, NodeID nid, const L
 
 void DrawingCursor::processCurrentNode()
 {
-
     using namespace traditional;
 
     bool phantom_node = false;
@@ -299,25 +298,42 @@ void DrawingCursor::moveSidewards()
 
 bool DrawingCursor::mayMoveSidewards()
 {
-    return NodeCursor::mayMoveSidewards();
+    /// whether the next node is present
+    const auto may_move = NodeCursor::mayMoveSidewards();
+
+    if (!may_move)
+        return false;
+
+    const auto parent = tree_.getParent(cur_node());
+    const auto alt = tree_.getAlternative(cur_node());
+    const auto next = tree_.getChild(parent, alt + 1);
+
+    /// wether the node is ready for drawing
+    const auto next_layout_done = layout_.getLayoutDone(next);
+
+    return next_layout_done;
 }
 
 bool DrawingCursor::mayMoveDownwards()
 {
-    if (tree_.childrenCount(cur_node()) == 0)
-    {
-        return false;
-    }
 
-    if (isClipped() || vis_flags_.isHidden(cur_node()))
-    {
+    const auto has_children = (tree_.childrenCount(cur_node()) > 0);
+    if (!has_children)
         return false;
-    }
+
+    const auto clipped = isClipped();
+    if (clipped)
+        return false;
+
+    const auto hidden = vis_flags_.isHidden(cur_node());
+
+    if (hidden)
+        return false;
 
     const auto kid = tree_.getChild(cur_node(), 0);
+    const auto kid_layout_done = layout_.getLayoutDone(kid);
 
-    /// TODO: this should be about children?
-    return layout_.getLayoutDone(kid);
+    return kid_layout_done;
 }
 
 bool DrawingCursor::mayMoveUpwards()
@@ -339,10 +355,6 @@ bool DrawingCursor::isClipped()
     }
 
     return false;
-}
-
-void DrawingCursor::finalize()
-{
 }
 
 } // namespace tree

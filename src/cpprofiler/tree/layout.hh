@@ -59,13 +59,15 @@ public:
   /// Get the height of the shape of node `nid`
   int getHeight(NodeID nid) const;
 
-  /// Whether layout is done for the subtree associated with node `nid`
+  /// Whether layout is done for the subtree associated with node `nid`;
+  /// this is used by the drawing cursor to determine where to stop going down
+  /// the tree
   bool getLayoutDone(NodeID nid) const;
 
   /// Whether layout is information for node exists
   bool ready(NodeID nid) const;
 
-  /// Whether node `nid` is dirty
+  /// Whether node `nid` is dirty (needs layout update)
   bool isDirty(NodeID nid) const { return dirty_[nid]; }
 
   /// Set node `nid` as (dirty) / (not dirty) based on `val`

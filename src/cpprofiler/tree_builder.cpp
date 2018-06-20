@@ -81,7 +81,7 @@ void TreeBuilder::handleNode(Message *node)
     }
 
     std::unique_ptr<Message> node_msg{node};
-    // debug("msg:node") << *node << std::endl;
+    // print("node: {}", *node);
 
     const auto n_uid = node->nodeUID();
     const auto p_uid = node->parentUID();
