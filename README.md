@@ -139,13 +139,13 @@ The **`Node`** message is sent whenever a new node is explored by the solver and
 
 ### The Protocol (low level)
 
-Each message starts with a four-byte integer encoding the size of the remainder of the message in bytes. This is followed by a single byte encofing the type of the message. The corresponding values are: **`Node`**: `0`, **`Done`**: `1`, **`Start`**: `2`, **`Restart`**: `3`.
+Each message starts with a four-byte integer encoding the size of the remainder of the message in bytes. This is followed by a single byte encoding the type of the message. The corresponding values are: **`Node`**: `0`, **`Done`**: `1`, **`Start`**: `2`, **`Restart`**: `3`.
 
 #### `Node` message
 
 In case the message is of the type **`Node`**, the following fields are added in order: `id`, `pid`, `alt`, `children` and `status`.
 
-Node identifiers `id` and `pid` are represented using three four-byte integers: first identifies the identifier of the node within a thread, the second -- the identifier of the restart (in a restart-based search), and the third -- the identifier of the thread.
+Node identifiers `id` and `pid` are represented using three four-byte integers: first identifies the identifier of the node within a thread, the second — the identifier of the restart (in a restart-based search), and the third — the identifier of the thread.
 The `alt` and `children` fields are represented by a single four byte integer each.
 The `status` field is represented by a single byte; its possible values are: *SOLVED*: 0, *FAILED*: 1, *BRANCH*: 2, *SKIPPED*: 3.
 All multi-byte integer values are encoded using the *two's compliment* notation in the *big-endian order*.
@@ -205,3 +205,22 @@ Field identifiers and their sizes in bytes:
 |-----|---------------|-------------------------|
 | 20  | `00 00 00 01` | message size (1)        |
 | 21  | `01`          | message type (**DONE**) |
+
+
+### Tree Visualisations
+
+#### Traditional Tree Visualisation
+
+When a new execution is connected to the profiler it will be added to the list of executions displayed at the top of the main window. For example, in the image below execution *golomb6a.fzn* is shown to be added to the profiler.
+To display the execution, select its name from the list and click the *Show Tree* button. Note that the solver can still be running the execution, in which case the profiler will draw the search tree in real time.
+
+![Profiler Conductor](https://bitbucket.org/Msgmaxim/cp-profiler2/raw/d2aad1af0805a47f89459f771f70516f29886a09/docs/images/doc_conductor1.png)
+
+The image below shows an example of a traditional (node-link) visualisation of the search tree. Different types of nodes are shown differently: branch (internal) nodes are shown as blue circles; nodes representing failures are shown as red squares; solution nodes are shown as green diamonds.
+
+Note that the root of the tree is shown in gold colour indicating the currently selected node. Arrow keys on the keyboard allow the user to navigate the tree by changing which node is selected. `Down` navigates to the first child of the current node, `Shift+Down` — to its last child, `Up` — to its the parent, `Left` — to its next sibling on the left, `Right` — to its next sibling on the right. 
+Additionally, pressing `R` will navigate to the root of the tree.
+The same actions are available under the **`Navigation`** menu.
+
+
+![Traditional Visualisation Interface](https://bytebucket.org/Msgmaxim/cp-profiler2/raw/d2aad1af0805a47f89459f771f70516f29886a09/docs/images/doc_traditional_interface.png)
