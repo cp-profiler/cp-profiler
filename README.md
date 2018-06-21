@@ -32,70 +32,6 @@ This starts a local TCP server listening on one of the available ports (6565 by 
 The solver must implement the profiling protocol (TODO). Integration libraries are available if you wish to extend your solver to work with CP-Profiler.
 
 
-
-#### Similar Subtree Analysis
-
-This analysis allows users to find similarities in the search tree.
-
-**Elimination of subsumed patterns**
-
-A pattern `P` is said to be subsumed by one or more patterns if subtrees of those patterns
-contain all of the subtrees of `P` as descendants.
-
-**Applying filters.**
-
-Should filtered out patterns be allowed to subsume?
-
-
-# CP-Profiler
-
-CP-Profiler provides search tree visualisations for executions of constraint programming solvers.
-
-## Table of Contents
-
-- [Building](#building)
-- [Usage](#usage)
-
-### Building
-
-Dependencies:
-
-- Qt5.x
-
-```
-    git submodule update --init
-    mkdir build && cd build
-    qmake .. && make
-```
-
-### Usage
-
-1. Starting CP-Profiler
-
-    `cp-profiler.app/Contents/MacOS/cp-profiler` (Mac)
-
-This starts a local TCP server listening on one of the available ports (6565 by default).
-
-2. Executing a supported solver
-
-The solver must implement the profiling protocol (TODO). Integration libraries are available if you wish to extend your solver to work with CP-Profiler.
-
-
-
-#### Similar Subtree Analysis
-
-This analysis allows users to find similarities in the search tree.
-
-**Elimination of subsumed patterns**
-
-A pattern `P` is said to be subsumed by one or more patterns if subtrees of those patterns
-contain all of the subtrees of `P` as descendants.
-
-**Applying filters.**
-
-Should filtered out patterns be allowed to subsume?
-
-
 ### The Protocol (high level)
 
 The following describes the protocol that a solver must implement to communicate with the profiler.
@@ -224,3 +160,28 @@ The same actions are available under the **`Navigation`** menu.
 
 
 ![Traditional Visualisation Interface](https://bytebucket.org/Msgmaxim/cp-profiler2/raw/d2aad1af0805a47f89459f771f70516f29886a09/docs/images/doc_traditional_interface.png)
+
+If a subtree contains no solutions, it can be collapsed into a special single node displayed as a large red triangle. By default, the tree will be collapse failed subtrees automatically during its construction as a way to deal with large trees. The image below shows the same search tree as above, but with all failed subtrees collapsed.
+
+![Collapsed Failed Subtrees](https://bitbucket.org/Msgmaxim/cp-profiler2/raw/76bb21242ad5427b10b84f7c4cb60f9b557490a0/docs/images/doc_traditional_collapsed.png)
+
+This view of the tree allows the user to show additional information for every node — its label, which usually represents the branching decision made by the solver to move from the parent node to its child. Pressing `L` on the keyboard will display labels for all descendants of the current node. `Shift + L` will display labels on the path to the current node.
+For example, the visualisation above shows branching decisions on the path from the first solution (shown as the new current node) to the root of the tree.
+
+Status bar at the bottom of the window displays node statistics: the depth of the tree and the counts of different types of nodes.
+The scroll bar on the right lets the user to zoom in/out on the visualisation;
+
+#### Similar Subtree Analysis
+
+This analysis allows users to find similarities within a single search tree.
+
+It can be initiated by selecting **`Similar Subtrees`** from the menu **`Analyses`** (shortcut: `Shift+S`).
+
+**Elimination of subsumed patterns**
+
+A pattern `P` is said to be subsumed by one or more patterns if subtrees of those patterns
+contain all of the subtrees of `P` as descendants.
+
+**Applying filters.**
+
+Should filtered out patterns be allowed to subsume?
