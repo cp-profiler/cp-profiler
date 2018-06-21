@@ -61,7 +61,7 @@ class PentagonListWidget : public QWidget
     }
 };
 
-PentagonListWidget::PentagonListWidget(QWidget *w, const MergeResult &res) : QWidget(w), merge_res_(res)
+inline PentagonListWidget::PentagonListWidget(QWidget *w, const MergeResult &res) : QWidget(w), merge_res_(res)
 {
 
     auto layout = new QVBoxLayout(this);
@@ -81,7 +81,7 @@ PentagonListWidget::PentagonListWidget(QWidget *w, const MergeResult &res) : QWi
     layout->addWidget(view_);
 }
 
-void PentagonListWidget::updateScene()
+inline void PentagonListWidget::updateScene()
 {
     using namespace pent_config;
 

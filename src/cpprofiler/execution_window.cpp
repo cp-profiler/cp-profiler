@@ -267,6 +267,7 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
             connect(saveSearch, &QAction::triggered, [this]() { emit needToSaveSearch(&execution_); });
         }
 
+#ifdef DEBUG_MODE
         {
             auto debugMenu = menuBar->addMenu("Debu&g");
 
@@ -298,6 +299,7 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
             debugMenu->addAction(debugMode);
             connect(debugMode, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::setDebugMode);
         }
+#endif
 
         // auto debugText = new QTextEdit{this};
         // // debugText->setHeight(200);

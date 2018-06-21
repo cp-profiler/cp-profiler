@@ -191,14 +191,14 @@ void DrawingCursor::processCurrentNode()
     const auto sel_node = user_data_.getSelectedNode();
     const auto selected = (sel_node == node) ? true : false;
 
-    if (selected)
-    {
-        painter_.setBrush(QColor{0, 0, 0, 20});
+    // if (selected)
+    // {
+    //     painter_.setBrush(QColor{0, 0, 0, 20});
 
-        drawBoundingBox(painter_, cur_x, cur_y, node, layout_);
+    //     drawBoundingBox(painter_, cur_x, cur_y, node, layout_);
 
-        drawShape(painter_, cur_x, cur_y, node, layout_);
-    }
+    //     drawShape(painter_, cur_x, cur_y, node, layout_);
+    // }
 
     /// see if the node is hidden
 

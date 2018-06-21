@@ -9,7 +9,7 @@ namespace tree
 
 namespace layout
 {
-constexpr int dist_y = 38;
+constexpr int dist_y = 36;
 constexpr int min_dist_x = 16;
 } // namespace layout
 

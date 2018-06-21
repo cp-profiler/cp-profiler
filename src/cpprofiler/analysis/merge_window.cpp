@@ -40,17 +40,6 @@ MergeWindow::MergeWindow(Execution &ex_l, Execution &ex_r, std::shared_ptr<tree:
     pentagon_bar = new PentagonCounter(this);
     statusBar()->addPermanentWidget(pentagon_bar);
 
-    // auto dummy_result = new MergeResult{
-    //     {NodeID{0}, 10, 20}
-    //    ,{NodeID{1}, 20, 30}
-    //    ,{NodeID{2}, 30, 40}
-    //    ,{NodeID{4}, 160, 270}
-    //    ,{NodeID{4}, 1160, 2270}
-    //    ,{NodeID{3}, 40, 50}
-    //    ,{NodeID{4}, 60, 70}
-    // };
-
-    // pent_list = new PentagonListWidget(this, *dummy_result);
     pent_list = new PentagonListWidget(this, *merge_result_);
 
     connect(pent_list, &PentagonListWidget::pentagonClicked, view_.get(), &tree::TraditionalView::setCurrentNode);
@@ -73,7 +62,6 @@ MergeWindow::MergeWindow(Execution &ex_l, Execution &ex_r, std::shared_ptr<tree:
     auto menuBar = new QMenuBar(0);
 // Don't add the menu bar on Mac OS X
 #ifndef Q_WS_MAC
-    /// is this needed???
     setMenuBar(menuBar);
 #endif
 
