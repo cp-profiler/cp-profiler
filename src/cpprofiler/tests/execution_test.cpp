@@ -508,7 +508,7 @@ void run(Conductor &c)
 
     // hiding_failed_test(c);
 
-    // comparison(c);
+    comparison(c);
 
     // comparison2(c);
 
