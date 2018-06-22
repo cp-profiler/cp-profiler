@@ -68,6 +68,11 @@ MergeWindow::MergeWindow(Execution &ex_l, Execution &ex_r, std::shared_ptr<tree:
     connect(nt_.get(), &tree::NodeTree::structureUpdated,
             view_.get(), &tree::TraditionalView::setLayoutOutdated);
 
+    /// This indirection is necessary to immitate the behaviour of ExecutionWindow,
+    /// which selects nodes in all views (traditional, pixel etc.)
+    connect(view_.get(), &tree::TraditionalView::nodeSelected,
+            view_.get(), &tree::TraditionalView::setCurrentNode);
+
     {
         auto nodeMenu = menuBar->addMenu("&Node");
 
