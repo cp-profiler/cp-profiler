@@ -320,8 +320,6 @@ void MergeWindow::runNogoodAnalysis() const
 
         const auto &sd = tree_l.solver_data();
 
-        print("nogood: {}", ng.get());
-
         /// get contributing nogoods:
 
         const auto *nogoods = sd.getContribNogoods(orig_id);

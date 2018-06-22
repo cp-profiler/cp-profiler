@@ -389,6 +389,12 @@ void TraditionalView::toggleCollapsePentagon(NodeID nid)
     emit needsRedrawing();
 }
 
+void TraditionalView::setNodeHidden(NodeID n, bool val)
+{
+    vis_flags_->setHidden(n, false);
+    layout_->setLayoutDone(n, false);
+}
+
 void TraditionalView::unhideNode(NodeID nid)
 {
     utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
@@ -397,8 +403,7 @@ void TraditionalView::unhideNode(NodeID nid)
     auto hidden = vis_flags_->isHidden(nid);
     if (hidden)
     {
-        vis_flags_->setHidden(nid, false);
-        layout_->setLayoutDone(nid, false);
+        setNodeHidden(nid, false);
 
         dirtyUp(nid);
         emit needsLayoutUpdate();
@@ -658,6 +663,23 @@ class TreeHighlighter : public QThread
     }
 };
 
+void TraditionalView::revealNode(NodeID n)
+{
+    utils::DebugMutexLocker t_locker(&tree_.treeMutex());
+    utils::DebugMutexLocker l_locker(&layout_->getMutex());
+
+    layout_computer_->dirtyUpUnconditional(n);
+
+    while (n != NodeID::NoNode)
+    {
+        setNodeHidden(n, false);
+        n = tree_.getParent(n);
+    }
+
+    emit needsLayoutUpdate();
+    emit needsRedrawing();
+}
+
 void TraditionalView::highlightSubtrees(const std::vector<NodeID> &nodes, bool hide_rest)
 {
     vis_flags_->unhighlightAll();
@@ -768,15 +790,8 @@ void TraditionalView::showNogoods() const
     ng_dialog->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(ng_dialog, &NogoodDialog::nogoodClicked, [this](NodeID nid) {
-        const_cast<TraditionalView *>(this)->setCurrentNode(nid);
-        const_cast<TraditionalView *>(this)->centerCurrentNode();
-
-        /// TODO: emit showNogoods connected to conductor
-
-        /// url
-        /// name
-        /// record
-
+        const_cast<TraditionalView *>(this)->revealNode(nid);
+        const_cast<TraditionalView *>(this)->setAndCenterNode(nid);
         emit nogoodsClicked({nid});
     });
 

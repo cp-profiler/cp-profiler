@@ -39,6 +39,9 @@ class LayoutComputer
     /// compute the layout and return where any work was required
     bool compute();
 
+    /// Mark node's ancestors as dirty without stopping at an already dirty node
+    void dirtyUpUnconditional(NodeID nid);
+
     void dirtyUpLater(NodeID nid);
 
     bool isDirty(NodeID nid);

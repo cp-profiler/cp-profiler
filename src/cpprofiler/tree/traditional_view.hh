@@ -64,6 +64,9 @@ class TraditionalView : public QObject
     /// Sets nid as the currently selected node
     void setNode(NodeID nid);
 
+    /// Set the node as hidden/shown based on `val`
+    void setNodeHidden(NodeID nid, bool val);
+
   public:
     TraditionalView(const NodeTree &tree, UserData &ud, SolverData &sd);
     ~TraditionalView();
@@ -157,6 +160,9 @@ class TraditionalView : public QObject
 
     /// Set current node as not hidden
     void unhideNode(NodeID nid);
+
+    /// Make sure the node is not hidden behind collapsed subtrees
+    void revealNode(NodeID nid);
 
     /// Mark a node and attach a note to it
     void bookmarkCurrentNode();

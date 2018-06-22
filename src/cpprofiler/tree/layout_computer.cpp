@@ -37,6 +37,15 @@ void LayoutComputer::setDirty(NodeID nid)
     m_layout.setDirty(nid, true);
 }
 
+void LayoutComputer::dirtyUpUnconditional(NodeID n)
+{
+    while (n != NodeID::NoNode)
+    {
+        m_layout.setDirty(n, true);
+        n = m_tree.getParent(n);
+    }
+}
+
 void LayoutComputer::dirtyUp(NodeID nid)
 {
     while (nid != NodeID::NoNode && !m_layout.isDirty(nid))
