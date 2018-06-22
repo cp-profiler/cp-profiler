@@ -298,36 +298,57 @@ class ResultBuilder
 void MergeWindow::runNogoodAnalysis() const
 {
 
+    /// Determine which tree has nogoods
+    const bool l_has_ng = ex_l_.hasNogoods();
+    const bool r_has_ng = ex_r_.hasNogoods();
+
+    /// whether treat the execution on the left as the one with nogoods
+    const bool left = [&]() {
+        /// left execution is the default one, but
+        /// use the one on the right if it is the only
+        /// one with nogoods
+        if (r_has_ng && !l_has_ng)
+            return false;
+        else if (r_has_ng && l_has_ng)
+        {
+            print("NOTE: both LEFT and RIGHT executions have nogoods");
+            return true;
+        }
+        return true;
+    }();
+
     print("merge result size: {}", merge_result_->size());
 
-    const auto &tree_l = ex_l_.tree();
-
     ng_analysis::ResultBuilder res_builder;
+
+    /// The tree with nogoods
+    const auto &ng_tree = left ? ex_l_.tree() : ex_r_.tree();
 
     for (auto &item : *merge_result_)
     {
 
-        if (item.size_l != 1)
+        /// check if the nogood tree contains 1 node subtree under pentagon
+        const auto subtree_size = left ? item.size_l : item.size_r;
+        if (subtree_size != 1)
             continue;
 
         /// See what nogoods contribute to the nogood at item.nid
 
-        /// get left child
-        auto kid_l = nt_->getChild(item.pen_nid, 0);
-        auto orig_id = orig_locations_[kid_l].nid;
-
-        const auto &ng = tree_l.getNogood(orig_id);
-
-        const auto &sd = tree_l.solver_data();
+        /// get the sole node
+        const auto alt = left ? 0 : 1;
+        const auto kid = nt_->getChild(item.pen_nid, alt);
+        const auto orig_id = orig_locations_[kid].nid;
 
         /// get contributing nogoods:
-
-        const auto *nogoods = sd.getContribNogoods(orig_id);
+        const auto *nogoods = ng_tree.solver_data().getContribNogoods(orig_id);
 
         if (nogoods)
         {
-            print("contributing nogoods: {}", *nogoods);
-            res_builder.addPentagonData(*nogoods, item.size_r - item.size_l);
+            res_builder.addPentagonData(*nogoods, std::abs(item.size_r - item.size_l));
+        }
+        else
+        {
+            // print("no contrib nogoods for {}", orig_locations_[kid_l].nid);
         }
     }
 
@@ -338,7 +359,7 @@ void MergeWindow::runNogoodAnalysis() const
     for (auto item : res_builder.result())
     {
         const NogoodID id = item.first;
-        const auto &ng_str = tree_l.getNogood(id);
+        const auto &ng_str = ng_tree.getNogood(id);
 
         nga_data.push_back({id, ng_str, item.second.total_red, item.second.count});
     }
@@ -347,8 +368,7 @@ void MergeWindow::runNogoodAnalysis() const
     ng_window->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(ng_window, &NogoodAnalysisDialog::nogoodClicked, [this](NodeID nid) {
-        const_cast<tree::TraditionalView *>(view_.get())->setCurrentNode(nid);
-        const_cast<tree::TraditionalView *>(view_.get())->centerCurrentNode();
+        const_cast<tree::TraditionalView *>(view_.get())->setAndCenterNode(nid);
     });
 
     ng_window->show();

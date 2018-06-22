@@ -50,6 +50,7 @@ class NogoodAnalysisDialog : public QDialog
         auto layout = new QVBoxLayout(this);
 
         auto ng_table = new QTableView();
+
         layout->addWidget(ng_table);
 
         ng_model_.reset(new QStandardItemModel(0, 4));
@@ -61,6 +62,7 @@ class NogoodAnalysisDialog : public QDialog
         ng_table->setSelectionBehavior(QAbstractItemView::SelectRows);
         ng_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
+        ng_table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
         ng_table->setModel(ng_model_.get());
 
         connect(ng_table, &QTableView::doubleClicked, [this](const QModelIndex &idx) {

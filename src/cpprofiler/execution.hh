@@ -49,6 +49,8 @@ class Execution
     tree::NodeTree &tree();
     const tree::NodeTree &tree() const;
 
+    bool hasNogoods() const { return solver_data_->hasNogoods(); }
+
     bool doesRestarts() const;
 };
 

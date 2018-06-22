@@ -99,12 +99,13 @@ void SolverData::processInfo(NodeID nid, const std::string &info_str)
         {
             auto ng_nid = getNodeId(sid);
 
-            if (ng_nid != NodeID::NoNode) {
+            if (ng_nid != NodeID::NoNode)
+            {
                 c_nogoods.push_back(ng_nid);
             }
         }
 
-        // print("nogoods for {}: {}", nid, c_nogoods);
+        // print("responsible nogoods for {}: {}", nid, c_nogoods);
 
         contrib_ngs_.insert({nid, std::move(c_nogoods)});
     }
