@@ -165,7 +165,7 @@ If a subtree contains no solutions, it can be collapsed into a special single no
 
 ![Collapsed Failed Subtrees](https://bitbucket.org/Msgmaxim/cp-profiler2/raw/76bb21242ad5427b10b84f7c4cb60f9b557490a0/docs/images/doc_traditional_collapsed.png)
 
-This view of the tree allows the user to show additional information for every node — its label, which usually represents the branching decision made by the solver to move from the parent node to its child. Pressing `L` on the keyboard will display labels for all descendants of the current node. `Shift + L` will display labels on the path to the current node.
+This view of the tree allows the user to show additional information for every node — its label, which usually represents the branching decision made by the solver to move from the parent node to its child. Pressing `L` on the keyboard will display labels for all descendants of the current node. `Shift+L` will display labels on the path to the current node.
 For example, the visualisation above shows branching decisions on the path from the first solution (shown as the new current node) to the root of the tree.
 
 Status bar at the bottom of the window displays node statistics: the depth of the tree and the counts of different types of nodes.
@@ -176,6 +176,25 @@ The scroll bar on the right lets the user to zoom in/out on the visualisation;
 This analysis allows users to find similarities within a single search tree.
 
 It can be initiated by selecting **`Similar Subtrees`** from the menu **`Analyses`** (shortcut: `Shift+S`).
+The image below shows the result of running the analysis on the search tree above.
+Horizontal bars on the left lists all similarities (patterns) found in the tree.
+Here, the lengths of the bars indicate are configured to indicate how many subtrees belong to a particular pattern (*count*).
+Additionally the bars are sorted so that the patterns with subtrees of larger *size* appear at the top.
+Another property of a pattern is its *height*, which indicates the height/depth of subtrees that the pattern represent.
+
+Note that the second from the top pattern is currently selected (shown with orange outline).
+The view on the right shows a "preview" (traditional visualisation) of one of the subtrees representing the selected pattern.
+The two rows below the show the result of computing the difference in labels on the path from the root to two of the subtrees representing the pattern (in this case it is the first two subtrees encountered when the tree is traversed in the depth-first-search order).
+
+![Similar Subtrees Summary](https://bitbucket.org/Msgmaxim/cp-profiler2/raw/dec396e2537294be8cdf18b9594441ac710e937b/docs/images/doc_ss_analysis_hist.png)
+
+Changing the configuration menu at the bottom of the window, the user can filter the list of patterns based on their *count* and *height* values.
+They way the length of horizontal bars is determined and the sorting criteria can also be specified there.
+
+Whenever a pattern on the left hand side is selected, the corresponding subtrees will be highlighted on the traditional visualisation by drawing their .
+Additionally, if the option *Hide not selected* is selected (top of the window), the subtrees of t
+
+![Similar Subtrees Highlighted](https://bitbucket.org/Msgmaxim/cp-profiler2/raw/dec396e2537294be8cdf18b9594441ac710e937b/docs/images/doc_ss_analysis.png)
 
 **Elimination of subsumed patterns**
 
@@ -185,3 +204,4 @@ contain all of the subtrees of `P` as descendants.
 **Applying filters.**
 
 Should filtered out patterns be allowed to subsume?
+
