@@ -18,9 +18,9 @@ class Execution
 
     const ExecID id_;
 
-    const std::string m_name;
+    const std::string name_;
 
-    std::unique_ptr<tree::NodeTree> m_tree;
+    std::unique_ptr<tree::NodeTree> tree_;
 
     std::shared_ptr<SolverData> solver_data_;
 
@@ -40,14 +40,14 @@ class Execution
 
     void setNameMap(std::shared_ptr<const NameMap> nm);
 
-    SolverData &solver_data();
-    const SolverData &solver_data() const;
+    SolverData &solver_data() { return *solver_data_; }
+    const SolverData &solver_data() const { return *solver_data_; }
 
     inline UserData &userData() { return *user_data_; }
     inline const UserData &userData() const { return *user_data_; };
 
-    tree::NodeTree &tree();
-    const tree::NodeTree &tree() const;
+    tree::NodeTree &tree() { return *tree_; }
+    const tree::NodeTree &tree() const { return *tree_; }
 
     bool hasNogoods() const { return solver_data_->hasNogoods(); }
 

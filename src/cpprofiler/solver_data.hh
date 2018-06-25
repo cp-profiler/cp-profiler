@@ -74,6 +74,7 @@ class SolverData
         return m_id_map.getUID(nid);
     }
 
+    /// Get the reasons (constraint ids) for the nogood at node `nid`
     const std::vector<int> *getContribConstraints(NodeID nid) const
     {
         const auto it = contrib_cs_.find(nid);

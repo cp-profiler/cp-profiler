@@ -360,11 +360,14 @@ void MergeWindow::runNogoodAnalysis() const
     {
         const NogoodID id = item.first;
         const auto &ng_str = ng_tree.getNogood(id);
+        const auto *reasons_ptr = ng_tree.solver_data().getContribConstraints(id);
 
-        nga_data.push_back({id, ng_str, item.second.total_red, item.second.count});
+        std::vector<int> reasons = reasons_ptr ? *reasons_ptr : std::vector<int>{};
+
+        nga_data.push_back({id, ng_str, item.second.total_red, item.second.count, std::move(reasons)});
     }
 
-    auto ng_window = new NogoodAnalysisDialog(nga_data);
+    auto ng_window = new NogoodAnalysisDialog(std::move(nga_data));
     ng_window->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(ng_window, &NogoodAnalysisDialog::nogoodClicked, [this](NodeID nid) {

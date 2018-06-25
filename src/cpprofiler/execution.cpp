@@ -10,36 +10,28 @@
 namespace cpprofiler
 {
 
-std::string Execution::name() { return m_name; }
+std::string Execution::name() { return name_; }
 
 Execution::Execution(const std::string &name, ExecID id, bool restarts)
-    : id_(id), m_name{name}, m_tree{new tree::NodeTree()},
+    : id_(id), name_{name}, tree_{new tree::NodeTree()},
       solver_data_(utils::make_unique<SolverData>()),
       user_data_(utils::make_unique<UserData>()), m_is_restarts(restarts)
 {
-    m_tree->setSolverData(solver_data_);
+    tree_->setSolverData(solver_data_);
 
     /// need to create a dummy root node
     if (restarts)
     {
         print("restart execution!");
-        m_tree->createRoot(0, "root");
+        tree_->createRoot(0, "root");
     }
 }
 
 void Execution::setNameMap(std::shared_ptr<const NameMap> nm)
 {
     name_map_ = nm;
-    m_tree->setNameMap(nm);
+    tree_->setNameMap(nm);
 }
-
-const SolverData &Execution::solver_data() const { return *solver_data_; }
-
-SolverData &Execution::solver_data() { return *solver_data_; }
-
-tree::NodeTree &Execution::tree() { return *m_tree; }
-
-const tree::NodeTree &Execution::tree() const { return *m_tree; }
 
 bool Execution::doesRestarts() const { return m_is_restarts; }
 

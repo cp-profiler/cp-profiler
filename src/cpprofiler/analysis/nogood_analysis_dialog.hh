@@ -5,6 +5,10 @@
 #include <QTableView>
 #include <QHeaderView>
 #include <QVBoxLayout>
+#include <QPushButton>
+
+#include <QFile>
+#include <QFileDialog>
 
 #include <memory>
 
@@ -16,20 +20,13 @@ namespace cpprofiler
 namespace analysis
 {
 
-struct NgAnalysisItemOld
-{
-    NodeID nid;       /// node id of the pentagon
-    int left;         /// number of nodes in the left subtree
-    int right;        /// number of nodes in the right subtree
-    const Nogood &ng; /// nogood associated with the reduction
-};
-
 struct NgAnalysisItem
 {
-    NogoodID nid;     /// node id of the nogood
-    const Nogood &ng; /// textual representation of the nogood
-    int total_red;    /// total reduction by this nogood
-    int count;        /// number of times the nogood found in a 1-n pentagon
+    NogoodID nid;                    /// node id of the nogood
+    const Nogood &ng;                /// textual representation of the nogood
+    int total_red;                   /// total reduction by this nogood
+    int count;                       /// number of times the nogood found in a 1-n pentagon
+    std::vector<int> constraint_ids; /// reasons for the nogood
 };
 
 using NgAnalysisData = std::vector<NgAnalysisItem>;
@@ -40,6 +37,8 @@ class NogoodAnalysisDialog : public QDialog
 
   private:
     std::unique_ptr<QStandardItemModel> ng_model_;
+
+    NgAnalysisData ng_data_;
 
     void init()
     {
@@ -69,13 +68,54 @@ class NogoodAnalysisDialog : public QDialog
             const auto nid = ng_model_->item(idx.row())->text().toInt();
             emit nogoodClicked(NodeID(nid));
         });
+
+        auto save_ng_btn = new QPushButton("Save Nogoods");
+        layout->addWidget(save_ng_btn, 0, Qt::AlignLeft);
+
+        connect(save_ng_btn, &QPushButton::clicked, this, &NogoodAnalysisDialog::saveNogoods);
+    }
+
+    void saveNogoods()
+    {
+        QString file_name = QFileDialog::getSaveFileName(this, "Save nogoods to");
+        /// No file was selected
+        if (file_name.isEmpty())
+            return;
+
+        QFile file(file_name);
+
+        if (!file.open(QIODevice::WriteOnly))
+        {
+            print("Error: could not open for writing: {}", file_name);
+            return;
+        }
+
+        QTextStream nogood_stream(&file);
+        const char sep = '\t';
+
+        nogood_stream << "nid" << sep << "count" << sep << "reduction" << sep << "nogood" << sep << "reasons" << '\n';
+
+        for (auto &ng_item : ng_data_)
+        {
+            nogood_stream << ng_item.nid << sep;
+            nogood_stream << ng_item.count << sep;
+            nogood_stream << ng_item.total_red << sep;
+            nogood_stream << ng_item.ng.get().c_str() << sep;
+
+            for (auto id : ng_item.constraint_ids)
+            {
+                nogood_stream << id << ' ';
+            }
+
+            nogood_stream << '\n';
+        }
     }
 
   public:
-    NogoodAnalysisDialog(const NgAnalysisData &nga_data) : QDialog()
+    NogoodAnalysisDialog(NgAnalysisData nga_data) : QDialog(), ng_data_(std::move(nga_data))
     {
         init();
-        populate(nga_data);
+        populate(ng_data_);
     }
 
     void populate(const NgAnalysisData &nga_data)
