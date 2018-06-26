@@ -7,6 +7,7 @@
 #include "execution.hh"
 
 #include "tree/node_tree.hh"
+#include "name_map.hh"
 
 #include <thread>
 
@@ -129,7 +130,18 @@ void TreeBuilder::handleNode(Message *node)
 
     if (node->has_nogood())
     {
-        m_execution.solver_data().setNogood(nid, node->nogood());
+        const auto nm = m_execution.nameMap();
+
+        if (nm)
+        {
+            /// Construct a renamed nogood using the name map
+            const auto renamed = m_execution.nameMap()->replaceNames(node->nogood());
+            m_execution.solver_data().setNogood(nid, node->nogood(), renamed);
+        }
+        else
+        {
+            m_execution.solver_data().setNogood(nid, node->nogood());
+        }
     }
 
     if (node->has_info() && !node->info().empty())

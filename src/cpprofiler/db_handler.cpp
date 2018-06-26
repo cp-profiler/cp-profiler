@@ -393,7 +393,8 @@ static void save_nogoods(sqlite3 *db, const Execution *ex)
 
     for (const auto n : nodes)
     {
-        const auto &text = sd.getNogood(n).get();
+        /// TODO: should save renamed instead?
+        const auto &text = sd.getNogood(n).original();
         if (text != "")
         {
             insert_nogood(insert_ng_stmt.get(), {n, text});

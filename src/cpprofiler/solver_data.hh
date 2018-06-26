@@ -96,16 +96,22 @@ class SolverData
     }
 
     /// Associate nogood `ng` with node `nid`
-    void setNogood(NodeID nid, const Nogood &ng)
+    void setNogood(NodeID nid, const std::string &orig, const std::string &renamed)
     {
-        nogood_map_.insert({nid, ng});
+        nogood_map_.insert({nid, Nogood(orig, renamed)});
+    }
+
+    void setNogood(NodeID nid, const std::string &orig)
+    {
+        nogood_map_.insert({nid, Nogood(orig)});
     }
 
     const Nogood &getNogood(NodeID nid) const
     {
-        if (nogood_map_.find(nid) != nogood_map_.end())
+        auto it = nogood_map_.find(nid);
+        if (it != nogood_map_.end())
         {
-            return nogood_map_.at(nid);
+            return it->second;
         }
         else
         {
@@ -117,7 +123,10 @@ class SolverData
     void processInfo(NodeID nid, const std::string &info_str);
 
     /// Whether the data stores at least one no-good
-    bool hasNogoods() const { return !nogood_map_.empty(); }
+    bool hasNogoods() const
+    {
+        return !nogood_map_.empty();
+    }
 };
 
 } // namespace cpprofiler

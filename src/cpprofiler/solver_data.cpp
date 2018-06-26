@@ -75,7 +75,6 @@ void SolverData::processInfo(NodeID nid, const std::string &info_str)
 
     if (json_obj.isEmpty())
     {
-        print("info is not object!");
         return;
     }
 

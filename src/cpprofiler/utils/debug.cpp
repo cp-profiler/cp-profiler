@@ -16,8 +16,7 @@ std::ostream &debug(std::string type)
     static std::vector<std::string> to_print = {
         "", "force", "done", "error", "perf", "thread"
         // ,"layout"
-        ,
-        "msg:command", "msg:node"};
+    };
 
     if (std::find(to_print.begin(), to_print.end(), type) != to_print.end())
     {

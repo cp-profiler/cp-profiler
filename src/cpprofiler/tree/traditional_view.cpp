@@ -626,7 +626,17 @@ void TraditionalView::printNodeInfo()
     print("total kids: {}, ", tree_.childrenCount(nid));
     print("has solved kids: {}, ", tree_.hasSolvedChildren(nid));
     print("has open kids: {}", tree_.hasOpenChildren(nid));
-    print("nogood: {}", tree_.getNogood(nid).get());
+
+    const auto &ng = tree_.getNogood(nid);
+
+    if (ng.has_renamed())
+    {
+        print("nogood: {} ({})", ng.renamed(), ng.original());
+    }
+    else
+    {
+        print("nogood: {}", ng.original());
+    }
     print("alt: {}", tree_.getAlternative(nid));
 }
 

@@ -100,6 +100,7 @@ class NogoodAnalysisDialog : public QDialog
             nogood_stream << ng_item.nid << sep;
             nogood_stream << ng_item.count << sep;
             nogood_stream << ng_item.total_red << sep;
+
             nogood_stream << ng_item.ng.get().c_str() << sep;
 
             for (auto id : ng_item.constraint_ids)

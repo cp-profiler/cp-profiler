@@ -38,12 +38,32 @@ namespace cpprofiler
 
 class Nogood
 {
+    /// whether the nogood has a renamed (nice) version
+    bool renamed_;
+    /// raw flatzinc nogood
     std::string orig_ng_;
+    /// built using a name map
+    std::string nice_ng_;
 
   public:
-    Nogood(const std::string &text) : orig_ng_(text) {}
+    explicit Nogood(const std::string &orig) : renamed_(false), orig_ng_(orig) {}
 
-    const std::string get() const { return orig_ng_; }
+    Nogood(const std::string &orig, const std::string &renamed) : renamed_(true), orig_ng_(orig), nice_ng_(renamed) {}
+
+    const std::string &renamed() const
+    {
+        return nice_ng_;
+    }
+
+    bool has_renamed() const { return renamed_; }
+
+    /// Get the best name available (renamed if present)
+    const std::string &get() const { return renamed_ ? nice_ng_ : orig_ng_; }
+
+    const std::string &original() const
+    {
+        return orig_ng_;
+    }
 
     static const Nogood empty;
 };

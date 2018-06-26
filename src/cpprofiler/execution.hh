@@ -51,6 +51,8 @@ class Execution
 
     bool hasNogoods() const { return solver_data_->hasNogoods(); }
 
+    const NameMap *nameMap() const { return name_map_.get(); }
+
     bool doesRestarts() const;
 };
 
