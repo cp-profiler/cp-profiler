@@ -501,7 +501,7 @@ void run(Conductor &c)
 
     // binary_test_2_for_identical_subtrees(c);
 
-    binary_tree_execution(c);
+    // binary_tree_execution(c);
     // simple_nary_execution(c);
     // nary_execution(c);
     // larger_nary_execution(c);

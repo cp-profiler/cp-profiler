@@ -2,6 +2,7 @@
 
 #include <QDialog>
 #include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QHeaderView>
 #include <QVBoxLayout>
@@ -31,12 +32,27 @@ struct NgAnalysisItem
 
 using NgAnalysisData = std::vector<NgAnalysisItem>;
 
+class NogoodProxyModel : public QSortFilterProxyModel
+{
+
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override
+    {
+        /// TODO: extend this to work for clauses too (although this doesn't crash)
+        int lhs = sourceModel()->data(left).toInt();
+        int rhs = sourceModel()->data(right).toInt();
+
+        return lhs < rhs;
+    }
+};
+
 class NogoodAnalysisDialog : public QDialog
 {
     Q_OBJECT
 
   private:
     std::unique_ptr<QStandardItemModel> ng_model_;
+
+    QTableView *ng_table_;
 
     NgAnalysisData ng_data_;
 
@@ -48,23 +64,28 @@ class NogoodAnalysisDialog : public QDialog
         resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
         auto layout = new QVBoxLayout(this);
 
-        auto ng_table = new QTableView();
+        ng_table_ = new QTableView();
 
-        layout->addWidget(ng_table);
+        ng_table_->setSortingEnabled(true);
+
+        layout->addWidget(ng_table_);
 
         ng_model_.reset(new QStandardItemModel(0, 4));
+
+        auto proxy_model = new NogoodProxyModel();
+        proxy_model->setSourceModel(ng_model_.get());
 
         const QStringList headers{"NodeID", "Total Reduction", "Count",
                                   "Clause"};
         ng_model_->setHorizontalHeaderLabels(headers);
-        ng_table->horizontalHeader()->setStretchLastSection(true);
-        ng_table->setSelectionBehavior(QAbstractItemView::SelectRows);
-        ng_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        ng_table_->horizontalHeader()->setStretchLastSection(true);
+        ng_table_->setSelectionBehavior(QAbstractItemView::SelectRows);
+        ng_table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-        ng_table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-        ng_table->setModel(ng_model_.get());
+        ng_table_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        ng_table_->setModel(proxy_model);
 
-        connect(ng_table, &QTableView::doubleClicked, [this](const QModelIndex &idx) {
+        connect(ng_table_, &QTableView::doubleClicked, [this](const QModelIndex &idx) {
             const auto nid = ng_model_->item(idx.row())->text().toInt();
             emit nogoodClicked(NodeID(nid));
         });
@@ -117,6 +138,8 @@ class NogoodAnalysisDialog : public QDialog
     {
         init();
         populate(ng_data_);
+
+        ng_table_->sortByColumn(1, Qt::SortOrder::DescendingOrder);
     }
 
     void populate(const NgAnalysisData &nga_data)
