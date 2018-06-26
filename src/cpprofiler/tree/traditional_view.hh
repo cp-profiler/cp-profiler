@@ -155,9 +155,6 @@ class TraditionalView : public QObject
     /// Hides node `n`; immediately updates layout if delayed is false
     void hideNode(NodeID n, bool delayed = true);
 
-    /// Show/hide node (not actually used atm)
-    void toggleHidden();
-
     /// Set current node as not hidden
     void unhideNode(NodeID nid);
 
@@ -172,6 +169,9 @@ class TraditionalView : public QObject
 
     /// Hide all failed descendants of the current node
     void hideFailed(bool onlyDirty = false);
+
+    /// Toggle hide/unhide current node
+    void toggleHidden();
 
     /// Unhide all nodes in the tree
     void unhideAll();

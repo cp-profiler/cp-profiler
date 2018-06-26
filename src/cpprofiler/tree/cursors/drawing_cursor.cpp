@@ -67,7 +67,7 @@ DrawingCursor::DrawingCursor(NodeID start,
     cur_y = start_pos.y();
 }
 
-static void drawTriangle(QPainter &painter, int x, int y, bool selected)
+static void drawTriangle(QPainter &painter, int x, int y, bool selected, bool has_gradient, bool has_solutions)
 {
     using namespace traditional;
 
@@ -77,7 +77,19 @@ static void drawTriangle(QPainter &painter, int x, int y, bool selected)
     }
     else
     {
-        painter.setBrush(colors::red);
+        QColor main_color = has_solutions ? colors::green : colors::red;
+        if (has_gradient)
+        {
+            QLinearGradient gradient(x - COLLAPSED_WIDTH, y,
+                                     x + COLLAPSED_WIDTH * 1.3, y + COLLAPSED_DEPTH * 1.3);
+            gradient.setColorAt(0, colors::white);
+            gradient.setColorAt(1, main_color);
+            painter.setBrush(gradient);
+        }
+        else
+        {
+            painter.setBrush(main_color);
+        }
     }
 
     QPointF points[3] = {QPointF(x, y),
@@ -219,12 +231,10 @@ void DrawingCursor::processCurrentNode()
         if (lantern_size == -1)
         {
 
-            /// completely failed
-            drawTriangle(painter_, cur_x, cur_y, selected);
+            const bool has_gradient = tree_.hasOpenChildren(node);
+            const bool has_solutions = tree_.hasSolvedChildren(node);
 
-            /// TODO: has open nodes
-
-            /// TODO: has solutions
+            drawTriangle(painter_, cur_x, cur_y, selected, has_gradient, has_solutions);
         }
         else
         {

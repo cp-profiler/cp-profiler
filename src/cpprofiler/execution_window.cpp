@@ -167,9 +167,14 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
             connect(unhideAll, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::unhideAllAtCurrent);
 
             auto toggleHighlighted = new QAction{"Toggle highlight subtree", this};
-            toggleHighlighted->setShortcut(QKeySequence("H"));
+            toggleHighlighted->setShortcut(QKeySequence("Shift+H"));
             nodeMenu->addAction(toggleHighlighted);
             connect(toggleHighlighted, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::toggleHighlighted);
+
+            auto toggleHidden = new QAction{"Toggle hide/unhide subtree", this};
+            toggleHidden->setShortcut(QKeySequence("H"));
+            nodeMenu->addAction(toggleHidden);
+            connect(toggleHidden, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::toggleHidden);
 
             auto bookmarkNode = new QAction{"Add/remove bookmark", this};
             bookmarkNode->setShortcut(QKeySequence("Shift+B"));
