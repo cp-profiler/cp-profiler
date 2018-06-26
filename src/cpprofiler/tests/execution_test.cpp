@@ -368,7 +368,7 @@ void restart_tree(Conductor &c)
 
     auto &tree = ex->tree();
 
-    utils::DebugMutexLocker locker(&tree.treeMutex());
+    utils::MutexLocker locker(&tree.treeMutex());
 
     auto root = tree.createRoot(0);
 

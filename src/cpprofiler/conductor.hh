@@ -49,8 +49,8 @@ class Conductor : public QMainWindow
     Execution *addNewExecution(const std::string &ex_name, int ex_id = 0,
                                bool restarts = false);
 
-    /// Add existing execution to the displayed list
-    void addNewExecution(std::shared_ptr<Execution> ex);
+    /// Add existing execution to the displayed list; return generated execution id
+    int addNewExecution(std::shared_ptr<Execution> ex);
 
     void showTraditionalView(Execution *e);
 

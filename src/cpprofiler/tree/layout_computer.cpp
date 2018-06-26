@@ -32,7 +32,7 @@ bool LayoutComputer::isDirty(NodeID nid)
 void LayoutComputer::setDirty(NodeID nid)
 {
 
-    utils::DebugMutexLocker lock(&m_layout.getMutex());
+    utils::MutexLocker lock(&m_layout.getMutex());
 
     m_layout.setDirty(nid, true);
 }
@@ -72,17 +72,9 @@ bool LayoutComputer::compute()
     if (m_tree.nodeCount() == 0)
         return false;
 
-    static bool done = false;
-
-    if (!done)
-    {
-        debug("thread") << "LayoutComputer:compute thread:" << std::this_thread::get_id() << std::endl;
-        done = true;
-    }
-
     /// TODO: come back here (ensure mutexes work correctly)
-    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
-    utils::DebugMutexLocker layout_lock(&m_layout.getMutex());
+    utils::MutexLocker tree_lock(&m_tree.treeMutex());
+    utils::MutexLocker layout_lock(&m_layout.getMutex());
 
     /// Ensures that sufficient memory is allocated for every node's shape
     m_layout.growDataStructures(m_tree.nodeCount());

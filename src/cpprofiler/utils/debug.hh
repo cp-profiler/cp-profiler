@@ -9,9 +9,10 @@
 namespace cpprofiler
 {
 
-std::ostream &debug(std::string str = "");
-
-std::ostream &operator<<(std::ostream &os, const QString &str);
+inline std::ostream &operator<<(std::ostream &os, const QString &str)
+{
+    return os << str.toStdString();
+}
 
 template <typename T>
 std::string to_string(const std::vector<T> &vec)

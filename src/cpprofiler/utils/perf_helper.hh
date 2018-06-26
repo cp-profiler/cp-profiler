@@ -64,8 +64,7 @@ class PerformanceHelper
             duration_cast<milliseconds>(m_hrClock.now() - m_begin).count();
         auto duration_ns =
             duration_cast<nanoseconds>(m_hrClock.now() - m_begin).count();
-        ::cpprofiler::debug("perf") << "Duration(" << m_message << "): " << duration_ms << "ms"
-                                    << " (" << duration_ns << "ns)\n";
+        ::cpprofiler::print("Duration({}): {}ms ({}ns)", m_message, duration_ms, duration_ns);
     }
 };
 

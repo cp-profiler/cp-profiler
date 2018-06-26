@@ -27,7 +27,7 @@ static vector<string> read_file_by_lines(const string &file)
     /// Come back here next time
     if (!model_file.is_open())
     {
-        debug("force") << "ERR: cannot open model file " << file << std::endl;
+        print("ERROR: cannot open model file: {}", file);
         return {};
     }
 
@@ -203,7 +203,7 @@ std::string NameMap::replaceNames(const std::string &text, bool expand) const
 //     const auto lhs = left_right[0];
 //     const auto rhs = left_right[1];
 
-//     // debug("force") << "left: " << lhs << " right: " << rhs << std::endl;
+//     print("left: {}, right: {}", lhs, rhs);
 
 //     st[lhs] = SymbolRecord(rhs, empty_string, empty_location);
 //   }
@@ -217,10 +217,8 @@ std::string NameMap::replaceNames(const std::string &text, bool expand) const
 void NameMap::addIdExpressionToMap(const vector<string> &model,
                                    const string &ident)
 {
-    debug("force") << "ident:" << ident << std::endl;
 
     const auto &loc = findLocation(id_map_, ident);
-    // debug("force") << "location: " << loc << std::endl;
 
     if (loc.sl == 0)
         return; // default (empty) location?
@@ -229,9 +227,6 @@ void NameMap::addIdExpressionToMap(const vector<string> &model,
     const auto &path = findPath(id_map_, ident);
 
     const auto path_until = getPathUntilDecomp(path);
-
-    // debug("force") << "expression: " << expression << std::endl;
-    // debug("force") << "path until: " << path_until << std::endl;
 
     // replaceAssignments(path_until, expression);
 }
@@ -294,7 +289,8 @@ const NiceName &NameMap::getNiceName(const std::string &ident) const
     return empty_string;
 }
 
-const Path& NameMap::getPath(const std::string &ident) const {
+const Path &NameMap::getPath(const std::string &ident) const
+{
 
     auto it = id_map_.find(ident);
     if (it != id_map_.end())

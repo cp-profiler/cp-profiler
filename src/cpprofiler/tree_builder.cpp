@@ -60,26 +60,18 @@ TreeBuilder::TreeBuilder(Execution &ex) : m_execution(ex)
 void TreeBuilder::startBuilding()
 {
     perfHelper.begin("tree building");
-    std::cerr << "  Builder: start building\n";
+    print("Builder: start building");
 }
 
 void TreeBuilder::finishBuilding()
 {
     perfHelper.end();
-    debug("done") << "  Builder: done building\n";
+    print("Builder: done building");
     emit buildingDone();
 }
 
 void TreeBuilder::handleNode(Message *node)
 {
-
-    static bool done = false;
-
-    if (!done)
-    {
-        debug("thread") << "BuilderThread:handleNode thread:" << std::this_thread::get_id() << std::endl;
-        done = true;
-    }
 
     std::unique_ptr<Message> node_msg{node};
     // print("node: {}", *node);

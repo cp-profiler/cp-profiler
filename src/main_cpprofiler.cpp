@@ -1,5 +1,4 @@
 #include <iostream>
-#include <thread>
 
 #include <QApplication>
 
@@ -22,7 +21,6 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     QCoreApplication::setApplicationName("CP-Profiler");
-    debug("thread") << "main thread:" << std::this_thread::get_id() << std::endl;
 
     CommandLineParser cl_parser;
     cl_parser.process(app);
@@ -33,13 +31,13 @@ int main(int argc, char *argv[])
         if (cl_parser.isSet(cl_options::paths))
         {
             options.paths = cl_parser.value(cl_options::paths).toStdString();
-            debug("force") << "selected paths file: " << options.paths << std::endl;
+            print("selected paths file: {}", options.paths);
         }
 
         if (cl_parser.isSet(cl_options::mzn))
         {
             options.mzn = cl_parser.value(cl_options::mzn).toStdString();
-            debug("force") << "selected mzn file: " << options.mzn << std::endl;
+            print("selected mzn file: {}", options.mzn);
         }
     }
 

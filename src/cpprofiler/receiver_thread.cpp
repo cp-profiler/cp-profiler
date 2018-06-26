@@ -57,8 +57,5 @@ void ReceiverThread::run()
     exec();
 }
 
-ReceiverThread::~ReceiverThread()
-{
-    debug("memory") << "~ReceiverThread\n";
-}
+ReceiverThread::~ReceiverThread() = default;
 } // namespace cpprofiler

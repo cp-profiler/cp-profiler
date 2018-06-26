@@ -17,7 +17,6 @@ SOURCES += \
     $$PWD/src/cpprofiler/utils/tree_utils.cpp \
     $$PWD/src/cpprofiler/utils/perf_helper.cpp \
     $$PWD/src/cpprofiler/utils/array.cpp \
-    $$PWD/src/cpprofiler/utils/debug.cpp \
     $$PWD/src/cpprofiler/utils/std_ext.cpp \
     $$PWD/src/cpprofiler/utils/maybe_caller.cpp \
     $$PWD/src/cpprofiler/tree/node.cpp \

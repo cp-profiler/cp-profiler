@@ -63,15 +63,6 @@ class NodeStatsBar : public QWidget
 
     void update()
     {
-
-        static bool done = false;
-
-        if (!done)
-        {
-            debug("thread") << "StatsBar::update thread:" << std::this_thread::get_id() << std::endl;
-            done = true;
-        }
-
         depthLabel->setNum(stats.maxDepth());
         openLabel->setNum(stats.undeterminedCount());
         solvedLabel->setNum(stats.solvedCount());

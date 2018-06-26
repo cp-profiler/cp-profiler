@@ -29,15 +29,6 @@ static int32_t ArrayToInt(const QByteArray &ba)
 
 void ReceiverWorker::doRead()
 {
-
-    static bool done = false;
-
-    if (!done)
-    {
-        debug("thread") << "ReceiverWorker:doRead thread:" << std::this_thread::get_id() << std::endl;
-        done = true;
-    }
-
     // are there enough bytes to read something
     bool can_read_more = true;
 
@@ -106,8 +97,6 @@ void ReceiverWorker::handleStart(const Message &msg)
 
     int exec_id = -1;
 
-    debug("msg:command") << "message:start";
-
     if (msg.has_info())
     {
 
@@ -116,7 +105,7 @@ void ReceiverWorker::handleStart(const Message &msg)
 
         if (json_doc.isNull() || json_doc.isArray())
         {
-            debug("msg:command") << " (info invalid or empty)";
+            print("Warning: start message info is invalid or empty");
         }
         else
         {
@@ -127,7 +116,6 @@ void ReceiverWorker::handleStart(const Message &msg)
             if (name_val.isString())
             {
                 execution_name = name_val.toString().toStdString();
-                debug("msg:command") << format(" (name: {})", execution_name);
             }
 
             auto restarts_val = json_obj.value("has_restarts");
@@ -135,21 +123,16 @@ void ReceiverWorker::handleStart(const Message &msg)
             if (restarts_val.isBool())
             {
                 has_restarts = restarts_val.toBool();
-                debug("msg:command") << " (restarts: " << (has_restarts ? "true" : "false") << ")";
             }
 
             {
                 auto e_id_val = json_obj.value("execution_id");
                 exec_id = e_id_val.toInt();
-                debug("msg:command") << " (ex_id: " << exec_id << ")";
             }
         }
-
-        debug("msg:command") << "\n";
     }
 
-    /// Conductor will take the ownership of the new Execution
-    // auto execution = new Execution{execution_name, has_restarts};
+    print("New execution: (name: {}, exec_id: {}, has restarts: {}", execution_name, exec_id, has_restarts);
 
     emit notifyStart(execution_name, exec_id, has_restarts); // blocking connection
 }
@@ -183,18 +166,18 @@ void ReceiverWorker::handleMessage(const Message &msg)
 
         break;
     case cpprofiler::MsgType::START:
-        std::cerr << "START\n";
+        print("message: start");
         handleStart(msg);
         break;
     case cpprofiler::MsgType::DONE:
         emit doneReceiving();
-        debug("msg:command") << "message:done\n";
+        print("message: done");
         break;
     case cpprofiler::MsgType::RESTART:
-        debug("msg:command") << "message:restart\n";
+        print("message: restart");
         break;
     default:
-        debug("msg:command") << "(!) message:unknown\n";
+        print("ERROR: unknown solver message");
     }
 }
 

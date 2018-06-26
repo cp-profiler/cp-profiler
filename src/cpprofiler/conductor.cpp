@@ -113,7 +113,8 @@ Conductor::Conductor(Options opt) : options_(opt)
         }
         else
         {
-            addNewExecution(ex);
+            const auto ex_id = addNewExecution(ex);
+            print("New execution from a database, ex_id: {}", ex_id);
         }
     });
 
@@ -193,11 +194,7 @@ int Conductor::getListenPort() const
     return static_cast<int>(listen_port_);
 }
 
-Conductor::~Conductor()
-{
-
-    debug("memory") << "~Conductor\n";
-}
+Conductor::~Conductor() = default;
 
 void Conductor::handleStart(ReceiverThread *receiver, const std::string &ex_name, int ex_id, bool restarts)
 {
@@ -214,7 +211,7 @@ void Conductor::handleStart(ReceiverThread *receiver, const std::string &ex_name
 
         if (ide_used)
         {
-            debug("force") << "already know metadata for this ex_id!\n";
+            print("already know metadata for this ex_id!");
             ex_name_used = exec_meta_[ex_id].ex_name;
         }
 
@@ -265,15 +262,15 @@ void Conductor::handleStart(ReceiverThread *receiver, const std::string &ex_name
             builder, &TreeBuilder::finishBuilding);
 }
 
-void Conductor::addNewExecution(std::shared_ptr<Execution> ex)
+int Conductor::addNewExecution(std::shared_ptr<Execution> ex)
 {
 
     auto ex_id = getRandomExID();
 
-    debug("force") << "EXECUTION_ID: " << ex_id << std::endl;
-
     executions_[ex_id] = ex;
     execution_list_->addExecution(*ex);
+
+    return ex_id;
 }
 
 Execution *Conductor::addNewExecution(const std::string &ex_name, int ex_id, bool restarts)

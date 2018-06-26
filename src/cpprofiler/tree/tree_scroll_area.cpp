@@ -56,14 +56,6 @@ static void drawGrid(QPainter &painter, QSize size)
 void TreeScrollArea::paintEvent(QPaintEvent *event)
 {
 
-    static bool done = false;
-
-    if (!done)
-    {
-        debug("thread") << "Drawing thread:" << std::this_thread::get_id() << std::endl;
-        done = true;
-    }
-
     QPainter painter(this->viewport());
 
     painter.setRenderHint(QPainter::Antialiasing);
@@ -141,7 +133,7 @@ void TreeScrollArea::paintEvent(QPaintEvent *event)
 
     // drawGrid(painter, {std::max(tree_width, displayed_width), std::max(tree_height, displayed_height)});
 
-    utils::DebugMutexLocker tree_locker(&m_tree.treeMutex());
+    utils::MutexLocker tree_locker(&m_tree.treeMutex());
 
     // perfHelper.begin("tree drawing");
 
@@ -192,8 +184,8 @@ void TreeScrollArea::setScale(int val)
 /// Make sure the layout for nodes is done
 NodeID TreeScrollArea::findNodeClicked(int x, int y)
 {
-    utils::DebugMutexLocker tree_lock(&m_tree.treeMutex());
-    utils::DebugMutexLocker layout_lock(&m_layout.getMutex());
+    utils::MutexLocker tree_lock(&m_tree.treeMutex());
+    utils::MutexLocker layout_lock(&m_layout.getMutex());
 
     using namespace traditional;
 
@@ -289,8 +281,6 @@ TreeScrollArea::TreeScrollArea(NodeID start, const NodeTree &tree, const UserDat
 {
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-
-    debug("memory") << "TreeScrollArea()";
 }
 
 void TreeScrollArea::centerPoint(int x, int y)

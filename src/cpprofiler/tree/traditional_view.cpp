@@ -583,8 +583,6 @@ void TraditionalView::setAndCenterNode(NodeID nid)
 
 bool TraditionalView::updateLayout()
 {
-    static int counter = 0;
-    debug("layout") << "compute Layout:" << ++counter << "\n";
     const auto changed = layout_computer_->compute();
     layout_stale_ = false;
 

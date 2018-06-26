@@ -42,7 +42,7 @@ struct CloseSqlStatement
     {
         if (sqlite3_finalize(stmt) != SQLITE_OK)
         {
-            debug("error") << "could not finalize a statement in db\n";
+            print("ERROR: could not finalize a statement in db");
         }
     }
 };
@@ -53,7 +53,7 @@ struct CloseDB
     {
         if (sqlite3_close(db) != SQLITE_OK)
         {
-            debug("error") << "could not close db\n";
+            print("ERROR: could not close db");
         }
     }
 };
@@ -71,7 +71,7 @@ static bool execute_query(sqlite3 *db, const char *query, SQL_Callback cb = null
     auto rc = sqlite3_exec(db, query, cb, arg, &zErrMsg);
     if (rc != SQLITE_OK)
     {
-        debug("error") << "SQL error: " << zErrMsg << '\n';
+        print("ERROR: sql error: {}", zErrMsg);
         success = false;
     }
 
@@ -115,7 +115,7 @@ static SqlStatement prepare_statement(sqlite3 *db, const char *query)
     int rc = sqlite3_prepare_v2(db, query, strlen(query) + 1, &stmt, &pzTest);
     if (rc != SQLITE_OK)
     {
-        debug("error") << "SQL error: " << pzTest << '\n';
+        print("ERROR: sql error: {}", pzTest);
     }
 
     return SqlStatement{stmt};
@@ -261,16 +261,15 @@ static Sqlite3 open_db(const char *path)
 {
 
     sqlite3 *db;
-    print("openDB: {}", path);
     int res = sqlite3_open_v2(path, &db, SQLITE_OPEN_READONLY, nullptr);
     if (res != SQLITE_OK)
     {
-        debug("error") << "error opening a DB file\n";
+        print("ERROR: cannot open a DB file: {}", path);
 
         /// need to close the DB even when an error occurred
         if (sqlite3_close(db) != SQLITE_OK)
         {
-            debug("error") << "could not close db\n";
+            print("ERROR: could not close DB");
         }
 
         return nullptr;
@@ -284,7 +283,7 @@ static void insert_node(sqlite3_stmt *stmt, NodeData nd)
 
     if (sqlite3_reset(stmt) != SQLITE_OK)
     {
-        debug("error") << "could not reset db statement\n";
+        print("ERROR: could not reset DB statement");
     }
 
     sqlite3_bind_int(stmt, 1, nd.nid);
@@ -296,7 +295,7 @@ static void insert_node(sqlite3_stmt *stmt, NodeData nd)
 
     if (sqlite3_step(stmt) != SQLITE_DONE)
     {
-        debug("error") << "could not execute db statement\n";
+        print("ERROR: could not execute db statement");
     }
 }
 
@@ -344,7 +343,7 @@ static void insert_bookmark(sqlite3_stmt *stmt, BookmarkItem bi)
 
     if (sqlite3_reset(stmt) != SQLITE_OK)
     {
-        debug("error") << "could not reset db statement\n";
+        print("ERROR: could not reset DB statement");
     }
 
     sqlite3_bind_int(stmt, 1, bi.nid);
@@ -352,7 +351,7 @@ static void insert_bookmark(sqlite3_stmt *stmt, BookmarkItem bi)
 
     if (sqlite3_step(stmt) != SQLITE_DONE)
     {
-        debug("error") << "could not execute db statement\n";
+        print("ERROR: could not execute DB statement");
     }
 }
 
@@ -361,7 +360,7 @@ static void insert_nogood(sqlite3_stmt *stmt, NogoodItem ngi)
 
     if (sqlite3_reset(stmt) != SQLITE_OK)
     {
-        debug("error") << "could not reset db statement\n";
+        print("ERROR: could not reset DB statement");
     }
 
     sqlite3_bind_int(stmt, 1, ngi.nid);
@@ -369,15 +368,12 @@ static void insert_nogood(sqlite3_stmt *stmt, NogoodItem ngi)
 
     if (sqlite3_step(stmt) != SQLITE_DONE)
     {
-        debug("error") << "could not execute db statement\n";
+        print("ERROR: could not execute DB statement");
     }
 }
 
 static void save_nogoods(sqlite3 *db, const Execution *ex)
 {
-
-    print("saving nogoods");
-
     const char *query = "INSERT INTO Nogoods \
                          (NodeID, Nogood) \
                          VALUES (?,?);";
@@ -430,7 +426,7 @@ static void save_user_data(sqlite3 *db, const Execution *ex)
 /// Create a file at `path` (or overwrite it) and associate it with `db`
 static Sqlite3 create_db(const char *path)
 {
-    debug("force") << "creating file: " << path << std::endl;
+    print("creating file: {}", path);
     std::ofstream file(path);
     file.close();
 
@@ -439,7 +435,7 @@ static Sqlite3 create_db(const char *path)
     int res = sqlite3_open(path, &db);
     if (res != SQLITE_OK)
     {
-        debug("error") << "error opening a DB file\n";
+        print("ERROR: error opening a DB file");
         return nullptr;
     }
 

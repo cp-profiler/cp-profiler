@@ -24,31 +24,31 @@ class TestClass
     {
         counter++;
         m_id = counter;
-        debug("memory") << "TestClass:" << m_id;
+        print("TestClass(): {}", m_id);
     }
 
     ~TestClass()
     {
-        debug("memory") << "~TestClass" << m_id;
+        print("~TestClass(): {}", m_id);
     }
 
     TestClass(const TestClass &other)
     {
         counter++;
         m_id = counter;
-        debug("memory") << "copy TestClass";
+        print("TestClass(const T&): {}", m_id);
     }
 
     TestClass(TestClass &&other)
     {
         m_id = other.m_id;
-        debug("memory") << "move constructred TestClass";
+        print("TestClass(const T&&): {}", m_id);
     }
 
     TestClass &operator=(const TestClass &other)
     {
         m_id = other.m_id;
-        debug("memory") << "copy assigning TestClass";
+        print("T &operator=TestClass(const T&): {}", m_id);
     }
 };
 
