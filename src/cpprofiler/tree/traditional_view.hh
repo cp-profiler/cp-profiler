@@ -58,9 +58,6 @@ class TraditionalView : public QObject
     /// Only update layout if it is stale
     bool layout_stale_ = true;
 
-    /// Returns currently selected node; can be NodeID::NoNode
-    NodeID node() const;
-
     /// Sets nid as the currently selected node
     void setNode(NodeID nid);
 
@@ -70,6 +67,9 @@ class TraditionalView : public QObject
   public:
     TraditionalView(const NodeTree &tree, UserData &ud, SolverData &sd);
     ~TraditionalView();
+
+    /// Returns currently selected node; can be NodeID::NoNode
+    NodeID node() const;
 
     /// Return the scroll area
     QWidget *widget();

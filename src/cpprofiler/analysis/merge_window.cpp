@@ -119,7 +119,7 @@ MergeWindow::MergeWindow(Execution &ex_l, Execution &ex_r, std::shared_ptr<tree:
         auto hideFailed = new QAction{"Hide failed", this};
         hideFailed->setShortcut(QKeySequence("F"));
         nodeMenu->addAction(hideFailed);
-        connect(hideFailed, &QAction::triggered, view_.get(), &tree::TraditionalView::hideFailed);
+        connect(hideFailed, &QAction::triggered, this, &analysis::MergeWindow::hideFailed);
 
         auto unhideAll = new QAction{"Unhide all", this};
         unhideAll->setShortcut(QKeySequence("U"));
@@ -375,6 +375,74 @@ void MergeWindow::runNogoodAnalysis() const
     });
 
     ng_window->show();
+}
+
+static bool has_as_ancestor(const tree::NodeTree &nt, NodeID n, NodeID a)
+{
+    while (n != NodeID::NoNode)
+    {
+        if (n == a)
+            return true;
+
+        n = nt.getParent(n);
+    }
+
+    return false;
+}
+
+/// Check if the node is under some pentagon
+static bool under_pentagon(const tree::NodeTree &nt, NodeID n)
+{
+    /// Don't check the node itself
+    if (n != NodeID::NoNode)
+    {
+        n = nt.getParent(n);
+    }
+
+    while (n != NodeID::NoNode)
+    {
+        if (nt.getStatus(n) == tree::NodeStatus::MERGED)
+        {
+            return true;
+        }
+
+        n = nt.getParent(n);
+    }
+
+    return false;
+}
+
+/// Hide failed subtrees in a way that does not hide pentagon nodes
+void MergeWindow::hideFailed()
+{
+    auto cur_node = view_->node();
+
+    /// Hide if the node is under some pentagon
+    /// (meaning there are no other pentagons under the node)
+    if (under_pentagon(*nt_, cur_node))
+    {
+        view_->hideFailedAt(cur_node);
+        return;
+    }
+
+    /// Otherwise, see which pentagons are under the
+    /// node and try to hide their children
+    for (auto item : *merge_result_)
+    {
+        /// pentagon node
+        const auto pen = item.pen_nid;
+
+        /// hide failed children if pen is below cur_node
+        if (has_as_ancestor(*nt_, pen, cur_node))
+        {
+
+            for (auto alt = 0; alt < nt_->childrenCount(pen); ++alt)
+            {
+                auto kid = nt_->getChild(pen, alt);
+                view_->hideFailedAt(kid);
+            }
+        }
+    }
 }
 
 // NodeID MergeWindow::findOriginalId(NodeID nid) const

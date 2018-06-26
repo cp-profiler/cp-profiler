@@ -64,6 +64,9 @@ class MergeWindow : public QMainWindow
     /// Find id for a node `nid` of a merged tree
     // NodeID findOriginalId(NodeID nid) const;
 
+    /// Hide all failed subtrees under pentagons
+    void hideFailed();
+
   public:
     MergeWindow(Execution &ex_l, Execution &ex_r, std::shared_ptr<tree::NodeTree> nt, std::shared_ptr<MergeResult> res);
     ~MergeWindow();
