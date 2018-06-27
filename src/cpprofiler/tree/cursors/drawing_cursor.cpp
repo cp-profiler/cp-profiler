@@ -225,20 +225,19 @@ void DrawingCursor::processCurrentNode()
             return;
         }
 
+        const bool has_gradient = tree_.hasOpenChildren(node);
+        const bool has_solutions = tree_.hasSolvedChildren(node);
+
         /// check if the node is a lantern node
         const auto lantern_size = vis_flags_.lanternSize(node);
-
         if (lantern_size == -1)
         {
-
-            const bool has_gradient = tree_.hasOpenChildren(node);
-            const bool has_solutions = tree_.hasSolvedChildren(node);
 
             drawTriangle(painter_, cur_x, cur_y, selected, has_gradient, has_solutions);
         }
         else
         {
-            draw::lantern(painter_, cur_x, cur_y, lantern_size, selected);
+            draw::lantern(painter_, cur_x, cur_y, lantern_size, selected, has_gradient, has_solutions);
         }
 
         return;

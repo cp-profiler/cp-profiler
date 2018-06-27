@@ -174,10 +174,12 @@ void big_pentagon(QPainter &painter, int x, int y, bool selected)
     painter.drawConvexPolygon(points, 5);
 }
 
-void lantern(QPainter &painter, int x, int y, int size, bool selected)
+void lantern(QPainter &painter, int x, int y, int size, bool selected, bool has_gradient, bool has_solutions)
 {
 
     using namespace lantern;
+
+    const int height = K * size;
 
     if (selected)
     {
@@ -185,10 +187,20 @@ void lantern(QPainter &painter, int x, int y, int size, bool selected)
     }
     else
     {
-        painter.setBrush(colors::red);
+        QColor main_color = has_solutions ? colors::green : colors::red;
+        if (has_gradient)
+        {
+            QLinearGradient gradient(x - HALF_WIDTH, y,
+                                     x + HALF_WIDTH, y + BASE_HEIGHT + height);
+            gradient.setColorAt(0, colors::white);
+            gradient.setColorAt(1, main_color);
+            painter.setBrush(gradient);
+        }
+        else
+        {
+            painter.setBrush(main_color);
+        }
     }
-
-    const int height = K * size;
 
     QPointF points[5] = {QPointF(x, y),
                          QPointF(x + HALF_WIDTH, y + BASE_HEIGHT),

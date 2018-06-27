@@ -448,8 +448,6 @@ void TraditionalView::unhideAllAt(NodeID n)
     /// indicates if any change was made
     bool modified = false;
 
-    perfHelper.begin("unhdeAll At");
-
     const auto action = [&](NodeID n) {
         if (vis_flags_->isHidden(n))
         {
@@ -461,8 +459,6 @@ void TraditionalView::unhideAllAt(NodeID n)
     };
 
     utils::apply_below(tree_, n, action);
-
-    perfHelper.end();
 
     if (modified)
     {
@@ -481,8 +477,6 @@ void TraditionalView::unhideAll()
     {
         return;
     }
-
-    perfHelper.begin("unhideAll");
 
     for (auto n : vis_flags_->hidden_nodes())
     {
@@ -720,6 +714,7 @@ void TraditionalView::highlightSubtrees(const std::vector<NodeID> &nodes, bool h
     emit needsRedrawing();
 }
 
+/// Lantern Tree Visualisation
 void TraditionalView::hideBySize(int size_limit)
 {
     utils::DebugMutexLocker tree_lock(&tree_.treeMutex());
@@ -773,8 +768,6 @@ void TraditionalView::hideBySize(int size_limit)
     emit needsRedrawing();
 
     centerCurrentNode();
-
-    perfHelper.end();
 }
 
 void TraditionalView::undoLanterns()

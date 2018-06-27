@@ -88,7 +88,6 @@ bool LayoutComputer::compute()
 
     du_node_set_.clear();
 
-    // perfHelper.begin("layout");
     LayoutCursor lc(m_tree.getRoot(), m_tree, m_vis_flags, m_layout, debug_mode_);
     PostorderNodeVisitor<LayoutCursor>(lc).run();
 

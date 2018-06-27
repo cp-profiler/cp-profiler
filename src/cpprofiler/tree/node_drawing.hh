@@ -22,7 +22,7 @@ void skipped(QPainter &painter, int x, int y, bool selected);
 void pentagon(QPainter &painter, int x, int y, bool selected);
 void big_pentagon(QPainter &painter, int x, int y, bool selected);
 
-void lantern(QPainter &painter, int x, int y, int size, bool selected);
+void lantern(QPainter &painter, int x, int y, int size, bool selected, bool has_gradient, bool has_solutions);
 
 } // namespace draw
 } // namespace tree

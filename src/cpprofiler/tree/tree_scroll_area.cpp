@@ -135,11 +135,8 @@ void TreeScrollArea::paintEvent(QPaintEvent *event)
 
     utils::MutexLocker tree_locker(&m_tree.treeMutex());
 
-    // perfHelper.begin("tree drawing");
-
     DrawingCursor dc(m_start_node, m_tree, m_layout, user_data_, m_vis_flags, painter, start_pos, clip, debug_mode_);
     PreorderNodeVisitor<DrawingCursor>(dc).run();
-    // perfHelper.end();
 }
 
 QPoint TreeScrollArea::getNodeCoordinate(NodeID nid)

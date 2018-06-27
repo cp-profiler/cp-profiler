@@ -463,7 +463,6 @@ void ExecutionWindow::showIcicleTree()
 
 void ExecutionWindow::toggleLanternView(bool checked)
 {
-    print("TODO: lantern tree");
 
     if (checked)
     {
