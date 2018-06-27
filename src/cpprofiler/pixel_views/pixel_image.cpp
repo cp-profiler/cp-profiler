@@ -55,7 +55,7 @@ void PixelImage::resize(const QSize &size)
 void PixelImage::clear()
 {
     /// set all pixels to white
-    std::fill(buffer_.begin(), buffer_.end(), 0xCCCCFF);
+    std::fill(buffer_.begin(), buffer_.end(), 0xFFFFFF);
 }
 
 void PixelImage::update()

@@ -67,7 +67,7 @@ class PtCanvas : public QWidget
   signals:
 
     /// notify the traditional visualisation
-    void nodesSelected(std::vector<NodeID> nodes);
+    void nodesSelected(const std::vector<NodeID> &nodes);
 
   public slots:
 

@@ -263,8 +263,9 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
                 auto ssw = new analysis::SimilarSubtreeWindow(this, ex.tree());
                 ssw->show();
 
-                connect(ssw, &analysis::SimilarSubtreeWindow::should_be_highlighted,
-                        traditional_view_.get(), &tree::TraditionalView::highlightSubtrees);
+                connect(ssw, &analysis::SimilarSubtreeWindow::should_be_highlighted, [this](const std::vector<NodeID> &nodes, bool hide_rest) {
+                    traditional_view_->highlightSubtrees(nodes, hide_rest);
+                });
             });
 
             auto saveSearch = new QAction{"Save Search (for replaying)", this};
@@ -413,6 +414,10 @@ void ExecutionWindow::showPixelTree()
         addDockWidget(Qt::BottomDockWidgetArea, pt_dock_);
         pixel_tree_.reset(new pixel_view::PtCanvas(tree));
         pt_dock_->setWidget(pixel_tree_.get());
+
+        connect(pixel_tree_.get(), &pixel_view::PtCanvas::nodesSelected, [this](const std::vector<NodeID> &nodes) {
+            traditional_view_->highlightSubtrees(nodes, true, false);
+        });
     }
 
     if (pt_dock_->isHidden())

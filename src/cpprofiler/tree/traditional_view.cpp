@@ -682,11 +682,12 @@ void TraditionalView::revealNode(NodeID n)
     emit needsRedrawing();
 }
 
-void TraditionalView::highlightSubtrees(const std::vector<NodeID> &nodes, bool hide_rest)
+void TraditionalView::highlightSubtrees(const std::vector<NodeID> &nodes, bool hide_rest, bool show_outline)
 {
     vis_flags_->unhighlightAll();
 
     detail::PerformanceHelper phelper;
+
     for (auto nid : nodes)
     {
         vis_flags_->setHighlighted(nid, true);
@@ -696,19 +697,20 @@ void TraditionalView::highlightSubtrees(const std::vector<NodeID> &nodes, bool h
     {
         unhideAll();
 
-        phelper.begin("show subtrees");
-
         auto root = tree_.getRoot();
         HideNotHighlightedCursor hnhc(root, tree_, *vis_flags_, *layout_computer_);
         PostorderNodeVisitor<HideNotHighlightedCursor>(hnhc).run();
 
-        // {
-        //     auto highlighter = new TreeHighlighter(tree_, *vis_flags_, *layout_, *layout_computer_);
-        //     connect(highlighter, &QThread::finished, highlighter, &QObject::deleteLater);
-        //     highlighter->start();
-        // }
-        phelper.end();
         emit needsLayoutUpdate();
+    }
+
+    /// Note: this duplication could probably be avoided
+    if (!show_outline)
+    {
+        for (auto nid : nodes)
+        {
+            vis_flags_->setHighlighted(nid, false);
+        }
     }
 
     emit needsRedrawing();

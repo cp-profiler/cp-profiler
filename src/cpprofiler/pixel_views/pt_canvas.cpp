@@ -75,7 +75,7 @@ PtCanvas::PtCanvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
         addCompression->setMaximumWidth(40);
         controlLayout->addWidget(addCompression);
         connect(addCompression, &QPushButton::clicked, [reduceCompression, this]() {
-            compression_ += 1;
+            compression_ += 10;
             reduceCompression->setEnabled(true);
             redrawAll();
         });
@@ -84,7 +84,7 @@ PtCanvas::PtCanvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
         reduceCompression->setEnabled(false);
         controlLayout->addWidget(reduceCompression);
         connect(reduceCompression, &QPushButton::clicked, [reduceCompression, this]() {
-            compression_ = std::max(1, compression_ - 1);
+            compression_ = std::max(1, compression_ - 10);
 
             if (compression_ == 1)
                 reduceCompression->setEnabled(false);
@@ -273,14 +273,22 @@ void PtCanvas::selectNodes(int vbegin, int vend)
         selected_slices_.insert(slice);
     }
 
+    /// recover the nodes from selected slices
+    std::vector<NodeID> selected_nodes;
     for (auto slice : selected_slices_)
     {
-        print("selected slice: {}", slice);
+        int first_idx = slice * compression_;
+
+        for (auto idx = first_idx; idx < first_idx + compression_; ++idx)
+        {
+            if (idx == pi_seq_.size())
+                break;
+
+            selected_nodes.push_back(pi_seq_[idx].nid);
+        }
     }
 
-    /// recover the nodes from selected slices
-
-    // emit nodesSelected();
+    emit nodesSelected(selected_nodes);
 
     redrawAll();
 }

@@ -201,8 +201,8 @@ class TraditionalView : public QObject
     /// Show nogoods of the nodes under the current node and the node itself
     void showNogoods() const;
 
-    /// Highlight the subtrees and hide the rest (if hide_rest is true)
-    void highlightSubtrees(const std::vector<NodeID> &nodes, bool hide_rest);
+    /// Highlight the subtrees (if show_outline is true) and hide the rest (if hide_rest is true)
+    void highlightSubtrees(const std::vector<NodeID> &nodes, bool hide_rest, bool show_outline = true);
 
     /// Transform the tree in to a lantern tree using `limit` as max lantern size
     void hideBySize(int limit);
