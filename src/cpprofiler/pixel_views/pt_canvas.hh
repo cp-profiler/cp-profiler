@@ -64,6 +64,11 @@ class PtCanvas : public QWidget
 
     ~PtCanvas();
 
+  signals:
+
+    /// notify the traditional visualisation
+    void nodesSelected(std::vector<NodeID> nodes);
+
   public slots:
 
     /// Select nodes based on vertical slices (may be out of bounds)

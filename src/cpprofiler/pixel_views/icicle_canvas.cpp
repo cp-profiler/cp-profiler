@@ -21,10 +21,10 @@ namespace pixel_view
 
 namespace colors
 {
-QRgb branch = qRgb(50, 50, 230);
-QRgb failure = qRgb(230, 50, 50);
-QRgb solution = qRgb(50, 230, 50);
-QRgb selected = qRgb(252, 209, 22);
+static QRgb branch = qRgb(50, 50, 230);
+static QRgb failure = qRgb(230, 50, 50);
+static QRgb solution = qRgb(50, 230, 50);
+static QRgb selected = qRgb(252, 209, 22);
 } // namespace colors
 
 class IcicleLayout
@@ -53,11 +53,8 @@ static std::unique_ptr<IcicleLayout> computeLayout(const tree::NodeTree &nt, int
     /// TODO: hold tree mutex
 
     /// post order traversal
-    perfHelper.begin("post order");
     auto order = utils::post_order(nt);
-    perfHelper.end();
 
-    perfHelper.begin("generations");
     /// All leaf nodes are of generation 1, parent nodes are
     /// the largest generation of children + 1
     std::vector<int> generations(order.size());
@@ -87,9 +84,7 @@ static std::unique_ptr<IcicleLayout> computeLayout(const tree::NodeTree &nt, int
             }
         }
     }
-    perfHelper.end();
 
-    perfHelper.begin("icicle layout: rest");
     auto layout = std::unique_ptr<IcicleLayout>(new IcicleLayout());
 
     layout->resize(order.size());
@@ -125,7 +120,6 @@ static std::unique_ptr<IcicleLayout> computeLayout(const tree::NodeTree &nt, int
             layout->setWidth(n, sum_width);
         }
     }
-    perfHelper.end();
 
     return layout;
 }
@@ -381,7 +375,6 @@ class IcicleDrawing
 
     ~IcicleDrawing()
     {
-        print("drew {} nodes", counter);
     }
 
     /// only called once
@@ -398,12 +391,8 @@ void IcicleCanvas::drawIcicleTree()
 
     const auto x_begin = pwidget_->horizontalScrollBar()->value();
 
-    perfHelper.begin("draw icicle");
-
     IcicleDrawing drawer(tree_, *layout_, *pimage_, pwidget_->width(), selected_);
     drawer.run(root, -x_begin, 0);
-
-    perfHelper.end();
 
     /// provided every node knows its bounding box
 }

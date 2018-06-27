@@ -231,7 +231,7 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
             viewMenu->addAction(showPixelTree);
             connect(showPixelTree, &QAction::triggered, this, &ExecutionWindow::showPixelTree);
 
-            auto showIcicleTree = new QAction{"Pixel Icicle View", this};
+            auto showIcicleTree = new QAction{"Icicle Tree View", this};
             showIcicleTree->setCheckable(true);
             showIcicleTree->setShortcut(QKeySequence("Shift+I"));
             viewMenu->addAction(showIcicleTree);
@@ -446,6 +446,7 @@ void ExecutionWindow::showIcicleTree()
         it_dock_->setWidget(icicle_tree_.get());
 
         connect(icicle_tree_.get(), &pixel_view::IcicleCanvas::nodeClicked, this, &ExecutionWindow::nodeSelected);
+        connect(icicle_tree_.get(), &pixel_view::IcicleCanvas::nodeClicked, traditional_view_.get(), &tree::TraditionalView::centerCurrentNode);
 
         /// Note: nodeSelected can be triggered by some other view
         connect(this, &ExecutionWindow::nodeSelected, icicle_tree_.get(), &pixel_view::IcicleCanvas::selectNode);

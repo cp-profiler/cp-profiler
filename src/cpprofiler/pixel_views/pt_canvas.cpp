@@ -20,10 +20,16 @@ namespace cpprofiler
 namespace pixel_view
 {
 
+namespace colors
+{
+QRgb solution = qRgb(50, 230, 50);
+} // namespace colors
+
 PtCanvas::PtCanvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
 {
     pimage_.reset(new PixelImage());
     pwidget_.reset(new PixelWidget(*pimage_));
+    pimage_->setPixelSize(4);
 
     pi_seq_ = constructPixelTree();
 
@@ -35,8 +41,11 @@ PtCanvas::PtCanvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
     auto controlLayout = new QHBoxLayout();
     layout->addLayout(controlLayout);
 
+    controlLayout->addWidget(new QLabel("Zoom:"));
+
     {
         auto zoomOut = new QPushButton("-", this);
+        zoomOut->setMaximumWidth(40);
         controlLayout->addWidget(zoomOut);
         connect(zoomOut, &QPushButton::clicked, [this]() {
             pimage_->zoomOut();
@@ -46,9 +55,40 @@ PtCanvas::PtCanvas(const tree::NodeTree &tree) : QWidget(), tree_(tree)
 
     {
         auto zoomIn = new QPushButton("+", this);
+        zoomIn->setMaximumWidth(40);
         controlLayout->addWidget(zoomIn);
         connect(zoomIn, &QPushButton::clicked, [this]() {
             pimage_->zoomIn();
+            redrawAll();
+        });
+    }
+
+    controlLayout->addStretch();
+
+    {
+
+        controlLayout->addWidget(new QLabel("Compression:"));
+
+        auto addCompression = new QPushButton("-", this);
+        auto reduceCompression = new QPushButton("+", this);
+
+        addCompression->setMaximumWidth(40);
+        controlLayout->addWidget(addCompression);
+        connect(addCompression, &QPushButton::clicked, [reduceCompression, this]() {
+            compression_ += 1;
+            reduceCompression->setEnabled(true);
+            redrawAll();
+        });
+
+        reduceCompression->setMaximumWidth(40);
+        reduceCompression->setEnabled(false);
+        controlLayout->addWidget(reduceCompression);
+        connect(reduceCompression, &QPushButton::clicked, [reduceCompression, this]() {
+            compression_ = std::max(1, compression_ - 1);
+
+            if (compression_ == 1)
+                reduceCompression->setEnabled(false);
+
             redrawAll();
         });
     }
@@ -173,6 +213,34 @@ void PtCanvas::drawPixelTree()
             color = qRgb(255, 0, 0);
         }
 
+        /// See if there is a solution node (warning: duplication / bad code!)
+        /// (Note that this has to be separate from drawing, as the solution line
+        /// should go behind the actual nodes)
+        bool has_solutions = false;
+        for (auto idx = first_idx; idx < first_idx + compression_; ++idx)
+        {
+            if (idx == pi_seq_.size())
+            {
+                end_reached = true;
+                break;
+            }
+            const auto node = pi_seq_[idx].nid;
+
+            if (tree_.getStatus(node) == tree::NodeStatus::SOLVED)
+            {
+                has_solutions = true;
+                break;
+            }
+        }
+
+        if (has_solutions)
+        {
+            for (auto y = 0; y < tree_.depth(); ++y)
+            {
+                pimage_->drawPixel(x, y, colors::solution);
+            }
+        }
+
         /// Draw a "slice"
         for (auto idx = first_idx; idx < first_idx + compression_; ++idx)
         {
@@ -191,10 +259,8 @@ void PtCanvas::drawPixelTree()
 void PtCanvas::selectNodes(int vbegin, int vend)
 {
 
-    print("vbegin: {}", vbegin);
     if (vend < vbegin)
     {
-        print("vend < vbegin");
         return;
     }
 
@@ -206,6 +272,15 @@ void PtCanvas::selectNodes(int vbegin, int vend)
     {
         selected_slices_.insert(slice);
     }
+
+    for (auto slice : selected_slices_)
+    {
+        print("selected slice: {}", slice);
+    }
+
+    /// recover the nodes from selected slices
+
+    // emit nodesSelected();
 
     redrawAll();
 }

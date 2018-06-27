@@ -55,6 +55,8 @@ public:
     return *image_;
   }
 
+  void setPixelSize(int size) { pixel_size_ = size; }
+
   int pixel_size() const { return pixel_size_; }
 
 public slots:
