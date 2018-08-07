@@ -11,6 +11,7 @@ namespace cl_options
 extern QCommandLineOption paths;
 extern QCommandLineOption mzn;
 extern QCommandLineOption save_search;
+extern QCommandLineOption save_execution;
 } // namespace cl_options
 
 class CommandLineParser

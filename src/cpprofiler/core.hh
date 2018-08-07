@@ -36,6 +36,8 @@ std::ostream &operator<<(std::ostream &os, const NodeStatus &ns);
 namespace cpprofiler
 {
 
+typedef std::string Info;
+
 class Nogood
 {
     /// whether the nogood has a renamed (nice) version

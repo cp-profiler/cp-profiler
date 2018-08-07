@@ -36,6 +36,12 @@ struct NogoodItem
     std::string text;
 };
 
+struct InfoItem
+{
+    NodeID nid;
+    std::string text;
+};
+
 struct CloseSqlStatement
 {
     void operator()(sqlite3_stmt *stmt)
@@ -209,6 +215,45 @@ static bool read_bookmarks(sqlite3 *db, Execution &ex)
         const auto bm_text = (const char *)(sqlite3_column_text(select_bm_.get(), 1));
 
         ud.setBookmark(nid, bm_text);
+
+        if (res != SQLITE_ROW)
+            break;
+    }
+
+    return success;
+}
+
+/// Read all Info from the database
+static bool read_info(sqlite3 *db, Execution &ex)
+{
+    const auto query = "select * from Info;";
+    auto select_info_ = prepare_statement(db, query);
+
+    bool success = false;
+
+    auto &sd = ex.solver_data();
+
+    while (true)
+    {
+
+        int res = sqlite3_step(select_info_.get());
+
+        if (res == SQLITE_DONE)
+        {
+            success = true;
+            break;
+        }
+
+        if (res == SQLITE_ERROR)
+        {
+            print("sqlite runtime ERROR!");
+            break;
+        }
+
+        const auto nid = NodeID(sqlite3_column_int(select_info_.get(), 0));
+        const auto info_text = (const char *)(sqlite3_column_text(select_info_.get(), 1));
+
+        sd.setInfo(nid, {info_text});
 
         if (res != SQLITE_ROW)
             break;
@@ -400,6 +445,50 @@ static void save_nogoods(sqlite3 *db, const Execution *ex)
     execute_query(db, "END;");
 }
 
+static void insert_info(sqlite3_stmt *stmt, InfoItem ii)
+{
+
+    if (sqlite3_reset(stmt) != SQLITE_OK)
+    {
+        print("ERROR: could not reset DB statement");
+    }
+
+    sqlite3_bind_int(stmt, 1, ii.nid);
+    sqlite3_bind_text(stmt, 2, ii.text.c_str(), -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+    {
+        print("ERROR: could not execute DB statement");
+    }
+}
+
+static void save_info(sqlite3 *db, const Execution *ex)
+{
+    const char *query = "INSERT INTO Info \
+                         (NodeID, Info) \
+                         VALUES (?,?);";
+
+    auto insert_ng_stmt = prepare_statement(db, query);
+
+    const auto &nt = ex->tree();
+    const auto &sd = ex->solver_data();
+
+    const auto nodes = utils::any_order(nt);
+
+    execute_query(db, "BEGIN;");
+
+    for (const auto n : nodes)
+    {
+        const auto &text = sd.getInfo(n);
+        if (text != "")
+        {
+            insert_info(insert_ng_stmt.get(), {n, text});
+        }
+    }
+
+    execute_query(db, "END;");
+}
+
 static void save_user_data(sqlite3 *db, const Execution *ex)
 {
 
@@ -458,7 +547,12 @@ static Sqlite3 create_db(const char *path)
         Nogood varchar(8) \
     );");
 
-    if (success1 && success2 && success3)
+    const auto success4 = execute_query(db, "CREATE TABLE Info( \
+        NodeID INTEGER PRIMARY KEY, \
+        Info TEXT \
+    );");
+
+    if (success1 && success2 && success3 && success4)
     {
         return Sqlite3{db};
     }
@@ -487,6 +581,11 @@ void save_execution(const Execution *ex, const char *path)
         save_nogoods(db.get(), ex);
     }
 
+    if (sd.hasInfo())
+    {
+        save_info(db.get(), ex);
+    }
+
     perfHelper.end();
 }
 
@@ -505,6 +604,8 @@ std::shared_ptr<Execution> load_execution(const char *path, ExecID eid)
     read_bookmarks(db.get(), *ex);
 
     read_nogoods(db.get(), *ex);
+
+    read_info(db.get(), *ex);
 
     ex->tree().setDone();
 

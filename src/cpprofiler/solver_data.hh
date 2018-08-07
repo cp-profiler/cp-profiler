@@ -47,6 +47,8 @@ class SolverData
     /// TODO:save/load id map to/from DB
     IdMap m_id_map;
 
+    std::unordered_map<NodeID, Info> info_map_;
+
     std::unordered_map<NodeID, Nogood> nogood_map_;
 
     /// Constraints contributing to a no-good at NodeID
@@ -119,6 +121,24 @@ class SolverData
         }
     }
 
+    void setInfo(NodeID nid, const std::string &orig)
+    {
+        info_map_.insert({nid, Info(orig)});
+    }
+
+    const Info &getInfo(NodeID nid) const
+    {
+        auto it = info_map_.find(nid);
+        if (it != info_map_.end())
+        {
+            return it->second;
+        }
+        else
+        {
+            return Info("");
+        }
+    }
+
     /// Process node info looking for reasons, contributing nogoods for failed nodes etc.
     void processInfo(NodeID nid, const std::string &info_str);
 
@@ -126,6 +146,12 @@ class SolverData
     bool hasNogoods() const
     {
         return !nogood_map_.empty();
+    }
+
+    /// Whether the data stores at least one no-good
+    bool hasInfo() const
+    {
+        return !info_map_.empty();
     }
 };
 

@@ -83,7 +83,7 @@ class Conductor : public QMainWindow
 
     void readSettings();
 
-    void onExecutionDone(Execution *e) const;
+    void onExecutionDone(Execution *e);
 
     // void getSelectedExecutions
 

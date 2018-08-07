@@ -156,7 +156,7 @@ static int getRandomExID()
     return dist(rng);
 }
 
-void Conductor::onExecutionDone(Execution *e) const
+void Conductor::onExecutionDone(Execution *e)
 {
     e->tree().setDone();
 
@@ -164,6 +164,13 @@ void Conductor::onExecutionDone(Execution *e) const
     {
         print("saving search to: {}", options_.save_search_path);
         saveSearch(e, options_.save_search_path.c_str());
+        QApplication::quit();
+    }
+
+    if (options_.save_execution_db != "")
+    {
+        print("saving execution to db: {}", options_.save_execution_db);
+        db_handler::save_execution(e, options_.save_execution_db.c_str());
         QApplication::quit();
     }
 }
@@ -289,7 +296,7 @@ Execution *Conductor::addNewExecution(const std::string &ex_name, int ex_id, boo
     execution_list_->addExecution(*ex);
 
     const bool auto_show = true;
-    if (auto_show && options_.save_search_path == "")
+    if (auto_show && options_.save_search_path == "" && options_.save_execution_db == "")
     {
         showTraditionalView(ex.get());
     }

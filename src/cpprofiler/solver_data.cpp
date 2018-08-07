@@ -77,6 +77,8 @@ void SolverData::processInfo(NodeID nid, const std::string &info_str)
         return;
     }
 
+    setInfo(nid, info_str);
+
     QJsonObject json_obj = json_doc.object();
 
     if (json_obj.isEmpty())
