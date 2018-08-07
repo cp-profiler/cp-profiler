@@ -46,11 +46,11 @@ constexpr int BIG_PENTAGON_HALF_W = BIG_PENTAGON_WIDTH / 2;
 constexpr int BIG_PENTAGON_THIRD_W = BIG_PENTAGON_WIDTH / 3;
 
 /// there is no constexpr std::max until C++14
-static_assert(MAX_NODE_W >= BRANCH_WIDTH);
-static_assert(MAX_NODE_W >= FAILED_WIDTH);
-static_assert(MAX_NODE_W >= SOL_WIDTH);
-static_assert(MAX_NODE_W >= UNDET_WIDTH);
-static_assert(MAX_NODE_W >= PENTAGON_WIDTH);
+static_assert(MAX_NODE_W >= BRANCH_WIDTH,   "MAX_NODE_W >= BRANCH_WIDTH");
+static_assert(MAX_NODE_W >= FAILED_WIDTH,   "MAX_NODE_W >= FAILED_WIDTH");
+static_assert(MAX_NODE_W >= SOL_WIDTH,      "MAX_NODE_W >= SOL_WIDTH");
+static_assert(MAX_NODE_W >= UNDET_WIDTH,    "MAX_NODE_W >= UNDET_WIDTH");
+static_assert(MAX_NODE_W >= PENTAGON_WIDTH, "MAX_NODE_W >= PENTAGON_WIDTH");
 
 constexpr int SHADOW_OFFSET = 3.0;
 } // namespace traditional

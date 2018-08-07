@@ -234,7 +234,7 @@ utils::Mutex &NodeTree::treeMutex() const
 
 NodeStatus NodeTree::getStatus(NodeID nid) const
 {
-    node_info_->getStatus(nid);
+    return node_info_->getStatus(nid);
 }
 
 int NodeTree::getNumberOfSiblings(NodeID nid) const
@@ -244,7 +244,7 @@ int NodeTree::getNumberOfSiblings(NodeID nid) const
 
 int NodeTree::depth() const
 {
-    node_stats_.maxDepth();
+    return node_stats_.maxDepth();
 }
 
 int NodeTree::getAlternative(NodeID nid) const

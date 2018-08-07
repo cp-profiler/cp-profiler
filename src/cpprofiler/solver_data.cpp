@@ -63,7 +63,13 @@ static std::vector<SolverID> parse_nogoods_json(QJsonValue &json_arr)
 void SolverData::processInfo(NodeID nid, const std::string &info_str)
 {
     auto info_bytes = QByteArray::fromStdString(info_str);
-    auto json_doc = QJsonDocument::fromJson(info_bytes);
+    QJsonParseError json_err;
+    auto json_doc = QJsonDocument::fromJson(info_bytes, &json_err);
+
+    if (json_err.error != QJsonParseError::NoError) {
+        print("QJsonDocument::fromJson() error: {}\ninfo_str:\n {}\n", json_err.errorString(), info_str);
+        return;
+    }
 
     if (json_doc.isNull() || json_doc.isEmpty())
     {

@@ -124,7 +124,7 @@ void TreeScrollArea::paintEvent(QPaintEvent *event)
     m_options.root_y = y_margin / m_options.scale;
     auto start_pos = QPoint{m_options.root_x, m_options.root_y};
 
-    const auto clip_margin = 0 / m_options.scale;
+    const int clip_margin = 0 / m_options.scale;
 
     QRect clip{QPoint{x_off + clip_margin, y_off + clip_margin},
                QSize{displayed_width - 2 * clip_margin, displayed_height - 2 * clip_margin}};
@@ -146,7 +146,7 @@ QPoint TreeScrollArea::getNodeCoordinate(NodeID nid)
 
     while (node != m_tree.getRoot())
     {
-        pos += {m_layout.getOffset(node), layout::dist_y};
+        pos += {static_cast<int>(m_layout.getOffset(node)), layout::dist_y};
         node = m_tree.getParent(node);
     }
 

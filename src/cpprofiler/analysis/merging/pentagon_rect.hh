@@ -9,7 +9,7 @@ namespace analysis
 {
 
 class PentagonListWidget;
-class PentagonItem;
+struct PentagonItem;
 
 namespace pent_config
 {

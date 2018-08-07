@@ -43,7 +43,7 @@ NodeID Structure::createRoot(int kids)
 
 NodeID Structure::createNode(NodeID pid, int kids)
 {
-    const auto nid = NodeID{nodes_.size()};
+    const auto nid = NodeID{static_cast<int>(nodes_.size())};
     nodes_.push_back(std::unique_ptr<Node>{new Node(pid, kids)});
     return nid;
 }

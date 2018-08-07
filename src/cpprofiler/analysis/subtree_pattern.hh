@@ -30,7 +30,7 @@ struct SubtreePattern
 
     SubtreePattern() = default;
 
-    int setSize(int size)
+    void setSize(int size)
     {
         size_ = size;
     }

@@ -21,7 +21,7 @@ namespace cpprofiler
 namespace analysis
 {
 
-class OriginalLoc;
+struct OriginalLoc;
 
 class TreeMerger : public QThread
 {

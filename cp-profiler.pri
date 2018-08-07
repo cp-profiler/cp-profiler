@@ -2,10 +2,10 @@ SOURCES += \
     $$PWD/src/cpprofiler/core.cpp \
     $$PWD/src/cpprofiler/command_line_parser.cpp \
     $$PWD/src/cpprofiler/name_map.cpp \
-    $$PWD/src/cpprofiler/conductor.cpp \
     $$PWD/src/cpprofiler/tcp_server.cpp \
     $$PWD/src/cpprofiler/receiver_thread.cpp \
     $$PWD/src/cpprofiler/receiver_worker.cpp \
+    $$PWD/src/cpprofiler/conductor.cpp \
     $$PWD/src/cpprofiler/execution.cpp \
     $$PWD/src/cpprofiler/user_data.cpp \
     $$PWD/src/cpprofiler/tree_builder.cpp \
@@ -131,5 +131,3 @@ SOURCES += \
 HEADERS += \
     $$PWD/src/cpprofiler/tests/tree_test.hh \
     $$PWD/src/cpprofiler/tests/execution_test.hh \
-
-LIBS += -ldl

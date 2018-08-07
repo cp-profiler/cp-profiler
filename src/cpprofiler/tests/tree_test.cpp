@@ -49,6 +49,7 @@ class TestClass
     {
         m_id = other.m_id;
         print("T &operator=TestClass(const T&): {}", m_id);
+        return *this;
     }
 };
 
