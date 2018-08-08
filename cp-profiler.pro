@@ -2,7 +2,7 @@ TEMPLATE = app
 
 TARGET = cp-profiler
 
-QT += widgets network
+QT += widgets network sql
 
 CONFIG += c++11
 

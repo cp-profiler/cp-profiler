@@ -2,7 +2,8 @@
 
 #include <fstream>
 #include "utils/debug.hh"
-#include "../sqlite/sqlite3.h"
+#include <QSqlDatabase>
+#include <QSqlQuery>
 #include "execution.hh"
 #include "utils/tree_utils.hh"
 #include "utils/perf_helper.hh"
@@ -42,130 +43,43 @@ struct InfoItem
     std::string text;
 };
 
-struct CloseSqlStatement
+static int count_nodes(QSqlDatabase *db)
 {
-    void operator()(sqlite3_stmt *stmt)
-    {
-        if (sqlite3_finalize(stmt) != SQLITE_OK)
-        {
-            print("ERROR: could not finalize a statement in db");
-        }
-    }
-};
-
-struct CloseDB
-{
-    void operator()(sqlite3 *db)
-    {
-        if (sqlite3_close(db) != SQLITE_OK)
-        {
-            print("ERROR: could not close db");
-        }
-    }
-};
-
-using SqlStatement = std::unique_ptr<sqlite3_stmt, CloseSqlStatement>;
-using Sqlite3 = std::unique_ptr<sqlite3, CloseDB>;
-
-/// Execute `sql` query; return true on success
-static bool execute_query(sqlite3 *db, const char *query, SQL_Callback cb = nullptr, void *arg = nullptr)
-{
-    char *zErrMsg = 0;
-
-    bool success = true;
-
-    auto rc = sqlite3_exec(db, query, cb, arg, &zErrMsg);
-    if (rc != SQLITE_OK)
-    {
-        print("ERROR: sql error: {}", zErrMsg);
-        success = false;
-    }
-
-    sqlite3_free(zErrMsg);
-    return success;
-}
-
-static int count_nodes(sqlite3 *db)
-{
-
-    int count = 0;
-
-    const auto query = "select count (*) from Nodes;";
-    const auto success = execute_query(db, query, [](void *count, int ncols, char **cols, char **) -> int {
-        int *val = reinterpret_cast<int *>(count);
-
-        if (ncols == 1)
-        {
-            const auto str_val = cols[0];
-            /// Note that atoi returns zero on error
-            *val = atoi(str_val);
-        }
-        /// sqlite requires the return value of 0 to go on with the query
-        return 0;
-    },
-                                       reinterpret_cast<void *>(&count));
-
-    /// For now return zero on any error
-    if (!success)
-        count = 0;
-
-    return count;
-}
-
-/// Prepare statement using `query`
-static SqlStatement prepare_statement(sqlite3 *db, const char *query)
-{
-    const char *pzTest;
-
-    sqlite3_stmt *stmt;
-    int rc = sqlite3_prepare_v2(db, query, strlen(query) + 1, &stmt, &pzTest);
-    if (rc != SQLITE_OK)
-    {
-        print("ERROR: sql error: {}", pzTest);
-    }
-
-    return SqlStatement{stmt};
+    const auto query = "select count(*) from Nodes;";
+    QSqlQuery count_stmt(*db);
+    count_stmt.prepare(query);
+    count_stmt.exec();
+    count_stmt.next();
+    return count_stmt.value(0).toInt();
 }
 
 /// Reads all nodes from a database and builds the tree; returns `true` on success
-static bool read_nodes(sqlite3 *db, Execution &ex)
+static bool read_nodes(QSqlDatabase *db, Execution &ex)
 {
     const auto query = "select * from Nodes;";
 
-    auto select_stmt = prepare_statement(db, query);
+    QSqlQuery select_stmt (*db);
+    select_stmt.prepare(query);
 
     auto &tree = ex.tree();
 
     const auto total_nodes = count_nodes(db);
+    print("We have {} nodes", total_nodes);
 
     tree.db_initialize(total_nodes);
 
-    bool success = false;
+    bool success = select_stmt.exec();
 
-    while (true)
+    if(!success) return false;
+
+    while (select_stmt.next())
     {
-
-        int res = sqlite3_step(select_stmt.get());
-
-        if (res == SQLITE_DONE)
-        {
-            print("sqlite done");
-            success = true;
-            break;
-        }
-
-        if (res == SQLITE_ERROR)
-        {
-            print("sqlite runtime ERROR!");
-            break;
-        }
-
-        const auto nid = NodeID(sqlite3_column_int(select_stmt.get(), 0));
-        const auto pid = NodeID(sqlite3_column_int(select_stmt.get(), 1));
-        const auto alt = sqlite3_column_int(select_stmt.get(), 2);
-        const auto kids = sqlite3_column_int(select_stmt.get(), 3);
-        const auto status = tree::NodeStatus(sqlite3_column_int(select_stmt.get(), 4));
-        const auto label = (const char *)sqlite3_column_text(select_stmt.get(), 5);
+        const auto nid = NodeID(select_stmt.value(0).toInt());
+        const auto pid = NodeID(select_stmt.value(1).toInt());
+        const auto alt = select_stmt.value(2).toInt();
+        const auto kids = select_stmt.value(3).toInt();
+        const auto status = tree::NodeStatus(select_stmt.value(4).toInt());
+        const auto label = select_stmt.value(5).toString().toStdString();
 
         if (pid == NodeID::NoNode)
         {
@@ -175,194 +89,111 @@ static bool read_nodes(sqlite3 *db, Execution &ex)
         {
             tree.db_addChild(nid, pid, alt, status, label);
         }
-
-        if (res != SQLITE_ROW)
-            break;
     }
 
     return success;
 }
 
 /// Read all bookmarks from the database
-static bool read_bookmarks(sqlite3 *db, Execution &ex)
+static bool read_bookmarks(QSqlDatabase *db, Execution &ex)
 {
     const auto query = "select * from Bookmarks;";
-    auto select_bm_ = prepare_statement(db, query);
+    QSqlQuery select_bm_(*db);
+    select_bm_.prepare(query);
 
-    bool success = false;
+    bool success = select_bm_.exec();
+    if(!success) return false;
 
     auto &ud = ex.userData();
 
-    while (true)
+    while (select_bm_.next())
     {
-
-        int res = sqlite3_step(select_bm_.get());
-
-        if (res == SQLITE_DONE)
-        {
-            print("sqlite done");
-            success = true;
-            break;
-        }
-
-        if (res == SQLITE_ERROR)
-        {
-            print("sqlite runtime ERROR!");
-            break;
-        }
-
-        const auto nid = NodeID(sqlite3_column_int(select_bm_.get(), 0));
-        const auto bm_text = (const char *)(sqlite3_column_text(select_bm_.get(), 1));
+        const auto nid = NodeID(select_bm_.value(0).toInt());
+        const auto bm_text = select_bm_.value(1).toString().toStdString();
 
         ud.setBookmark(nid, bm_text);
-
-        if (res != SQLITE_ROW)
-            break;
     }
 
     return success;
 }
 
 /// Read all Info from the database
-static bool read_info(sqlite3 *db, Execution &ex)
+static bool read_info(QSqlDatabase *db, Execution &ex)
 {
     const auto query = "select * from Info;";
-    auto select_info_ = prepare_statement(db, query);
+    QSqlQuery select_info_ (*db);
+    select_info_.prepare(query);
 
-    bool success = false;
+    bool success = select_info_.exec();
+    if(!success) return false;
 
     auto &sd = ex.solver_data();
 
-    while (true)
+    while (select_info_.next())
     {
-
-        int res = sqlite3_step(select_info_.get());
-
-        if (res == SQLITE_DONE)
-        {
-            success = true;
-            break;
-        }
-
-        if (res == SQLITE_ERROR)
-        {
-            print("sqlite runtime ERROR!");
-            break;
-        }
-
-        const auto nid = NodeID(sqlite3_column_int(select_info_.get(), 0));
-        const auto info_text = (const char *)(sqlite3_column_text(select_info_.get(), 1));
+        const auto nid = NodeID(select_info_.value(0).toInt());
+        const auto info_text = select_info_.value(1).toString().toStdString();
 
         sd.setInfo(nid, {info_text});
-
-        if (res != SQLITE_ROW)
-            break;
     }
 
     return success;
 }
 
 /// Read all nogoods from the database
-static bool read_nogoods(sqlite3 *db, Execution &ex)
+static bool read_nogoods(QSqlDatabase *db, Execution &ex)
 {
     const auto query = "select * from Nogoods;";
-    auto select_ng_ = prepare_statement(db, query);
+    QSqlQuery select_ng_(*db);
+    select_ng_.prepare(query);
 
-    bool success = false;
+    bool success = select_ng_.exec();
 
     auto &sd = ex.solver_data();
 
-    while (true)
+    while (select_ng_.next())
     {
-
-        int res = sqlite3_step(select_ng_.get());
-
-        if (res == SQLITE_DONE)
-        {
-            success = true;
-            break;
-        }
-
-        if (res == SQLITE_ERROR)
-        {
-            print("sqlite runtime ERROR!");
-            break;
-        }
-
-        const auto nid = NodeID(sqlite3_column_int(select_ng_.get(), 0));
-        const auto ng_text = (const char *)(sqlite3_column_text(select_ng_.get(), 1));
+        const auto nid = NodeID(select_ng_.value(0).toInt());
+        const auto ng_text = select_ng_.value(1).toString().toStdString();
 
         sd.setNogood(nid, {ng_text});
-
-        if (res != SQLITE_ROW)
-            break;
     }
 
     return success;
 }
 
-/// Opens a database file returing a handle on success (nullptr otherwise)
-static Sqlite3 open_db(const char *path)
+static void insert_node(QSqlQuery *stmt, NodeData nd)
 {
+    stmt->finish();
 
-    sqlite3 *db;
-    int res = sqlite3_open_v2(path, &db, SQLITE_OPEN_READONLY, nullptr);
-    if (res != SQLITE_OK)
-    {
-        print("ERROR: cannot open a DB file: {}", path);
+    stmt->addBindValue(static_cast<int>(nd.nid));
+    stmt->addBindValue(static_cast<int>(nd.pid));
+    stmt->addBindValue(static_cast<int>(nd.alt));
+    stmt->addBindValue(static_cast<int>(nd.kids));
+    stmt->addBindValue(static_cast<int>(nd.status));
+    stmt->addBindValue(nd.label.c_str());
 
-        /// need to close the DB even when an error occurred
-        if (sqlite3_close(db) != SQLITE_OK)
-        {
-            print("ERROR: could not close DB");
-        }
-
-        return nullptr;
-    }
-
-    return Sqlite3{db};
-}
-
-static void insert_node(sqlite3_stmt *stmt, NodeData nd)
-{
-
-    if (sqlite3_reset(stmt) != SQLITE_OK)
-    {
-        print("ERROR: could not reset DB statement");
-    }
-
-    sqlite3_bind_int(stmt, 1, nd.nid);
-    sqlite3_bind_int(stmt, 2, nd.pid);
-    sqlite3_bind_int(stmt, 3, nd.alt);
-    sqlite3_bind_int(stmt, 4, nd.kids);
-    sqlite3_bind_int(stmt, 5, static_cast<int>(nd.status));
-    sqlite3_bind_text(stmt, 6, nd.label.c_str(), -1, SQLITE_STATIC);
-
-    if (sqlite3_step(stmt) != SQLITE_DONE)
+    if (!stmt->exec())
     {
         print("ERROR: could not execute db statement");
     }
 }
 
-static void save_nodes(sqlite3 *db, const Execution *ex)
+static void save_nodes(QSqlDatabase *db, const Execution *ex)
 {
-
-    // db.prepareInsert();
-
     const char *insert_query = "INSERT INTO Nodes \
                          (NodeID, ParentID, Alternative, NKids, Status, Label) \
                          VALUES (?,?,?,?,?,?);";
 
-    auto insert_bm = prepare_statement(db, insert_query);
+    QSqlQuery insert_bm(*db);
+    insert_bm.prepare(insert_query);
 
     const auto &tree = ex->tree();
     const auto order = utils::pre_order(tree);
 
     constexpr static int TRANSACTION_SIZE = 50000;
 
-    bool success = 0;
-
-    execute_query(db, "BEGIN;");
+    db->transaction();
     for (auto i = 0u; i < order.size(); ++i)
     {
         const auto nid = order[i];
@@ -372,65 +203,59 @@ static void save_nodes(sqlite3 *db, const Execution *ex)
         const auto status = tree.getStatus(nid);
         const auto label = tree.getLabel(nid);
 
-        insert_node(insert_bm.get(), {nid, pid, alt, kids, status, label});
+        insert_node(&insert_bm, {nid, pid, alt, kids, status, label});
 
         if (i % TRANSACTION_SIZE == TRANSACTION_SIZE - 1)
         {
-            execute_query(db, "END;");
-            execute_query(db, "BEGIN;");
+            db->commit();
+            db->transaction();
         }
     }
-    execute_query(db, "END;");
+    db->commit();
 }
 
-static void insert_bookmark(sqlite3_stmt *stmt, BookmarkItem bi)
+static void insert_bookmark(QSqlQuery *stmt, BookmarkItem bi)
 {
+    stmt->finish();
 
-    if (sqlite3_reset(stmt) != SQLITE_OK)
-    {
-        print("ERROR: could not reset DB statement");
-    }
+    stmt->addBindValue(static_cast<int>(bi.nid));
+    stmt->addBindValue(bi.text.c_str());
 
-    sqlite3_bind_int(stmt, 1, bi.nid);
-    sqlite3_bind_text(stmt, 2, bi.text.c_str(), -1, SQLITE_STATIC);
-
-    if (sqlite3_step(stmt) != SQLITE_DONE)
+    if (!stmt->exec())
     {
         print("ERROR: could not execute DB statement");
     }
 }
 
-static void insert_nogood(sqlite3_stmt *stmt, NogoodItem ngi)
+static void insert_nogood(QSqlQuery *stmt, NogoodItem ngi)
 {
 
-    if (sqlite3_reset(stmt) != SQLITE_OK)
-    {
-        print("ERROR: could not reset DB statement");
-    }
+    stmt->finish();
 
-    sqlite3_bind_int(stmt, 1, ngi.nid);
-    sqlite3_bind_text(stmt, 2, ngi.text.c_str(), -1, SQLITE_STATIC);
+    stmt->addBindValue(static_cast<int>(ngi.nid));
+    stmt->addBindValue(ngi.text.c_str());
 
-    if (sqlite3_step(stmt) != SQLITE_DONE)
+    if (!stmt->exec())
     {
         print("ERROR: could not execute DB statement");
     }
 }
 
-static void save_nogoods(sqlite3 *db, const Execution *ex)
+static void save_nogoods(QSqlDatabase *db, const Execution *ex)
 {
     const char *query = "INSERT INTO Nogoods \
                          (NodeID, Nogood) \
                          VALUES (?,?);";
-
-    auto insert_ng_stmt = prepare_statement(db, query);
+    QSqlQuery insert_ng_stmt(*db);
+    insert_ng_stmt.prepare(query);
 
     const auto &nt = ex->tree();
     const auto &sd = ex->solver_data();
 
     const auto nodes = utils::any_order(nt);
 
-    execute_query(db, "BEGIN;");
+
+    db->transaction();
 
     for (const auto n : nodes)
     {
@@ -438,152 +263,148 @@ static void save_nogoods(sqlite3 *db, const Execution *ex)
         const auto &text = sd.getNogood(n).original();
         if (text != "")
         {
-            insert_nogood(insert_ng_stmt.get(), {n, text});
+            insert_nogood(&insert_ng_stmt, {n, text});
         }
     }
 
-    execute_query(db, "END;");
+    db->commit();
 }
 
-static void insert_info(sqlite3_stmt *stmt, InfoItem ii)
+static void insert_info(QSqlQuery *stmt, InfoItem ii)
 {
+    stmt->finish();
 
-    if (sqlite3_reset(stmt) != SQLITE_OK)
-    {
-        print("ERROR: could not reset DB statement");
-    }
+    stmt->addBindValue(static_cast<int>(ii.nid));
+    stmt->addBindValue(ii.text.c_str());
 
-    sqlite3_bind_int(stmt, 1, ii.nid);
-    sqlite3_bind_text(stmt, 2, ii.text.c_str(), -1, SQLITE_STATIC);
-
-    if (sqlite3_step(stmt) != SQLITE_DONE)
+    if (!stmt->exec())
     {
         print("ERROR: could not execute DB statement");
     }
 }
 
-static void save_info(sqlite3 *db, const Execution *ex)
+static void save_info(QSqlDatabase *db, const Execution *ex)
 {
     const char *query = "INSERT INTO Info \
                          (NodeID, Info) \
                          VALUES (?,?);";
 
-    auto insert_ng_stmt = prepare_statement(db, query);
+    QSqlQuery insert_ng_stmt(*db);
+    insert_ng_stmt.prepare(query);
 
     const auto &nt = ex->tree();
     const auto &sd = ex->solver_data();
 
     const auto nodes = utils::any_order(nt);
 
-    execute_query(db, "BEGIN;");
-
+    db->transaction();
     for (const auto n : nodes)
     {
         const auto &text = sd.getInfo(n);
         if (text != "")
         {
-            insert_info(insert_ng_stmt.get(), {n, text});
+            insert_info(&insert_ng_stmt, {n, text});
         }
     }
-
-    execute_query(db, "END;");
+    db->commit();
 }
 
-static void save_user_data(sqlite3 *db, const Execution *ex)
+static void save_user_data(QSqlDatabase *db, const Execution *ex)
 {
 
     const char *query = "INSERT INTO Bookmarks \
                          (NodeID, Bookmark) \
                          VALUES (?,?);";
 
-    auto insert_bm_stmt = prepare_statement(db, query);
+    QSqlQuery insert_bm_stmt(*db);
+    insert_bm_stmt.prepare(query);
 
     const auto &ud = ex->userData();
     const auto nodes = ud.bookmarkedNodes();
 
-    execute_query(db, "BEGIN;");
 
+    db->transaction();
     for (const auto n : nodes)
     {
         const auto &text = ud.getBookmark(n);
-        insert_bookmark(insert_bm_stmt.get(), {n, text});
+        insert_bookmark(&insert_bm_stmt, {n, text});
     }
-
-    execute_query(db, "END;");
+    db->commit();
 }
 
 /// Create a file at `path` (or overwrite it) and associate it with `db`
-static Sqlite3 create_db(const char *path)
+static bool create_db(QSqlDatabase* db)
 {
-    print("creating file: {}", path);
-    std::ofstream file(path);
-    file.close();
-
-    sqlite3 *db;
-
-    int res = sqlite3_open(path, &db);
-    if (res != SQLITE_OK)
-    {
-        print("ERROR: error opening a DB file");
-        return nullptr;
-    }
-
-    const auto success1 = execute_query(db, "CREATE TABLE Nodes( \
+    const auto create_nodes = "CREATE TABLE Nodes( \
       NodeID INTEGER PRIMARY KEY, \
       ParentID int NOT NULL, \
       Alternative int NOT NULL, \
       NKids int NOT NULL, \
       Status int, \
       Label varchar(256) \
-      );");
+      );";
 
-    const auto success2 = execute_query(db, "Create TABLE Bookmarks( \
+    const auto create_bookmarks = "Create TABLE Bookmarks( \
         NodeID INTEGER PRIMARY KEY, \
         Bookmark varchar(8) \
-        );");
+        );";
 
-    const auto success3 = execute_query(db, "CREATE TABLE Nogoods( \
+    const auto create_nogoods = "CREATE TABLE Nogoods( \
         NodeID INTEGER PRIMARY KEY, \
         Nogood varchar(8) \
-    );");
+    );";
 
-    const auto success4 = execute_query(db, "CREATE TABLE Info( \
+    const auto create_info = "CREATE TABLE Info( \
         NodeID INTEGER PRIMARY KEY, \
         Info TEXT \
-    );");
+    );";
 
-    if (success1 && success2 && success3 && success4)
-    {
-        return Sqlite3{db};
-    }
-    else
-    {
-        return nullptr;
-    }
+    QSqlQuery query (*db);
+
+    if(!query.exec(create_nodes)) return false;
+    if(!query.exec(create_bookmarks)) return false;
+    if(!query.exec(create_nogoods)) return false;
+    if(!query.exec(create_info)) return false;
+
+    return true;
 }
 
 /// this takes (without nogoods) under 2 sec for a ~1.5M nodes (golomb 10)
 void save_execution(const Execution *ex, const char *path)
 {
+    print("creating file: {}", path);
+    std::ofstream file(path);
+    file.close();
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(path);
+
+    if (!db.open()) {
+        print("Cannot open database file.");
+        return;
+    }
 
     perfHelper.begin("save execution");
 
-    auto db = create_db(path);
+    if(!create_db(&db)) {
+        print("Cannot create tables in database.");
+        return;
+    }
 
-    save_nodes(db.get(), ex);
+    save_nodes(&db, ex);
 
-    save_user_data(db.get(), ex);
+    save_user_data(&db, ex);
 
     const auto &sd = ex->solver_data();
 
     if (sd.hasNogoods())
     {
-        save_nogoods(db.get(), ex);
+        save_nogoods(&db, ex);
     }
 
     if (sd.hasInfo())
     {
-        save_info(db.get(), ex);
+        save_info(&db, ex);
     }
 
     perfHelper.end();
@@ -591,23 +412,25 @@ void save_execution(const Execution *ex, const char *path)
 
 std::shared_ptr<Execution> load_execution(const char *path, ExecID eid)
 {
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(path);
 
-    auto db = open_db(path);
-
-    if (!db)
+    if (!db.open())
         return nullptr;
 
     auto ex = std::make_shared<Execution>(path, eid);
 
-    read_nodes(db.get(), *ex);
+    read_nodes(&db, *ex);
 
-    read_bookmarks(db.get(), *ex);
+    read_bookmarks(&db, *ex);
 
-    read_nogoods(db.get(), *ex);
+    read_nogoods(&db, *ex);
 
-    read_info(db.get(), *ex);
+    read_info(&db, *ex);
 
     ex->tree().setDone();
+
+    db.close();
 
     return ex;
 }

@@ -52,7 +52,6 @@ SOURCES += \
     $$PWD/src/cpprofiler/db_handler.cpp \
     $$PWD/src/cpprofiler/solver_data.cpp \
     $$PWD/src/cpprofiler/nogood_dialog.cpp \
-    $$PWD/src/sqlite/sqlite3.c \
 
 HEADERS += \
     $$PWD/src/cpprofiler/config.hh \
@@ -122,7 +121,6 @@ HEADERS += \
     $$PWD/src/cpprofiler/solver_data.hh \
     $$PWD/src/cpprofiler/nogood_dialog.hh \
     $$PWD/src/cpprofiler/analysis/nogood_analysis_dialog.hh \
-    $$PWD/src/sqlite/sqlite3.h \
 
 SOURCES += \
     $$PWD/src/cpprofiler/tests/tree_test.cpp \
