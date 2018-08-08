@@ -15,7 +15,9 @@
 #include <QMouseEvent>
 #include <QInputDialog>
 #include <QLineEdit>
+#include <QTextEdit>
 #include <QThread>
+#include <QVBoxLayout>
 
 #include "cursors/nodevisitor.hh"
 #include "cursors/hide_failed_cursor.hh"
@@ -775,6 +777,28 @@ void TraditionalView::hideBySize(int size_limit)
 void TraditionalView::undoLanterns()
 {
     vis_flags_->resetLanternSizes();
+}
+
+void TraditionalView::showNodeInfo() const
+{
+
+    if (!solver_data_.hasInfo())
+        return;
+
+    const auto cur_nid = node();
+    if (cur_nid == NodeID::NoNode)
+        return;
+
+    auto info_dialog = new QDialog;
+    auto layout = new QVBoxLayout(info_dialog);
+
+    QTextEdit* te = new QTextEdit;
+    te->append(solver_data_.getInfo(cur_nid).c_str());
+
+    layout->addWidget(te);
+
+    info_dialog->setAttribute(Qt::WA_DeleteOnClose);
+    info_dialog->show();
 }
 
 void TraditionalView::showNogoods() const

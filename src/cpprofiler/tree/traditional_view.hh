@@ -201,6 +201,9 @@ class TraditionalView : public QObject
     /// Show nogoods of the nodes under the current node and the node itself
     void showNogoods() const;
 
+    /// Show node info of the current node
+    void showNodeInfo() const;
+
     /// Highlight the subtrees (if show_outline is true) and hide the rest (if hide_rest is true)
     void highlightSubtrees(const std::vector<NodeID> &nodes, bool hide_rest, bool show_outline = true);
 

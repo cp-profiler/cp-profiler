@@ -185,6 +185,11 @@ ExecutionWindow::ExecutionWindow(Execution &ex)
             showNogoods->setShortcut(QKeySequence("Shift+N"));
             nodeMenu->addAction(showNogoods);
             connect(showNogoods, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::showNogoods);
+
+            auto showNodeInfo = new QAction{"Show node info", this};
+            showNodeInfo->setShortcut(QKeySequence("i"));
+            nodeMenu->addAction(showNodeInfo);
+            connect(showNodeInfo, &QAction::triggered, traditional_view_.get(), &tree::TraditionalView::showNodeInfo);
         }
 
         {
