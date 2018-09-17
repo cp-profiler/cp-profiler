@@ -12,6 +12,8 @@ extern QCommandLineOption paths;
 extern QCommandLineOption mzn;
 extern QCommandLineOption save_search;
 extern QCommandLineOption save_execution;
+extern QCommandLineOption save_pixel_tree;
+extern QCommandLineOption pixel_tree_compression;
 } // namespace cl_options
 
 class CommandLineParser

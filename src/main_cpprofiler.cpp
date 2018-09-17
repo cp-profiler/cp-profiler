@@ -53,6 +53,16 @@ int main(int argc, char *argv[])
         options.save_execution_db = path;
     }
 
+    if(cl_parser.isSet(cl_options::save_pixel_tree)) {
+        const auto path = cl_parser.value(cl_options::save_pixel_tree).toStdString();
+        options.save_pixel_tree_path = path;
+    }
+
+    if(cl_parser.isSet(cl_options::pixel_tree_compression)) {
+        QString cs = cl_parser.value(cl_options::pixel_tree_compression);
+        options.pixel_tree_compression = cs.toInt();
+    }
+
     Conductor conductor(std::move(options));
 
     conductor.show();

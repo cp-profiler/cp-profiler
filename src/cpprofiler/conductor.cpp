@@ -29,6 +29,8 @@
 #include "utils/tree_utils.hh"
 #include "utils/path_utils.hh"
 
+#include "pixel_views/pt_canvas.hh"
+
 #include <random>
 
 #include <QProgressDialog>
@@ -171,6 +173,12 @@ void Conductor::onExecutionDone(Execution *e)
     {
         print("saving execution to db: {}", options_.save_execution_db);
         db_handler::save_execution(e, options_.save_execution_db.c_str());
+
+        if(options_.save_pixel_tree_path != "") {
+          print("Saving pixel tree to file: {}", options_.save_pixel_tree_path);
+          savePixelTree(e, options_.save_pixel_tree_path.c_str(), options_.pixel_tree_compression);
+        }
+
         QApplication::quit();
     }
 }
@@ -372,6 +380,18 @@ void Conductor::runNogoodAnalysis(Execution *e1, Execution *e2)
             });
 
     merger->start();
+}
+
+void Conductor::savePixelTree(Execution *e, const char* path, int compression_factor) const {
+  const auto &nt = e->tree();
+  pixel_view::PtCanvas pc(nt);
+  auto pi = pc.get_pimage();
+  pc.setCompression(compression_factor);
+  int width  = pi->pixel_size()*pc.totalSlices();
+  int height = pi->pixel_size()*nt.node_stats().maxDepth();
+  pi->resize({width,height});
+  pc.redrawAll(true);
+  pi->raw_image().save(path);
 }
 
 void Conductor::saveSearch(Execution *e, const char *path) const

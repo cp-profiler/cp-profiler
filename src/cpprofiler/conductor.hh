@@ -56,6 +56,8 @@ class Conductor : public QMainWindow
 
     void mergeTrees(Execution *e1, Execution *e2);
 
+    void savePixelTree(Execution *e, const char *path, int compression_factor = 2) const;
+
     void saveSearch(Execution *e, const char *path) const;
     void saveSearch(Execution *e) const;
 

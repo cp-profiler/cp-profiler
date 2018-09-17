@@ -159,11 +159,11 @@ std::vector<PixelItem> PtCanvas::constructPixelTree() const
     return pixel_seq;
 }
 
-void PtCanvas::redrawAll()
+void PtCanvas::redrawAll(bool all)
 {
     pimage_->clear();
 
-    drawPixelTree();
+    drawPixelTree(all);
 
     {
         const auto total_width = totalSlices();
@@ -180,7 +180,7 @@ void PtCanvas::redrawAll()
     pwidget_->viewport()->update();
 }
 
-void PtCanvas::drawPixelTree()
+void PtCanvas::drawPixelTree(bool all)
 {
 
     static int times_called = 0;
@@ -190,11 +190,10 @@ void PtCanvas::drawPixelTree()
     // print("draw pixel tree: {}", times_called);
 
     /// which vertical slice to draw at x = 0
-    const auto v_begin = pwidget_->horizontalScrollBar()->value();
+    const auto v_begin = all ? 0 : pwidget_->horizontalScrollBar()->value();
     /// how many slices are visible
     const auto visible_slices = pwidget_->width();
-    /// one past the last visible slice
-    const auto v_end = v_begin + visible_slices;
+    const auto v_end = all ? totalSlices() : v_begin + visible_slices;
 
     bool end_reached = false;
 

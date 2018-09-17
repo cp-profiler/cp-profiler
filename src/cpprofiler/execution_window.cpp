@@ -409,8 +409,8 @@ void ExecutionWindow::showPixelTree()
 
     /// Can only show pixel tree when the tree is fully built
     /// TODO: change this to allow partially built trees
-    if (!tree.isDone())
-        return;
+    //if (!tree.isDone())
+    //    return;
 
     if (!pt_dock_)
     {
@@ -441,8 +441,8 @@ void ExecutionWindow::showIcicleTree()
     const auto &tree = execution_.tree();
     /// Can only show icicle tree when the tree is fully built
     /// TODO: change this to allow partially built trees
-    if (!tree.isDone())
-        return;
+    //if (!tree.isDone())
+    //    return;
 
     if (!it_dock_)
     {

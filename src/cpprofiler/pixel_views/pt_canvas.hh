@@ -50,12 +50,8 @@ class PtCanvas : public QWidget
     std::set<int> selected_slices_;
 
   private:
-    void redrawAll();
+    void drawPixelTree(bool all = false);
 
-    void drawPixelTree();
-
-    /// How many vertical slices does the tree span
-    int totalSlices() const;
 
     std::vector<PixelItem> constructPixelTree() const;
 
@@ -63,6 +59,12 @@ class PtCanvas : public QWidget
     PtCanvas(const tree::NodeTree &tree);
 
     ~PtCanvas();
+
+    PixelImage* get_pimage(void) const { return pimage_.get(); }
+    void redrawAll(bool all = false);
+    /// How many vertical slices does the tree span
+    int totalSlices() const;
+    void setCompression(int c) { compression_ = c; }
 
   signals:
 
