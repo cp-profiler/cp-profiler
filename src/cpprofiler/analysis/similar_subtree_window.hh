@@ -26,7 +26,7 @@ namespace cpprofiler
 namespace analysis
 {
 
-class SubtreePattern;
+struct SubtreePattern;
 
 enum class SimilarityType
 {

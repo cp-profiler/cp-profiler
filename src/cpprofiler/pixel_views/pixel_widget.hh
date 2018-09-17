@@ -26,7 +26,7 @@ class PixelWidget : public QAbstractScrollArea
     static constexpr int PADDING = 5;
 
   protected:
-    void paintEvent(QPaintEvent *e) override
+    void paintEvent(QPaintEvent *) override
     {
         QPainter painter{viewport()};
         painter.drawImage(QPoint(PADDING, PADDING), image_.raw_image());
@@ -48,7 +48,7 @@ class PixelWidget : public QAbstractScrollArea
     int width() const
     {
 
-        return std::ceil((float)(viewport()->width() - 10) / image_.pixel_size());
+        return static_cast<int>(std::ceil(static_cast<float>(viewport()->width() - 10) / image_.pixel_size()));
     }
 
   signals:

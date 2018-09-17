@@ -248,7 +248,8 @@ void Conductor::handleStart(ReceiverThread *receiver, const std::string &ex_name
         builders_[ex_id] = builder;
         builder->moveToThread(builderThread);
 
-        connect(builder, &TreeBuilder::buildingDone, [this, ex]() {
+	// onExecutionDone must be called on the same thread as the conductor
+        connect(builder, &TreeBuilder::buildingDone, this, [this, ex]() {
             onExecutionDone(ex);
         });
 
@@ -497,7 +498,7 @@ static std::string getHeatMapUrl(const NameMap &nm,
 
     std::unordered_map<std::string, int> loc_intensity;
 
-    for (const auto it : con_counts)
+    for (const auto& it : con_counts)
     {
         const auto con = std::to_string(it.first);
         const auto count = it.second;
@@ -525,7 +526,7 @@ static std::string getHeatMapUrl(const NameMap &nm,
 
         std::vector<std::string> new_loc(location_etc.begin(), location_etc.begin() + 5);
 
-        int val = std::floor(count * (255.0 / max_count));
+        int val = static_cast<int>(std::floor(count * (255.0 / max_count)));
 
         const auto loc_str = utils::join(new_loc, utils::minor_sep);
 
@@ -568,7 +569,7 @@ void Conductor::computeHeatMap(ExecID eid, std::vector<NodeID> ns)
 
     std::unordered_map<int, int> con_counts;
 
-    for (const auto n : ns)
+    for (const auto& n : ns)
     {
         const auto *cs = sd.getContribConstraints(n);
 
@@ -582,7 +583,7 @@ void Conductor::computeHeatMap(ExecID eid, std::vector<NodeID> ns)
     }
 
     int max_count = 0;
-    for (const auto p : con_counts)
+    for (const auto& p : con_counts)
     {
         if (p.second > max_count)
         {

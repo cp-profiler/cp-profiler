@@ -42,7 +42,7 @@ struct SubtreePattern
 
     int count() const
     {
-        return m_nodes.size();
+        return static_cast<int>(m_nodes.size());
     }
 
     int height() const

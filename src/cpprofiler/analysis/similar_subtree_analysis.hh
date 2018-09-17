@@ -37,7 +37,7 @@ enum class LabelOption
     FULL
 };
 
-class SubtreePattern;
+struct SubtreePattern;
 
 std::vector<SubtreePattern> runIdenticalSubtrees(const tree::NodeTree &nt);
 
