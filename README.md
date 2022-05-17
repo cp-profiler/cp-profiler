@@ -190,6 +190,8 @@ You will get a Distribution Kit folder in the debug folder of the build director
    Then, add all the other files and folders present in this folder by clicking on Add file(s) or Add folder respectively.
     - Click on Next and fill in the fields that appear to you. They are quite intuitive.
     - It is advisable to leave the boxes checked by default
+    
+    
    Your installer is then generated.
 
 
