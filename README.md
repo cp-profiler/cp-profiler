@@ -30,7 +30,7 @@ This README file help you to generate an installer for cp profiler depending on 
 - A setup of Qt Creator IDE (for macOS, version 5.x)
 - The QT code of the Cp-Profiler application
 
-   **Step 1 :**
+ **Step 1 :**
    
  Add the `app_bundle` specification in the project .pro file.
  
@@ -39,7 +39,7 @@ This README file help you to generate an installer for cp profiler depending on 
   <img width="300" height="200" src="https://github.com/iamklaus01/readme_img_cp-profiler/blob/main/img/1.png">
 </p>
 
-  **Step 2 :**
+ **Step 2 :**
 - Clean up the project from previous versions. 
     
    <p align="center">
@@ -48,7 +48,7 @@ This README file help you to generate an installer for cp profiler depending on 
     
 - Cleaning the project from previous versions is a good practice to avoid errors that could be related to other versions you have already made.
 
-  **Step 3:**
+ **Step 3:**
   
  Run the project using the "Release" option
 
@@ -86,7 +86,7 @@ Note the path to the  'macdeployqt' :
  Open the project in the QT IDE and compile it for the first time: This will generate a build folder at the root of the project.
     
     
-  **Step 2 :**
+**Step 2 :**
   
   
 Run the following command:
@@ -139,7 +139,7 @@ For some Linux distributions additional packages are required. To automate the d
  Open the project in the QT IDE and compile it for the first time: This will generate a build folder at the root of the project.
     
     
-  **Step 2 :**
+**Step 2 :**
   
   
 Run the following command:
