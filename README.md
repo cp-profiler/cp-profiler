@@ -193,5 +193,7 @@ You will get a Distribution Kit folder in the debug folder of the build director
     
     
    Your installer is then generated.
-
-
+   
+   <p align="center">
+    Readme edited by EDX MOOC project - 18/05/2022
+  </p>
