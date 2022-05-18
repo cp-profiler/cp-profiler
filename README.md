@@ -36,14 +36,14 @@ This README file help you to generate an installer for cp profiler depending on 
  
  QMake should automatically generate a bundle for the application in the build folder. Nevertheless, it is recommended to explicitly add this in the .pro file. 
  <p align="center">
-  <img width="300" height="200" src="https://github.com/iamklaus01/readme_img_cp-profiler/blob/main/img/1.png">
+  <img width="300" height="200" src="https://github.com/iamklaus01/cp-profiler_installer/blob/assets/docs/images/installer_screenshots/1.png">
 </p>
 
  **Step 2 :**
 - Clean up the project from previous versions. 
     
    <p align="center">
-    <img width="300" height="300" src="https://github.com/iamklaus01/readme_img_cp-profiler/blob/main/img/2.png">
+    <img width="300" height="300" src="https://github.com/iamklaus01/cp-profiler_installer/blob/assets/docs/images/installer_screenshots/2.png">
    </p>
     
 - Cleaning the project from previous versions is a good practice to avoid errors that could be related to other versions you have already made.
@@ -165,24 +165,24 @@ You will get a Distribution Kit folder in the debug folder of the build director
     - Launch Inno Setup and select the second option as in the screenshot below
     
     <p align="center">
-        <img width="300" height="200" src="https://github.com/iamklaus01/readme_img_cp-profiler/blob/main/img/3.png">
+        <img width="300" height="200" src="https://github.com/iamklaus01/cp-profiler_installer/blob/assets/docs/images/installer_screenshots/3.png">
    </p>
    
     - Click on next then fill in the different fields with the corresponding values
    <p align="center">
-    <img width="300" height="200" src="https://github.com/iamklaus01/readme_img_cp-profiler/blob/main/img/4.png">
+    <img width="300" height="200" src="https://github.com/iamklaus01/cp-profiler_installer/blob/assets/docs/images/installer_screenshots/4.png">
    </p>
    
     - Click Next and choose a destination folder for the application, then the name of the application
       
    <p align="center">
-    <img width="300" height="200" src="https://github.com/iamklaus01/readme_img_cp-profiler/blob/main/img/5.png">
+    <img width="300" height="200" src="https://github.com/iamklaus01/cp-profiler_installer/blob/assets/docs/images/installer_screenshots/5.png">
    </p>
    
     - Click on Next then carry on.
       
   <p align="center">
-    <img width="300" height="200" src="https://github.com/iamklaus01/readme_img_cp-profiler/blob/main/img/6.png">
+    <img width="300" height="200" src="https://github.com/iamklaus01/cp-profiler_installer/blob/assets/docs/images/installer_screenshots/6.png">
   </p>
    
    At this step (see screenshot above), enter the path to the generated executable in the Distribution Kit folder.
